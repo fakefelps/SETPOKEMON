@@ -15,7 +15,6 @@
   --green:#2a9d5c;--radius:8px;--radius-lg:12px;
 }
 body{font-family:'Crimson Pro',serif;background:var(--bg);color:var(--text);min-height:100vh}
-
 header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14px 20px;position:sticky;top:0;z-index:100}
 .app-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:4px;color:var(--text3);margin-bottom:12px}
 .search-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -26,13 +25,11 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 .load-btn:hover{background:rgba(200,151,58,0.25)}
 .search-btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;padding:7px 14px;border:0.5px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer}
 .search-btn:hover{color:var(--text)}
-
 .quick-sets{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center}
 .qs-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;color:var(--text3)}
 .qs-chip{font-family:'Cinzel',serif;font-size:10px;padding:3px 10px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text2);cursor:pointer}
 .qs-chip:hover{border-color:var(--gold);color:var(--gold)}
 .qs-chip.active{border-color:var(--gold);color:var(--gold);background:var(--gold-bg)}
-
 .saved-bar{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
 .saved-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;color:var(--text3)}
 .saved-chip{font-family:'Cinzel',serif;font-size:10px;padding:3px 10px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px}
@@ -41,13 +38,25 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 .saved-chip .rm:hover{color:#e24b4a}
 .no-fav{font-size:11px;color:var(--text3)}
 
+/* Barra Apps Script */
+.sync-bar{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:8px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sync-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;color:var(--text3);white-space:nowrap}
+.sync-url-input{font-family:'Crimson Pro',serif;font-size:12px;flex:1;min-width:180px;padding:4px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg3);color:var(--text)}
+.sync-url-input:focus{outline:none;border-color:var(--gold)}
+.sync-url-input::placeholder{color:var(--text3)}
+.sync-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;padding:4px 12px;border:0.5px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap}
+.sync-btn:hover{border-color:var(--gold);color:var(--gold)}
+.sync-status{font-size:11px;color:var(--text2)}
+.sync-status.ok{color:var(--green)}
+.sync-status.err{color:#e24b4a}
+.sync-status.loading{color:var(--gold)}
+
 .stats-bar{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:10px 20px;display:none;gap:20px;align-items:center;flex-wrap:wrap}
 .stat{font-size:12px;color:var(--text2)}
 .stat span{font-family:'Cinzel',serif;font-size:15px;color:var(--text);font-weight:700;margin-left:4px}
 .stat-value{margin-left:auto;font-family:'Cinzel',serif;font-size:16px;color:var(--gold);font-weight:700}
 .progress-bar{height:2px;background:var(--border);display:none}
 .progress-fill{height:100%;background:var(--gold);transition:width .4s}
-
 .filter-bar{padding:10px 20px;border-bottom:0.5px solid var(--border);display:none;gap:8px;background:var(--bg2);align-items:center;flex-wrap:wrap}
 .filter-btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;padding:4px 12px;border:0.5px solid var(--border);border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer}
 .filter-btn:hover{color:var(--text)}
@@ -68,13 +77,11 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 .owned-badge svg{width:10px;height:10px}
 .card-num{font-family:'Cinzel',serif;font-size:9px;color:var(--text3);text-align:center;margin-top:5px}
 .card-name{font-size:11px;color:var(--text2);text-align:center;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
 .empty{grid-column:1/-1;padding:60px 20px;text-align:center;color:var(--text3)}
 .empty-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:3px;margin-bottom:10px;color:var(--text2)}
 .empty-sub{font-size:13px;line-height:1.8}
 .loading{grid-column:1/-1;padding:60px 20px;text-align:center;font-family:'Cinzel',serif;font-size:11px;letter-spacing:3px;color:var(--text3)}
 
-/* Modal busca */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
 .modal-bg.open{display:flex}
 .modal{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:22px;width:500px;max-width:100%;max-height:85vh;overflow-y:auto}
@@ -92,7 +99,6 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 .set-row-id{font-family:'Cinzel',serif;font-size:10px;color:var(--gold);letter-spacing:1px;margin-right:8px}
 .set-row-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;padding:3px 10px;border:0.5px solid var(--gold);border-radius:var(--radius);background:var(--gold-bg);color:var(--gold);cursor:pointer;white-space:nowrap}
 
-/* Modal carta */
 .card-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:300;display:none;align-items:center;justify-content:center;padding:16px}
 .card-modal-bg.open{display:flex}
 .card-modal{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:22px;width:360px;max-width:100%;max-height:90vh;overflow-y:auto}
@@ -112,6 +118,10 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 .hint-box a{color:var(--gold);text-decoration:none}
 .save-btn{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;width:100%;margin-top:16px;padding:10px;border:0.5px solid var(--gold);border-radius:var(--radius);background:var(--gold-bg);color:var(--gold);cursor:pointer;text-transform:uppercase}
 .save-btn:hover{background:rgba(200,151,58,0.25)}
+.save-note{font-size:11px;color:var(--text3);text-align:center;margin-top:6px}
+.save-note.syncing{color:var(--gold)}
+.save-note.synced{color:var(--green)}
+.save-note.error{color:#e24b4a}
 
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -136,11 +146,20 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
     <span class="qs-chip" data-id="sv4" onclick="quickLoad(this)">Paradox Rift</span>
   </div>
   <div class="saved-bar">
-    <span class="saved-label">Meus favoritos:</span>
+    <span class="saved-label">Favoritos:</span>
     <span id="savedChips"></span>
     <span class="no-fav" id="noFav">Nenhum — carregue um set e clique em ★ Salvar</span>
   </div>
 </header>
+
+<!-- Barra de sincronização -->
+<div class="sync-bar">
+  <span class="sync-label">Apps Script:</span>
+  <input class="sync-url-input" id="scriptUrl" placeholder="Cole aqui a URL do seu Apps Script..." />
+  <button class="sync-btn" onclick="saveScriptUrl()">Salvar URL</button>
+  <button class="sync-btn" onclick="syncFromSheet()">↺ Carregar da planilha</button>
+  <span class="sync-status" id="syncStatus"></span>
+</div>
 
 <div class="stats-bar" id="statsBar">
   <div class="stat">Coletadas<span id="statOwned">0</span></div>
@@ -157,9 +176,6 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
   <span class="set-title-lbl" id="setTitleLbl"></span>
   <div class="toolbar-right">
     <button class="tb-btn" onclick="saveAsFav()">★ Salvar favorito</button>
-    <button class="tb-btn" onclick="exportData()">⬇ Exportar</button>
-    <button class="tb-btn" onclick="document.getElementById('fileIn').click()">⬆ Importar</button>
-    <input type="file" id="fileIn" accept=".json" style="display:none" onchange="importData(event)" />
   </div>
 </div>
 
@@ -167,22 +183,20 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
   <div class="empty">
     <div class="empty-title">Nenhuma coleção carregada</div>
     <div class="empty-sub">
-      Clique em um set rápido acima ou digite o código e clique em Carregar<br><br>
-      <span style="color:var(--text2)">me1</span> = Megaevolução &nbsp;·&nbsp;
-      <span style="color:var(--text2)">sv8</span> = Surging Sparks &nbsp;·&nbsp;
-      <span style="color:var(--text2)">sv6</span> = Twilight Masquerade
+      Selecione um set acima para começar<br><br>
+      Configure o Apps Script para sincronização automática entre dispositivos
     </div>
   </div>
 </div>
 
-<!-- Modal busca de set -->
+<!-- Modal busca -->
 <div class="modal-bg" id="searchModal" onclick="closeSearchBg(event)">
   <div class="modal">
     <div class="modal-header">
       <span class="modal-title">Buscar Coleção</span>
       <button class="modal-close" onclick="closeSearch()">×</button>
     </div>
-    <input class="search-modal-input" id="searchQ" placeholder="Nome do set em inglês ou código (ex: Mega, Surging, sv8...)" oninput="filterSets()" />
+    <input class="search-modal-input" id="searchQ" placeholder="Nome do set (ex: Mega, Surging, sv8...)" oninput="filterSets()" />
     <div id="setResults"><div style="padding:12px;font-size:13px;color:var(--text3)">Carregando lista de sets...</div></div>
   </div>
 </div>
@@ -191,19 +205,17 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 <div class="card-modal-bg" id="cardModal" onclick="closeCardBg(event)">
   <div class="card-modal">
     <div class="cm-header">
-      <div>
-        <div class="cm-name" id="cmName"></div>
-        <div class="cm-meta" id="cmMeta"></div>
-      </div>
+      <div><div class="cm-name" id="cmName"></div><div class="cm-meta" id="cmMeta"></div></div>
       <button class="modal-close" onclick="closeCard()">×</button>
     </div>
     <img class="cm-img" id="cmImg" src="" alt="" />
     <div class="cm-section">Variações que possuo</div>
     <div id="cmVariants"></div>
     <div class="hint-box">
-      Consulte o preço médio em <a href="https://www.ligapokemon.com.br" target="_blank">ligapokemon.com.br</a> e preencha abaixo em R$.
+      Consulte o preço médio em <a href="https://www.ligapokemon.com.br" target="_blank">ligapokemon.com.br</a> e preencha abaixo.
     </div>
     <button class="save-btn" onclick="saveCard()">Salvar</button>
+    <div class="save-note" id="saveNote"></div>
   </div>
 </div>
 
@@ -218,14 +230,73 @@ const VARIANTS = [
 let allCards=[], allSets=[], currentFilter='all', openCardId=null, currentSetId='';
 let collection={}, savedSets=[];
 
+// ── Storage local ─────────────────────────────────────────
 function loadStorage(){
   try{collection=JSON.parse(localStorage.getItem('pkm_col')||'{}');}catch(e){collection={};}
   try{savedSets=JSON.parse(localStorage.getItem('pkm_favs')||'[]');}catch(e){savedSets=[];}
+  const url=localStorage.getItem('pkm_script_url')||'';
+  if(url) document.getElementById('scriptUrl').value=url;
   renderSaved();
 }
 function saveCol(){localStorage.setItem('pkm_col',JSON.stringify(collection));}
 function saveFavs(){localStorage.setItem('pkm_favs',JSON.stringify(savedSets));}
 loadStorage();
+
+function getScriptUrl(){return document.getElementById('scriptUrl').value.trim();}
+function saveScriptUrl(){
+  const url=getScriptUrl();
+  if(!url){setSyncStatus('Cole a URL do Apps Script','');return;}
+  localStorage.setItem('pkm_script_url',url);
+  setSyncStatus('URL salva!','ok');
+  setTimeout(()=>setSyncStatus('',''),2000);
+}
+function setSyncStatus(msg,cls){
+  const el=document.getElementById('syncStatus');
+  el.textContent=msg;
+  el.className='sync-status'+(cls?' '+cls:'');
+}
+
+// ── Carregar da planilha ──────────────────────────────────
+async function syncFromSheet(){
+  const url=getScriptUrl();
+  if(!url){setSyncStatus('Configure a URL do Apps Script primeiro','err');return;}
+  setSyncStatus('Carregando...','loading');
+  try{
+    const r=await fetch(url+'?action=get');
+    const d=await r.json();
+    if(!d.ok) throw new Error(d.error||'Erro desconhecido');
+    collection={...d.collection};
+    saveCol();
+    renderGrid();
+    setSyncStatus('✓ Sincronizado','ok');
+    setTimeout(()=>setSyncStatus('',''),3000);
+  }catch(e){
+    setSyncStatus('Erro: '+e.message,'err');
+  }
+}
+
+// ── Salvar carta na planilha ──────────────────────────────
+async function saveToSheet(card_id, variants){
+  const url=getScriptUrl();
+  if(!url) return; // sem URL, salva só local
+  setNoteStatus('Sincronizando...','syncing');
+  try{
+    await fetch(url,{
+      method:'POST',
+      body:JSON.stringify({action:'save', card_id, variants}),
+    });
+    setNoteStatus('✓ Salvo na planilha','synced');
+    setTimeout(()=>setNoteStatus('',''),2500);
+  }catch(e){
+    setNoteStatus('Salvo local (sem conexão)','error');
+    setTimeout(()=>setNoteStatus('',''),3000);
+  }
+}
+function setNoteStatus(msg,cls){
+  const el=document.getElementById('saveNote');
+  el.textContent=msg;
+  el.className='save-note'+(cls?' '+cls:'');
+}
 
 // ── Favoritos ─────────────────────────────────────────────
 function renderSaved(){
@@ -235,8 +306,7 @@ function renderSaved(){
   nf.style.display='none';
   chips.innerHTML=savedSets.map(s=>
     `<span class="saved-chip" onclick="fetchSet('${s.id}')">
-      ${s.name}
-      <span class="rm" onclick="removeFav(event,'${s.id}')">×</span>
+      ${s.name}<span class="rm" onclick="removeFav(event,'${s.id}')">×</span>
     </span>`
   ).join('');
 }
@@ -244,25 +314,16 @@ function saveAsFav(){
   if(!currentSetId)return;
   const name=document.getElementById('setTitleLbl').textContent||currentSetId;
   if(!savedSets.find(s=>s.id===currentSetId)){
-    savedSets.push({id:currentSetId,name});
-    saveFavs();renderSaved();
+    savedSets.push({id:currentSetId,name});saveFavs();renderSaved();
   }
 }
-function removeFav(e,id){
-  e.stopPropagation();
-  savedSets=savedSets.filter(s=>s.id!==id);
-  saveFavs();renderSaved();
-}
+function removeFav(e,id){e.stopPropagation();savedSets=savedSets.filter(s=>s.id!==id);saveFavs();renderSaved();}
 
 // ── Carregar set ──────────────────────────────────────────
-function loadFromInput(){
-  const v=document.getElementById('setInput').value.trim();
-  if(v)fetchSet(v);
-}
+function loadFromInput(){const v=document.getElementById('setInput').value.trim();if(v)fetchSet(v);}
 function quickLoad(btn){
   document.querySelectorAll('.qs-chip').forEach(c=>c.classList.remove('active'));
-  btn.classList.add('active');
-  fetchSet(btn.dataset.id);
+  btn.classList.add('active');fetchSet(btn.dataset.id);
 }
 document.getElementById('setInput').addEventListener('keydown',e=>{if(e.key==='Enter')loadFromInput();});
 
@@ -272,37 +333,29 @@ async function fetchSet(setId){
   ['statsBar','filterBar'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('progressBar').style.display='none';
   currentSetId='';
-
   try{
-    let page=1, cards=[];
+    let page=1,cards=[];
     while(true){
       const r=await fetch(`${API}/cards?q=set.id:${setId}&pageSize=250&page=${page}&orderBy=number`);
-      if(!r.ok)throw new Error(`Set "${setId}" não encontrado. Tente buscar por nome ou verifique o código.`);
+      if(!r.ok)throw new Error(`Set "${setId}" não encontrado.`);
       const data=await r.json();
       cards=cards.concat(data.data);
       if(cards.length>=data.totalCount)break;
       page++;
     }
-    if(!cards.length)throw new Error('Nenhuma carta encontrada para este set.');
-
-    allCards=cards;
-    currentSetId=setId;
+    if(!cards.length)throw new Error('Nenhuma carta encontrada.');
+    allCards=cards;currentSetId=setId;
     const setName=cards[0]?.set?.name||setId;
     document.getElementById('setTitleLbl').textContent=setName;
     document.getElementById('setInput').value=setId;
-
-    // marca chip ativo se for set rápido
-    document.querySelectorAll('.qs-chip').forEach(c=>{
-      c.classList.toggle('active', c.dataset.id===setId);
-    });
-
+    document.querySelectorAll('.qs-chip').forEach(c=>c.classList.toggle('active',c.dataset.id===setId));
     setFilter('all',document.querySelector('.filter-btn'));
     renderGrid();
     document.getElementById('statsBar').style.display='flex';
     document.getElementById('progressBar').style.display='block';
     document.getElementById('filterBar').style.display='flex';
   }catch(e){
-    grid.innerHTML=`<div class="empty"><div class="empty-title">Erro ao carregar</div><div class="empty-sub">${e.message}</div></div>`;
+    grid.innerHTML=`<div class="empty"><div class="empty-title">Erro</div><div class="empty-sub">${e.message}</div></div>`;
   }
 }
 
@@ -331,9 +384,8 @@ function renderGrid(){
   }
   updateStats();
 }
-
 function updateStats(){
-  const total=allCards.length, owned=allCards.filter(c=>isOwned(c.id)).length;
+  const total=allCards.length,owned=allCards.filter(c=>isOwned(c.id)).length;
   const pct=total?Math.round(owned/total*100):0;
   const val=allCards.reduce((s,c)=>s+getVal(c.id),0);
   document.getElementById('statOwned').textContent=owned;
@@ -342,51 +394,32 @@ function updateStats(){
   document.getElementById('statValue').textContent=fmtBRL(val);
   document.getElementById('progressFill').style.width=pct+'%';
 }
-
 function setFilter(f,btn){
-  currentFilter=f;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');
-  renderGrid();
+  currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');renderGrid();
 }
 
-// ── Modal busca de set ────────────────────────────────────
+// ── Modal busca ───────────────────────────────────────────
 async function openSearch(){
   document.getElementById('searchModal').classList.add('open');
   setTimeout(()=>document.getElementById('searchQ').focus(),50);
   if(!allSets.length){
     try{
       const r=await fetch(`${API}/sets?orderBy=-releaseDate&pageSize=250`);
-      const d=await r.json();
-      allSets=d.data||[];
-      filterSets();
-    }catch(e){
-      document.getElementById('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--text3)">Erro ao carregar lista.</div>';
-    }
+      const d=await r.json();allSets=d.data||[];filterSets();
+    }catch(e){document.getElementById('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--text3)">Erro ao carregar.</div>';}
   }else{filterSets();}
 }
 function closeSearch(){document.getElementById('searchModal').classList.remove('open');}
 function closeSearchBg(e){if(e.target===document.getElementById('searchModal'))closeSearch();}
-
 function filterSets(){
   const q=document.getElementById('searchQ').value.trim().toLowerCase();
-  const filtered=q
-    ?allSets.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.id||'').toLowerCase().includes(q))
-    :allSets.slice(0,40);
-  if(!filtered.length){
-    document.getElementById('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--text3)">Nenhum set encontrado.</div>';
-    return;
-  }
+  const filtered=q?allSets.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.id||'').toLowerCase().includes(q)):allSets.slice(0,40);
+  if(!filtered.length){document.getElementById('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--text3)">Nenhum set encontrado.</div>';return;}
   document.getElementById('setResults').innerHTML=filtered.map(s=>
     `<div class="set-row" onclick="pickSet('${s.id}')">
-      <div>
-        <div class="set-row-name">${s.name||s.id}</div>
-        <div class="set-row-meta">${s.releaseDate||''} · ${s.total||'?'} cartas</div>
-      </div>
-      <div style="display:flex;align-items:center">
-        <span class="set-row-id">${s.id}</span>
-        <button class="set-row-btn">Carregar</button>
-      </div>
+      <div><div class="set-row-name">${s.name||s.id}</div><div class="set-row-meta">${s.releaseDate||''} · ${s.total||'?'} cartas</div></div>
+      <div style="display:flex;align-items:center"><span class="set-row-id">${s.id}</span><button class="set-row-btn">Carregar</button></div>
     </div>`
   ).join('');
 }
@@ -408,39 +441,29 @@ function openCard(cardId){
     return `<div class="var-row">
       <input type="checkbox" class="var-check" id="v_${v.key}" ${owned?'checked':''}/>
       <label for="v_${v.key}" class="var-label">${v.label}</label>
-      <div class="price-wrap">
-        <span class="price-pfx">R$</span>
-        <input type="number" class="price-inp" id="p_${v.key}" value="${price}" placeholder="0,00" step="0.01" min="0"/>
-      </div>
+      <div class="price-wrap"><span class="price-pfx">R$</span>
+      <input type="number" class="price-inp" id="p_${v.key}" value="${price}" placeholder="0,00" step="0.01" min="0"/></div>
     </div>`;
   }).join('');
+  setNoteStatus('','');
   document.getElementById('cardModal').classList.add('open');
 }
-function saveCard(){
+
+async function saveCard(){
   if(!openCardId)return;
   const data={};
   VARIANTS.forEach(v=>{
     data[v.key]={owned:document.getElementById('v_'+v.key)?.checked||false,price:parseFloat(document.getElementById('p_'+v.key)?.value||0)||0};
   });
-  collection[openCardId]=data;saveCol();renderGrid();closeCard();
+  collection[openCardId]=data;
+  saveCol();
+  renderGrid();
+  // Salva na planilha automaticamente
+  await saveToSheet(openCardId, data);
 }
+
 function closeCard(){document.getElementById('cardModal').classList.remove('open');openCardId=null;}
 function closeCardBg(e){if(e.target===document.getElementById('cardModal'))closeCard();}
-
-// ── Export / Import ───────────────────────────────────────
-function exportData(){
-  const b=new Blob([JSON.stringify(collection,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='pokemon_colecao.json';a.click();
-}
-function importData(e){
-  const f=e.target.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=ev=>{
-    try{collection={...collection,...JSON.parse(ev.target.result)};saveCol();renderGrid();alert('Importado com sucesso!');}
-    catch(e){alert('Arquivo inválido.');}
-  };
-  r.readAsText(f);e.target.value='';
-}
 </script>
 </body>
 </html>
