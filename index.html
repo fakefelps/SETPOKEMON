@@ -19,15 +19,21 @@ body{font-family:'Crimson Pro',serif;background:var(--bg);color:var(--text);min-
 header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14px 20px;position:sticky;top:0;z-index:100}
 .app-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:4px;color:var(--text3);margin-bottom:12px}
 .search-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.set-input{font-family:'Crimson Pro',serif;font-size:14px;padding:7px 12px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg3);color:var(--text);width:240px}
+.set-input{font-family:'Crimson Pro',serif;font-size:14px;padding:7px 12px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg3);color:var(--text);width:220px}
 .set-input:focus{outline:none;border-color:var(--gold)}
 .set-input::placeholder{color:var(--text3)}
 .load-btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:1.5px;padding:7px 16px;border:0.5px solid var(--gold);border-radius:var(--radius);background:var(--gold-bg);color:var(--gold);cursor:pointer}
-.load-btn:hover{background:rgba(200,151,58,0.22)}
+.load-btn:hover{background:rgba(200,151,58,0.25)}
 .search-btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;padding:7px 14px;border:0.5px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer}
-.search-btn:hover{color:var(--text);border-color:var(--border2)}
+.search-btn:hover{color:var(--text)}
 
-.saved-bar{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.quick-sets{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.qs-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;color:var(--text3)}
+.qs-chip{font-family:'Cinzel',serif;font-size:10px;padding:3px 10px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text2);cursor:pointer}
+.qs-chip:hover{border-color:var(--gold);color:var(--gold)}
+.qs-chip.active{border-color:var(--gold);color:var(--gold);background:var(--gold-bg)}
+
+.saved-bar{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
 .saved-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;color:var(--text3)}
 .saved-chip{font-family:'Cinzel',serif;font-size:10px;padding:3px 10px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px}
 .saved-chip:hover{border-color:var(--gold);color:var(--gold)}
@@ -64,8 +70,8 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 .card-name{font-size:11px;color:var(--text2);text-align:center;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .empty{grid-column:1/-1;padding:60px 20px;text-align:center;color:var(--text3)}
-.empty-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:3px;margin-bottom:8px;color:var(--text2)}
-.empty-sub{font-size:13px}
+.empty-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:3px;margin-bottom:10px;color:var(--text2)}
+.empty-sub{font-size:13px;line-height:1.8}
 .loading{grid-column:1/-1;padding:60px 20px;text-align:center;font-family:'Cinzel',serif;font-size:11px;letter-spacing:3px;color:var(--text3)}
 
 /* Modal busca */
@@ -107,7 +113,7 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 .save-btn{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;width:100%;margin-top:16px;padding:10px;border:0.5px solid var(--gold);border-radius:var(--radius);background:var(--gold-bg);color:var(--gold);cursor:pointer;text-transform:uppercase}
 .save-btn:hover{background:rgba(200,151,58,0.25)}
 
-::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 </style>
@@ -117,14 +123,22 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 <header>
   <div class="app-title">Pokédex do Colecionador</div>
   <div class="search-row">
-    <input class="set-input" id="setInput" placeholder="Código do set (ex: sv08, sv09, swsh1...)" />
+    <input class="set-input" id="setInput" placeholder="Código do set (ex: me1, sv8...)" />
     <button class="load-btn" onclick="loadFromInput()">Carregar</button>
     <button class="search-btn" onclick="openSearch()">🔍 Buscar por nome</button>
   </div>
+  <div class="quick-sets">
+    <span class="qs-label">Sets rápidos:</span>
+    <span class="qs-chip" data-id="me1" onclick="quickLoad(this)">Megaevolução</span>
+    <span class="qs-chip" data-id="sv8" onclick="quickLoad(this)">Surging Sparks</span>
+    <span class="qs-chip" data-id="sv6" onclick="quickLoad(this)">Twilight Masquerade</span>
+    <span class="qs-chip" data-id="sv5" onclick="quickLoad(this)">Temporal Forces</span>
+    <span class="qs-chip" data-id="sv4" onclick="quickLoad(this)">Paradox Rift</span>
+  </div>
   <div class="saved-bar">
-    <span class="saved-label">Favoritos:</span>
+    <span class="saved-label">Meus favoritos:</span>
     <span id="savedChips"></span>
-    <span class="no-fav" id="noFav">Nenhum ainda — carregue um set e clique em ★ Salvar</span>
+    <span class="no-fav" id="noFav">Nenhum — carregue um set e clique em ★ Salvar</span>
   </div>
 </header>
 
@@ -152,8 +166,12 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 <div class="card-grid" id="cardGrid">
   <div class="empty">
     <div class="empty-title">Nenhuma coleção carregada</div>
-    <div class="empty-sub">Digite o código do set ou use "Buscar por nome"<br><br>
-    Exemplos: <b>sv08</b> = Megaevolução &nbsp;·&nbsp; <b>sv09</b> = Heróis Excelsos &nbsp;·&nbsp; <b>sv06</b> = Máscaras do Abismo</div>
+    <div class="empty-sub">
+      Clique em um set rápido acima ou digite o código e clique em Carregar<br><br>
+      <span style="color:var(--text2)">me1</span> = Megaevolução &nbsp;·&nbsp;
+      <span style="color:var(--text2)">sv8</span> = Surging Sparks &nbsp;·&nbsp;
+      <span style="color:var(--text2)">sv6</span> = Twilight Masquerade
+    </div>
   </div>
 </div>
 
@@ -164,8 +182,8 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
       <span class="modal-title">Buscar Coleção</span>
       <button class="modal-close" onclick="closeSearch()">×</button>
     </div>
-    <input class="search-modal-input" id="searchQ" placeholder="Nome da coleção em português (ex: Megaevolução, Escarlate...)" oninput="filterSets()" />
-    <div id="setResults"><div style="padding:12px;font-size:13px;color:var(--text3)">Carregando lista...</div></div>
+    <input class="search-modal-input" id="searchQ" placeholder="Nome do set em inglês ou código (ex: Mega, Surging, sv8...)" oninput="filterSets()" />
+    <div id="setResults"><div style="padding:12px;font-size:13px;color:var(--text3)">Carregando lista de sets...</div></div>
   </div>
 </div>
 
@@ -190,15 +208,13 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 </div>
 
 <script>
-// ── Config ────────────────────────────────────────────────
-const API   = 'https://api.tcgdex.net/v2/pt';
+const API = 'https://api.pokemontcg.io/v2';
 const VARIANTS = [
-  {key:'normal',  label:'Normal'},
-  {key:'holo',    label:'Holo / Foil'},
-  {key:'reverse', label:'Reverse Holo'},
+  {key:'normal',          label:'Normal'},
+  {key:'holofoil',        label:'Holofoil'},
+  {key:'reverseHolofoil', label:'Reverse Holo'},
 ];
 
-// ── State ─────────────────────────────────────────────────
 let allCards=[], allSets=[], currentFilter='all', openCardId=null, currentSetId='';
 let collection={}, savedSets=[];
 
@@ -243,38 +259,42 @@ function loadFromInput(){
   const v=document.getElementById('setInput').value.trim();
   if(v)fetchSet(v);
 }
+function quickLoad(btn){
+  document.querySelectorAll('.qs-chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  fetchSet(btn.dataset.id);
+}
 document.getElementById('setInput').addEventListener('keydown',e=>{if(e.key==='Enter')loadFromInput();});
 
 async function fetchSet(setId){
   const grid=document.getElementById('cardGrid');
-  grid.innerHTML='<div class="loading">Buscando cartas</div>';
+  grid.innerHTML='<div class="loading">Buscando cartas...</div>';
   ['statsBar','filterBar'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('progressBar').style.display='none';
   currentSetId='';
 
   try{
-    const r=await fetch(`${API}/sets/${setId}`);
-    if(!r.ok)throw new Error(`Set "${setId}" não encontrado. Tente buscar por nome.`);
-    const setData=await r.json();
+    let page=1, cards=[];
+    while(true){
+      const r=await fetch(`${API}/cards?q=set.id:${setId}&pageSize=250&page=${page}&orderBy=number`);
+      if(!r.ok)throw new Error(`Set "${setId}" não encontrado. Tente buscar por nome ou verifique o código.`);
+      const data=await r.json();
+      cards=cards.concat(data.data);
+      if(cards.length>=data.totalCount)break;
+      page++;
+    }
+    if(!cards.length)throw new Error('Nenhuma carta encontrada para este set.');
 
-    // cartas do set
-    const r2=await fetch(`${API}/sets/${setId}/cards`);
-    if(!r2.ok)throw new Error('Erro ao carregar cartas.');
-    const cards=await r2.json();
-    if(!cards||!cards.length)throw new Error('Nenhuma carta encontrada.');
-
-    allCards=cards.map(c=>({
-      id:`${setId}-${c.localId}`,
-      localId:c.localId,
-      name:c.name||'',
-      image:c.image?c.image+'/low.webp':'',
-      setName:setData.name||setId,
-      total:setData.cardCount?.official||setData.cardCount?.total||'?',
-    }));
-
+    allCards=cards;
     currentSetId=setId;
-    document.getElementById('setTitleLbl').textContent=setData.name||setId;
+    const setName=cards[0]?.set?.name||setId;
+    document.getElementById('setTitleLbl').textContent=setName;
     document.getElementById('setInput').value=setId;
+
+    // marca chip ativo se for set rápido
+    document.querySelectorAll('.qs-chip').forEach(c=>{
+      c.classList.toggle('active', c.dataset.id===setId);
+    });
 
     setFilter('all',document.querySelector('.filter-btn'));
     renderGrid();
@@ -301,10 +321,10 @@ function renderGrid(){
       const owned=isOwned(c.id);
       return `<div class="card-wrap" onclick="openCard('${c.id}')">
         <div class="card-img-box ${owned?'owned':'missing'}">
-          ${c.image?`<img src="${c.image}" alt="${c.name}" loading="lazy" />`:''}
+          <img src="${c.images?.small||''}" alt="${c.name}" loading="lazy"/>
           ${owned?`<div class="owned-badge"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`:''}
         </div>
-        <div class="card-num">${c.localId}/${c.total}</div>
+        <div class="card-num">${c.number}/${c.set?.printedTotal||'?'}</div>
         <div class="card-name">${c.name}</div>
       </div>`;
     }).join('');
@@ -313,7 +333,7 @@ function renderGrid(){
 }
 
 function updateStats(){
-  const total=allCards.length,owned=allCards.filter(c=>isOwned(c.id)).length;
+  const total=allCards.length, owned=allCards.filter(c=>isOwned(c.id)).length;
   const pct=total?Math.round(owned/total*100):0;
   const val=allCards.reduce((s,c)=>s+getVal(c.id),0);
   document.getElementById('statOwned').textContent=owned;
@@ -330,17 +350,18 @@ function setFilter(f,btn){
   renderGrid();
 }
 
-// ── Modal busca ───────────────────────────────────────────
+// ── Modal busca de set ────────────────────────────────────
 async function openSearch(){
   document.getElementById('searchModal').classList.add('open');
   setTimeout(()=>document.getElementById('searchQ').focus(),50);
   if(!allSets.length){
     try{
-      const r=await fetch(`${API}/sets`);
-      allSets=await r.json();
+      const r=await fetch(`${API}/sets?orderBy=-releaseDate&pageSize=250`);
+      const d=await r.json();
+      allSets=d.data||[];
       filterSets();
     }catch(e){
-      document.getElementById('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--text3)">Erro ao carregar lista de sets.</div>';
+      document.getElementById('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--text3)">Erro ao carregar lista.</div>';
     }
   }else{filterSets();}
 }
@@ -349,7 +370,9 @@ function closeSearchBg(e){if(e.target===document.getElementById('searchModal'))c
 
 function filterSets(){
   const q=document.getElementById('searchQ').value.trim().toLowerCase();
-  const filtered=q?allSets.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.id||'').toLowerCase().includes(q)):allSets.slice(0,40);
+  const filtered=q
+    ?allSets.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.id||'').toLowerCase().includes(q))
+    :allSets.slice(0,40);
   if(!filtered.length){
     document.getElementById('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--text3)">Nenhum set encontrado.</div>';
     return;
@@ -358,7 +381,7 @@ function filterSets(){
     `<div class="set-row" onclick="pickSet('${s.id}')">
       <div>
         <div class="set-row-name">${s.name||s.id}</div>
-        <div class="set-row-meta">${s.cardCount?.official||s.cardCount?.total||'?'} cartas</div>
+        <div class="set-row-meta">${s.releaseDate||''} · ${s.total||'?'} cartas</div>
       </div>
       <div style="display:flex;align-items:center">
         <span class="set-row-id">${s.id}</span>
@@ -375,8 +398,8 @@ function openCard(cardId){
   if(!card)return;
   openCardId=cardId;
   document.getElementById('cmName').textContent=card.name;
-  document.getElementById('cmMeta').textContent=`#${card.localId} · ${card.setName}`;
-  document.getElementById('cmImg').src=card.image||'';
+  document.getElementById('cmMeta').textContent=`#${card.number} · ${card.set?.name||''} · ${card.rarity||''}`;
+  document.getElementById('cmImg').src=card.images?.large||card.images?.small||'';
   document.getElementById('cmImg').alt=card.name;
   const c=collection[cardId]||{};
   document.getElementById('cmVariants').innerHTML=VARIANTS.map(v=>{
