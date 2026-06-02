@@ -155,7 +155,7 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 <!-- Barra de sincronização -->
 <div class="sync-bar">
   <span class="sync-label">Apps Script:</span>
-  <input class="sync-url-input" id="scriptUrl" placeholder="Cole aqui a URL do seu Apps Script..." />
+  <input class="sync-url-input" id="scriptUrl" placeholder="Cole aqui a URL do seu Apps Script..." value="https://script.google.com/macros/s/AKfycbyPcYirMaWu76NGnWLUcjKKfGcNp5uLy1cnvIJlMhel1cZEJK26xtDvMFEgPAJ79SDZ/exec" />
   <button class="sync-btn" onclick="saveScriptUrl()">Salvar URL</button>
   <button class="sync-btn" onclick="syncFromSheet()">↺ Carregar da planilha</button>
   <span class="sync-status" id="syncStatus"></span>
@@ -234,7 +234,7 @@ let collection={}, savedSets=[];
 function loadStorage(){
   try{collection=JSON.parse(localStorage.getItem('pkm_col')||'{}');}catch(e){collection={};}
   try{savedSets=JSON.parse(localStorage.getItem('pkm_favs')||'[]');}catch(e){savedSets=[];}
-  const url=localStorage.getItem('pkm_script_url')||'';
+  const url=localStorage.getItem('pkm_script_url')||'https://script.google.com/macros/s/AKfycbyPcYirMaWu76NGnWLUcjKKfGcNp5uLy1cnvIJlMhel1cZEJK26xtDvMFEgPAJ79SDZ/exec';
   if(url) document.getElementById('scriptUrl').value=url;
   renderSaved();
 }
