@@ -8,35 +8,33 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0f0f0f;--bg2:#181818;--bg3:#222;
-  --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2);
+  --bg:#0f0f0f;--bg2:#181818;--bg3:#242424;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.18);
   --text:#f0ece4;--text2:#a09888;--text3:#5a5248;
   --gold:#C8973A;--gold-bg:rgba(200,151,58,0.12);
   --green:#2a9d5c;--radius:8px;--radius-lg:12px;
 }
 body{font-family:'Crimson Pro',serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-/* ── HEADER ── */
 header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14px 20px;position:sticky;top:0;z-index:100}
 .app-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:4px;color:var(--text3);margin-bottom:12px}
-
 .search-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.set-input{font-family:'Crimson Pro',serif;font-size:14px;padding:7px 12px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg3);color:var(--text);width:220px}
+.set-input{font-family:'Crimson Pro',serif;font-size:14px;padding:7px 12px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg3);color:var(--text);width:240px}
 .set-input:focus{outline:none;border-color:var(--gold)}
 .set-input::placeholder{color:var(--text3)}
-.load-btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:1.5px;padding:7px 16px;border:0.5px solid var(--gold);border-radius:var(--radius);background:var(--gold-bg);color:var(--gold);cursor:pointer;white-space:nowrap}
+.load-btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:1.5px;padding:7px 16px;border:0.5px solid var(--gold);border-radius:var(--radius);background:var(--gold-bg);color:var(--gold);cursor:pointer}
 .load-btn:hover{background:rgba(200,151,58,0.22)}
-.search-btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;padding:7px 14px;border:0.5px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap}
-.search-btn:hover{border-color:var(--border2);color:var(--text)}
+.search-btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;padding:7px 14px;border:0.5px solid var(--border2);border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer}
+.search-btn:hover{color:var(--text);border-color:var(--border2)}
 
 .saved-bar{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center}
 .saved-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;color:var(--text3)}
 .saved-chip{font-family:'Cinzel',serif;font-size:10px;padding:3px 10px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px}
 .saved-chip:hover{border-color:var(--gold);color:var(--gold)}
-.saved-chip .rm{color:var(--text3);font-size:13px;line-height:1;margin-left:2px}
+.saved-chip .rm{color:var(--text3);font-size:14px;line-height:1}
 .saved-chip .rm:hover{color:#e24b4a}
+.no-fav{font-size:11px;color:var(--text3)}
 
-/* ── STATS ── */
 .stats-bar{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:10px 20px;display:none;gap:20px;align-items:center;flex-wrap:wrap}
 .stat{font-size:12px;color:var(--text2)}
 .stat span{font-family:'Cinzel',serif;font-size:15px;color:var(--text);font-weight:700;margin-left:4px}
@@ -44,23 +42,22 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 .progress-bar{height:2px;background:var(--border);display:none}
 .progress-fill{height:100%;background:var(--gold);transition:width .4s}
 
-/* ── FILTROS ── */
-.filter-bar{padding:10px 20px;border-bottom:0.5px solid var(--border);display:none;gap:8px;background:var(--bg2);align-items:center}
+.filter-bar{padding:10px 20px;border-bottom:0.5px solid var(--border);display:none;gap:8px;background:var(--bg2);align-items:center;flex-wrap:wrap}
 .filter-btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;padding:4px 12px;border:0.5px solid var(--border);border-radius:var(--radius);background:transparent;color:var(--text2);cursor:pointer}
 .filter-btn:hover{color:var(--text)}
 .filter-btn.active{border-color:var(--border2);color:var(--text);background:var(--bg3)}
-.export-btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;padding:4px 12px;border:0.5px solid var(--border);border-radius:var(--radius);background:transparent;color:var(--text3);cursor:pointer;margin-left:auto}
-.export-btn:hover{color:var(--text2)}
-.set-title-label{font-size:12px;color:var(--text3);margin-left:8px}
+.set-title-lbl{font-size:12px;color:var(--text3);margin-left:4px}
+.toolbar-right{margin-left:auto;display:flex;gap:6px}
+.tb-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;padding:4px 10px;border:0.5px solid var(--border);border-radius:var(--radius);background:transparent;color:var(--text3);cursor:pointer}
+.tb-btn:hover{color:var(--text2)}
 
-/* ── GRID ── */
 .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;padding:20px}
 .card-wrap{cursor:pointer}
 .card-img-box{border-radius:8px;overflow:hidden;border:0.5px solid var(--border);aspect-ratio:63/88;background:var(--bg3);position:relative;transition:transform .15s,border-color .15s}
 .card-wrap:hover .card-img-box{transform:translateY(-3px);border-color:var(--border2)}
 .card-wrap:hover .card-img-box.owned{border-color:var(--gold)}
 .card-img-box img{width:100%;height:100%;object-fit:cover;display:block}
-.card-img-box.missing{filter:grayscale(1) brightness(.35)}
+.card-img-box.missing{filter:grayscale(1) brightness(.3)}
 .owned-badge{position:absolute;top:5px;right:5px;width:18px;height:18px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center}
 .owned-badge svg{width:10px;height:10px}
 .card-num{font-family:'Cinzel',serif;font-size:9px;color:var(--text3);text-align:center;margin-top:5px}
@@ -71,44 +68,44 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 .empty-sub{font-size:13px}
 .loading{grid-column:1/-1;padding:60px 20px;text-align:center;font-family:'Cinzel',serif;font-size:11px;letter-spacing:3px;color:var(--text3)}
 
-/* ── MODAL BUSCA DE SET ── */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+/* Modal busca */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
 .modal-bg.open{display:flex}
-.modal{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:22px;width:480px;max-width:100%;max-height:85vh;overflow-y:auto}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.modal-title{font-family:'Cinzel',serif;font-size:13px;letter-spacing:2px;color:var(--text)}
+.modal{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:22px;width:500px;max-width:100%;max-height:85vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.modal-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:2px;color:var(--text)}
 .modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:22px;line-height:1;padding:0}
 .modal-close:hover{color:var(--text)}
-.search-input-modal{font-family:'Crimson Pro',serif;font-size:14px;width:100%;padding:8px 12px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg3);color:var(--text);margin-bottom:12px}
-.search-input-modal:focus{outline:none;border-color:var(--gold)}
-.search-result-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:var(--radius);cursor:pointer;border:0.5px solid transparent}
-.search-result-row:hover{background:var(--bg3);border-color:var(--border)}
-.srr-name{font-size:14px;color:var(--text)}
-.srr-meta{font-size:11px;color:var(--text3);margin-top:2px}
-.srr-code{font-family:'Cinzel',serif;font-size:10px;color:var(--gold);letter-spacing:1px}
-.srr-use{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;padding:3px 10px;border:0.5px solid var(--gold);border-radius:var(--radius);background:var(--gold-bg);color:var(--gold);cursor:pointer}
+.search-modal-input{font-family:'Crimson Pro',serif;font-size:14px;width:100%;padding:8px 12px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg3);color:var(--text);margin-bottom:12px}
+.search-modal-input:focus{outline:none;border-color:var(--gold)}
+.search-modal-input::placeholder{color:var(--text3)}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:var(--radius);cursor:pointer;border:0.5px solid transparent}
+.set-row:hover{background:var(--bg3);border-color:var(--border)}
+.set-row-name{font-size:14px;color:var(--text)}
+.set-row-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.set-row-id{font-family:'Cinzel',serif;font-size:10px;color:var(--gold);letter-spacing:1px;margin-right:8px}
+.set-row-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;padding:3px 10px;border:0.5px solid var(--gold);border-radius:var(--radius);background:var(--gold-bg);color:var(--gold);cursor:pointer;white-space:nowrap}
 
-/* ── MODAL CARTA ── */
-.card-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;display:none;align-items:center;justify-content:center;padding:16px}
+/* Modal carta */
+.card-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:300;display:none;align-items:center;justify-content:center;padding:16px}
 .card-modal-bg.open{display:flex}
 .card-modal{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--radius-lg);padding:22px;width:360px;max-width:100%;max-height:90vh;overflow-y:auto}
-.modal-name{font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:var(--text)}
-.modal-meta{font-size:12px;color:var(--text3);margin-top:3px}
-.modal-img{width:140px;border-radius:10px;display:block;margin:0 auto 18px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
-.modal-section{font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;color:var(--text3);margin:14px 0 8px;border-bottom:0.5px solid var(--border);padding-bottom:6px}
+.cm-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.cm-name{font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:var(--text)}
+.cm-meta{font-size:12px;color:var(--text3);margin-top:3px}
+.cm-img{width:140px;border-radius:10px;display:block;margin:0 auto 16px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.cm-section{font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;color:var(--text3);margin:14px 0 8px;border-bottom:0.5px solid var(--border);padding-bottom:6px}
 .var-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .var-check{width:16px;height:16px;cursor:pointer;accent-color:var(--gold);flex-shrink:0}
 .var-label{font-size:14px;color:var(--text);flex:1}
 .price-wrap{display:flex;align-items:center;gap:4px}
-.price-prefix{font-size:12px;color:var(--text3)}
-.price-input{font-family:'Crimson Pro',serif;font-size:13px;width:80px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg3);color:var(--text);text-align:right}
-.price-input:focus{outline:none;border-color:var(--gold)}
-.save-btn{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;width:100%;margin-top:18px;padding:10px;border:0.5px solid var(--gold);border-radius:var(--radius);background:var(--gold-bg);color:var(--gold);cursor:pointer;text-transform:uppercase}
-.save-btn:hover{background:rgba(200,151,58,0.25)}
-
-.hint-box{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-top:8px;font-size:12px;color:var(--text3);line-height:1.6}
+.price-pfx{font-size:12px;color:var(--text3)}
+.price-inp{font-family:'Crimson Pro',serif;font-size:13px;width:80px;padding:4px 8px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg3);color:var(--text);text-align:right}
+.price-inp:focus{outline:none;border-color:var(--gold)}
+.hint-box{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-top:10px;font-size:12px;color:var(--text3);line-height:1.6}
 .hint-box a{color:var(--gold);text-decoration:none}
-.hint-box a:hover{text-decoration:underline}
+.save-btn{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;width:100%;margin-top:16px;padding:10px;border:0.5px solid var(--gold);border-radius:var(--radius);background:var(--gold-bg);color:var(--gold);cursor:pointer;text-transform:uppercase}
+.save-btn:hover{background:rgba(200,151,58,0.25)}
 
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -120,14 +117,14 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 <header>
   <div class="app-title">Pokédex do Colecionador</div>
   <div class="search-row">
-    <input class="set-input" id="setCodeInput" placeholder="Código do set (ex: MEP, sv9, OBF...)" />
+    <input class="set-input" id="setInput" placeholder="Código do set (ex: sv08, sv09, swsh1...)" />
     <button class="load-btn" onclick="loadFromInput()">Carregar</button>
-    <button class="search-btn" onclick="openSearchModal()">🔍 Buscar set por nome</button>
+    <button class="search-btn" onclick="openSearch()">🔍 Buscar por nome</button>
   </div>
-  <div class="saved-bar" id="savedBar">
+  <div class="saved-bar">
     <span class="saved-label">Favoritos:</span>
     <span id="savedChips"></span>
-    <span style="font-size:11px;color:var(--text3)" id="noFav">Nenhum ainda — carregue um set e salve</span>
+    <span class="no-fav" id="noFav">Nenhum ainda — carregue um set e clique em ★ Salvar</span>
   </div>
 </header>
 
@@ -143,82 +140,84 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
   <button class="filter-btn active" onclick="setFilter('all',this)">Todas</button>
   <button class="filter-btn" onclick="setFilter('owned',this)">Tenho</button>
   <button class="filter-btn" onclick="setFilter('missing',this)">Faltando</button>
-  <span class="set-title-label" id="setTitleLabel"></span>
-  <div style="margin-left:auto;display:flex;gap:8px">
-    <button class="export-btn" onclick="saveAsFav()">★ Salvar favorito</button>
-    <button class="export-btn" onclick="exportData()">⬇ Exportar</button>
-    <button class="export-btn" onclick="document.getElementById('importFile').click()">⬆ Importar</button>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)" />
+  <span class="set-title-lbl" id="setTitleLbl"></span>
+  <div class="toolbar-right">
+    <button class="tb-btn" onclick="saveAsFav()">★ Salvar favorito</button>
+    <button class="tb-btn" onclick="exportData()">⬇ Exportar</button>
+    <button class="tb-btn" onclick="document.getElementById('fileIn').click()">⬆ Importar</button>
+    <input type="file" id="fileIn" accept=".json" style="display:none" onchange="importData(event)" />
   </div>
 </div>
 
 <div class="card-grid" id="cardGrid">
   <div class="empty">
     <div class="empty-title">Nenhuma coleção carregada</div>
-    <div class="empty-sub">Digite o código do set acima ou use "Buscar set por nome"</div>
+    <div class="empty-sub">Digite o código do set ou use "Buscar por nome"<br><br>
+    Exemplos: <b>sv08</b> = Megaevolução &nbsp;·&nbsp; <b>sv09</b> = Heróis Excelsos &nbsp;·&nbsp; <b>sv06</b> = Máscaras do Abismo</div>
   </div>
 </div>
 
-<!-- MODAL BUSCA DE SET -->
+<!-- Modal busca de set -->
 <div class="modal-bg" id="searchModal" onclick="closeSearchBg(event)">
   <div class="modal">
     <div class="modal-header">
       <span class="modal-title">Buscar Coleção</span>
       <button class="modal-close" onclick="closeSearch()">×</button>
     </div>
-    <input class="search-input-modal" id="searchInputModal" placeholder="Nome da coleção (ex: Megaevolução, Paradox...)" oninput="filterSets()" />
-    <div id="searchResults"></div>
+    <input class="search-modal-input" id="searchQ" placeholder="Nome da coleção em português (ex: Megaevolução, Escarlate...)" oninput="filterSets()" />
+    <div id="setResults"><div style="padding:12px;font-size:13px;color:var(--text3)">Carregando lista...</div></div>
   </div>
 </div>
 
-<!-- MODAL CARTA -->
+<!-- Modal carta -->
 <div class="card-modal-bg" id="cardModal" onclick="closeCardBg(event)">
   <div class="card-modal">
-    <div class="modal-header" style="margin-bottom:14px">
+    <div class="cm-header">
       <div>
-        <div class="modal-name" id="mName"></div>
-        <div class="modal-meta" id="mMeta"></div>
+        <div class="cm-name" id="cmName"></div>
+        <div class="cm-meta" id="cmMeta"></div>
       </div>
-      <button class="modal-close" onclick="closeCardModal()">×</button>
+      <button class="modal-close" onclick="closeCard()">×</button>
     </div>
-    <img class="modal-img" id="mImg" src="" alt="" />
-    <div class="modal-section">Variações que possuo</div>
-    <div id="mVariants"></div>
+    <img class="cm-img" id="cmImg" src="" alt="" />
+    <div class="cm-section">Variações que possuo</div>
+    <div id="cmVariants"></div>
     <div class="hint-box">
-      Consulte o preço médio em <a href="https://www.ligapokemon.com.br" target="_blank">ligapokemon.com.br</a> e digite abaixo em R$.
+      Consulte o preço médio em <a href="https://www.ligapokemon.com.br" target="_blank">ligapokemon.com.br</a> e preencha abaixo em R$.
     </div>
-    <button class="save-btn" onclick="saveCard()">Salvar carta</button>
+    <button class="save-btn" onclick="saveCard()">Salvar</button>
   </div>
 </div>
 
 <script>
-const API = 'https://api.pokemontcg.io/v2';
+// ── Config ────────────────────────────────────────────────
+const API   = 'https://api.tcgdex.net/v2/pt';
 const VARIANTS = [
-  {key:'normal', label:'Normal'},
-  {key:'holofoil', label:'Holofoil'},
-  {key:'reverseHolofoil', label:'Reverse Holo'},
+  {key:'normal',  label:'Normal'},
+  {key:'holo',    label:'Holo / Foil'},
+  {key:'reverse', label:'Reverse Holo'},
 ];
 
-let allCards = [], allSets = [];
-let currentFilter = 'all', openCardId = null;
-let collection = {}, savedSets = [], currentSetId = '';
+// ── State ─────────────────────────────────────────────────
+let allCards=[], allSets=[], currentFilter='all', openCardId=null, currentSetId='';
+let collection={}, savedSets=[];
 
-function load() {
-  try { collection = JSON.parse(localStorage.getItem('pkm_col') || '{}'); } catch(e){ collection={}; }
-  try { savedSets = JSON.parse(localStorage.getItem('pkm_favs') || '[]'); } catch(e){ savedSets=[]; }
+function loadStorage(){
+  try{collection=JSON.parse(localStorage.getItem('pkm_col')||'{}');}catch(e){collection={};}
+  try{savedSets=JSON.parse(localStorage.getItem('pkm_favs')||'[]');}catch(e){savedSets=[];}
   renderSaved();
 }
-function saveCol(){ localStorage.setItem('pkm_col', JSON.stringify(collection)); }
-function saveFavs(){ localStorage.setItem('pkm_favs', JSON.stringify(savedSets)); }
-load();
+function saveCol(){localStorage.setItem('pkm_col',JSON.stringify(collection));}
+function saveFavs(){localStorage.setItem('pkm_favs',JSON.stringify(savedSets));}
+loadStorage();
 
-// ── SETS FAVORITOS ────────────────────────────────────────
+// ── Favoritos ─────────────────────────────────────────────
 function renderSaved(){
-  const chips = document.getElementById('savedChips');
-  const noFav = document.getElementById('noFav');
-  if(!savedSets.length){ chips.innerHTML=''; noFav.style.display=''; return; }
-  noFav.style.display='none';
-  chips.innerHTML = savedSets.map(s =>
+  const chips=document.getElementById('savedChips');
+  const nf=document.getElementById('noFav');
+  if(!savedSets.length){chips.innerHTML='';nf.style.display='';return;}
+  nf.style.display='none';
+  chips.innerHTML=savedSets.map(s=>
     `<span class="saved-chip" onclick="fetchSet('${s.id}')">
       ${s.name}
       <span class="rm" onclick="removeFav(event,'${s.id}')">×</span>
@@ -226,135 +225,95 @@ function renderSaved(){
   ).join('');
 }
 function saveAsFav(){
-  if(!currentSetId) return;
-  const name = document.getElementById('setTitleLabel').textContent || currentSetId;
+  if(!currentSetId)return;
+  const name=document.getElementById('setTitleLbl').textContent||currentSetId;
   if(!savedSets.find(s=>s.id===currentSetId)){
-    savedSets.push({id:currentSetId, name});
-    saveFavs(); renderSaved();
+    savedSets.push({id:currentSetId,name});
+    saveFavs();renderSaved();
   }
 }
-function removeFav(e, id){
+function removeFav(e,id){
   e.stopPropagation();
-  savedSets = savedSets.filter(s=>s.id!==id);
-  saveFavs(); renderSaved();
+  savedSets=savedSets.filter(s=>s.id!==id);
+  saveFavs();renderSaved();
 }
 
-// ── CARREGAR SET ──────────────────────────────────────────
+// ── Carregar set ──────────────────────────────────────────
 function loadFromInput(){
-  const val = document.getElementById('setCodeInput').value.trim();
-  if(val) fetchSet(val);
+  const v=document.getElementById('setInput').value.trim();
+  if(v)fetchSet(v);
 }
-document.getElementById('setCodeInput').addEventListener('keydown', e => {
-  if(e.key==='Enter') loadFromInput();
-});
+document.getElementById('setInput').addEventListener('keydown',e=>{if(e.key==='Enter')loadFromInput();});
 
 async function fetchSet(setId){
-  const grid = document.getElementById('cardGrid');
-  grid.innerHTML = '<div class="loading">Buscando cartas</div>';
-  document.getElementById('statsBar').style.display = 'none';
-  document.getElementById('progressBar').style.display = 'none';
-  document.getElementById('filterBar').style.display = 'none';
-  currentSetId = '';
+  const grid=document.getElementById('cardGrid');
+  grid.innerHTML='<div class="loading">Buscando cartas</div>';
+  ['statsBar','filterBar'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('progressBar').style.display='none';
+  currentSetId='';
 
-  try {
-    let page=1, cards=[];
-    while(true){
-      const r = await fetch(`${API}/cards?q=set.id:${setId}&pageSize=250&page=${page}&orderBy=number`);
-      if(!r.ok) throw new Error(`Set "${setId}" não encontrado. Tente buscar pelo nome.`);
-      const data = await r.json();
-      cards = cards.concat(data.data);
-      if(cards.length >= data.totalCount) break;
-      page++;
-    }
-    if(!cards.length) throw new Error('Nenhuma carta encontrada.');
-    allCards = cards;
-    currentSetId = setId;
-    const setName = cards[0]?.set?.name || setId;
-    document.getElementById('setTitleLabel').textContent = setName;
-    document.getElementById('setCodeInput').value = setId;
+  try{
+    const r=await fetch(`${API}/sets/${setId}`);
+    if(!r.ok)throw new Error(`Set "${setId}" não encontrado. Tente buscar por nome.`);
+    const setData=await r.json();
+
+    // cartas do set
+    const r2=await fetch(`${API}/sets/${setId}/cards`);
+    if(!r2.ok)throw new Error('Erro ao carregar cartas.');
+    const cards=await r2.json();
+    if(!cards||!cards.length)throw new Error('Nenhuma carta encontrada.');
+
+    allCards=cards.map(c=>({
+      id:`${setId}-${c.localId}`,
+      localId:c.localId,
+      name:c.name||'',
+      image:c.image?c.image+'/low.webp':'',
+      setName:setData.name||setId,
+      total:setData.cardCount?.official||setData.cardCount?.total||'?',
+    }));
+
+    currentSetId=setId;
+    document.getElementById('setTitleLbl').textContent=setData.name||setId;
+    document.getElementById('setInput').value=setId;
+
+    setFilter('all',document.querySelector('.filter-btn'));
     renderGrid();
-    document.getElementById('statsBar').style.display = 'flex';
-    document.getElementById('progressBar').style.display = 'block';
-    document.getElementById('filterBar').style.display = 'flex';
-  } catch(e){
-    grid.innerHTML = `<div class="empty"><div class="empty-title">Erro</div><div class="empty-sub">${e.message}</div></div>`;
+    document.getElementById('statsBar').style.display='flex';
+    document.getElementById('progressBar').style.display='block';
+    document.getElementById('filterBar').style.display='flex';
+  }catch(e){
+    grid.innerHTML=`<div class="empty"><div class="empty-title">Erro ao carregar</div><div class="empty-sub">${e.message}</div></div>`;
   }
 }
 
-// ── BUSCA DE SET POR NOME ─────────────────────────────────
-async function openSearchModal(){
-  document.getElementById('searchModal').classList.add('open');
-  document.getElementById('searchInputModal').focus();
-  if(!allSets.length){
-    document.getElementById('searchResults').innerHTML = '<div style="padding:12px;font-size:13px;color:var(--text3)">Carregando lista de sets...</div>';
-    try{
-      const r = await fetch(`${API}/sets?orderBy=-releaseDate&pageSize=250`);
-      const d = await r.json();
-      allSets = d.data || [];
-      filterSets();
-    } catch(e){
-      document.getElementById('searchResults').innerHTML = '<div style="padding:12px;font-size:13px;color:var(--text3)">Erro ao carregar sets.</div>';
-    }
-  } else { filterSets(); }
-}
-function closeSearch(){ document.getElementById('searchModal').classList.remove('open'); }
-function closeSearchBg(e){ if(e.target===document.getElementById('searchModal')) closeSearch(); }
-
-function filterSets(){
-  const q = document.getElementById('searchInputModal').value.trim().toLowerCase();
-  const filtered = q
-    ? allSets.filter(s => s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q))
-    : allSets.slice(0,30);
-  if(!filtered.length){
-    document.getElementById('searchResults').innerHTML = '<div style="padding:12px;font-size:13px;color:var(--text3)">Nenhum set encontrado.</div>';
-    return;
-  }
-  document.getElementById('searchResults').innerHTML = filtered.map(s =>
-    `<div class="search-result-row" onclick="pickSet('${s.id}')">
-      <div>
-        <div class="srr-name">${s.name}</div>
-        <div class="srr-meta">${s.releaseDate || ''} · ${s.total || '?'} cartas</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span class="srr-code">${s.id}</span>
-        <button class="srr-use">Carregar</button>
-      </div>
-    </div>`
-  ).join('');
-}
-function pickSet(id){
-  closeSearch();
-  document.getElementById('setCodeInput').value = id;
-  fetchSet(id);
-}
-
-// ── GRID ──────────────────────────────────────────────────
-function isOwned(id){ const c=collection[id]; return c && VARIANTS.some(v=>c[v.key]?.owned); }
-function getVal(id){ const c=collection[id]; if(!c) return 0; return VARIANTS.reduce((s,v)=>s+(c[v.key]?.owned?parseFloat(c[v.key].price||0):0),0); }
-function fmtBRL(v){ return 'R$ '+v.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+// ── Grid ──────────────────────────────────────────────────
+function isOwned(id){const c=collection[id];return c&&VARIANTS.some(v=>c[v.key]?.owned);}
+function getVal(id){const c=collection[id];if(!c)return 0;return VARIANTS.reduce((s,v)=>s+(c[v.key]?.owned?parseFloat(c[v.key].price||0):0),0);}
+function fmtBRL(v){return 'R$ '+v.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
 
 function renderGrid(){
-  const grid = document.getElementById('cardGrid');
-  const list = allCards.filter(c => currentFilter==='owned'?isOwned(c.id):currentFilter==='missing'?!isOwned(c.id):true);
+  const grid=document.getElementById('cardGrid');
+  const list=allCards.filter(c=>currentFilter==='owned'?isOwned(c.id):currentFilter==='missing'?!isOwned(c.id):true);
   if(!list.length){
     grid.innerHTML='<div class="empty"><div class="empty-title">Nenhuma carta aqui</div><div class="empty-sub">Tente outro filtro</div></div>';
-  } else {
-    grid.innerHTML = list.map(c => {
-      const owned = isOwned(c.id);
+  }else{
+    grid.innerHTML=list.map(c=>{
+      const owned=isOwned(c.id);
       return `<div class="card-wrap" onclick="openCard('${c.id}')">
         <div class="card-img-box ${owned?'owned':'missing'}">
-          <img src="${c.images?.small||''}" alt="${c.name}" loading="lazy" />
+          ${c.image?`<img src="${c.image}" alt="${c.name}" loading="lazy" />`:''}
           ${owned?`<div class="owned-badge"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`:''}
         </div>
-        <div class="card-num">${c.number}/${c.set?.printedTotal||'?'}</div>
+        <div class="card-num">${c.localId}/${c.total}</div>
         <div class="card-name">${c.name}</div>
       </div>`;
     }).join('');
   }
   updateStats();
 }
+
 function updateStats(){
-  const total=allCards.length, owned=allCards.filter(c=>isOwned(c.id)).length;
+  const total=allCards.length,owned=allCards.filter(c=>isOwned(c.id)).length;
   const pct=total?Math.round(owned/total*100):0;
   const val=allCards.reduce((s,c)=>s+getVal(c.id),0);
   document.getElementById('statOwned').textContent=owned;
@@ -363,61 +322,101 @@ function updateStats(){
   document.getElementById('statValue').textContent=fmtBRL(val);
   document.getElementById('progressFill').style.width=pct+'%';
 }
+
 function setFilter(f,btn){
   currentFilter=f;
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  if(btn)btn.classList.add('active');
   renderGrid();
 }
 
-// ── MODAL CARTA ───────────────────────────────────────────
+// ── Modal busca ───────────────────────────────────────────
+async function openSearch(){
+  document.getElementById('searchModal').classList.add('open');
+  setTimeout(()=>document.getElementById('searchQ').focus(),50);
+  if(!allSets.length){
+    try{
+      const r=await fetch(`${API}/sets`);
+      allSets=await r.json();
+      filterSets();
+    }catch(e){
+      document.getElementById('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--text3)">Erro ao carregar lista de sets.</div>';
+    }
+  }else{filterSets();}
+}
+function closeSearch(){document.getElementById('searchModal').classList.remove('open');}
+function closeSearchBg(e){if(e.target===document.getElementById('searchModal'))closeSearch();}
+
+function filterSets(){
+  const q=document.getElementById('searchQ').value.trim().toLowerCase();
+  const filtered=q?allSets.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.id||'').toLowerCase().includes(q)):allSets.slice(0,40);
+  if(!filtered.length){
+    document.getElementById('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--text3)">Nenhum set encontrado.</div>';
+    return;
+  }
+  document.getElementById('setResults').innerHTML=filtered.map(s=>
+    `<div class="set-row" onclick="pickSet('${s.id}')">
+      <div>
+        <div class="set-row-name">${s.name||s.id}</div>
+        <div class="set-row-meta">${s.cardCount?.official||s.cardCount?.total||'?'} cartas</div>
+      </div>
+      <div style="display:flex;align-items:center">
+        <span class="set-row-id">${s.id}</span>
+        <button class="set-row-btn">Carregar</button>
+      </div>
+    </div>`
+  ).join('');
+}
+function pickSet(id){closeSearch();document.getElementById('setInput').value=id;fetchSet(id);}
+
+// ── Modal carta ───────────────────────────────────────────
 function openCard(cardId){
-  const card = allCards.find(c=>c.id===cardId);
-  if(!card) return;
-  openCardId = cardId;
-  document.getElementById('mName').textContent = card.name;
-  document.getElementById('mMeta').textContent = `#${card.number} · ${card.set?.name||''} · ${card.rarity||''}`;
-  document.getElementById('mImg').src = card.images?.large||card.images?.small||'';
-  document.getElementById('mImg').alt = card.name;
-  const c = collection[cardId]||{};
-  document.getElementById('mVariants').innerHTML = VARIANTS.map(v => {
+  const card=allCards.find(c=>c.id===cardId);
+  if(!card)return;
+  openCardId=cardId;
+  document.getElementById('cmName').textContent=card.name;
+  document.getElementById('cmMeta').textContent=`#${card.localId} · ${card.setName}`;
+  document.getElementById('cmImg').src=card.image||'';
+  document.getElementById('cmImg').alt=card.name;
+  const c=collection[cardId]||{};
+  document.getElementById('cmVariants').innerHTML=VARIANTS.map(v=>{
     const owned=c[v.key]?.owned||false;
     const price=c[v.key]?.price!==undefined?parseFloat(c[v.key].price).toFixed(2):'';
     return `<div class="var-row">
-      <input type="checkbox" class="var-check" id="var_${v.key}" ${owned?'checked':''} />
-      <label for="var_${v.key}" class="var-label">${v.label}</label>
+      <input type="checkbox" class="var-check" id="v_${v.key}" ${owned?'checked':''}/>
+      <label for="v_${v.key}" class="var-label">${v.label}</label>
       <div class="price-wrap">
-        <span class="price-prefix">R$</span>
-        <input type="number" class="price-input" id="price_${v.key}" value="${price}" placeholder="0,00" step="0.01" min="0" />
+        <span class="price-pfx">R$</span>
+        <input type="number" class="price-inp" id="p_${v.key}" value="${price}" placeholder="0,00" step="0.01" min="0"/>
       </div>
     </div>`;
   }).join('');
   document.getElementById('cardModal').classList.add('open');
 }
 function saveCard(){
-  if(!openCardId) return;
+  if(!openCardId)return;
   const data={};
   VARIANTS.forEach(v=>{
-    data[v.key]={owned:document.getElementById('var_'+v.key)?.checked||false, price:parseFloat(document.getElementById('price_'+v.key)?.value||0)||0};
+    data[v.key]={owned:document.getElementById('v_'+v.key)?.checked||false,price:parseFloat(document.getElementById('p_'+v.key)?.value||0)||0};
   });
-  collection[openCardId]=data; saveCol(); renderGrid(); closeCardModal();
+  collection[openCardId]=data;saveCol();renderGrid();closeCard();
 }
-function closeCardModal(){ document.getElementById('cardModal').classList.remove('open'); openCardId=null; }
-function closeCardBg(e){ if(e.target===document.getElementById('cardModal')) closeCardModal(); }
+function closeCard(){document.getElementById('cardModal').classList.remove('open');openCardId=null;}
+function closeCardBg(e){if(e.target===document.getElementById('cardModal'))closeCard();}
 
-// ── EXPORT / IMPORT ───────────────────────────────────────
+// ── Export / Import ───────────────────────────────────────
 function exportData(){
-  const blob=new Blob([JSON.stringify(collection,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='pokemon_colecao.json'; a.click();
+  const b=new Blob([JSON.stringify(collection,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='pokemon_colecao.json';a.click();
 }
 function importData(e){
-  const file=e.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    try{ collection={...collection,...JSON.parse(ev.target.result)}; saveCol(); renderGrid(); alert('Importado!'); }
-    catch(){ alert('Arquivo inválido.'); }
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{collection={...collection,...JSON.parse(ev.target.result)};saveCol();renderGrid();alert('Importado com sucesso!');}
+    catch(){alert('Arquivo inválido.');}
   };
-  reader.readAsText(file); e.target.value='';
+  r.readAsText(f);e.target.value='';
 }
 </script>
 </body>
