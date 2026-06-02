@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pokédex do Colecionador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f0f;
+    --bg2: #181818;
+    --bg3: #222;
+    --border: rgba(255,255,255,0.1);
+    --border2: rgba(255,255,255,0.2);
+    --text: #f0ece4;
+    --text2: #a09888;
+    --text3: #6a6058;
+    --gold: #B87333;
+    --gold-light: rgba(184,115,51,0.15);
+    --green: #2a9d5c;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  body {
+    font-family: 'Crimson Pro', serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--bg2);
+    border-bottom: 0.5px solid var(--border);
+    padding: 16px 20px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .app-title {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .set-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .set-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 6px 14px;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius);
+    background: var(--bg3);
+    color: var(--text2);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .set-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .set-btn.active { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
+
+  .set-input {
+    font-family: 'Crimson Pro', serif;
+    font-size: 13px;
+    padding: 6px 12px;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius);
+    background: var(--bg3);
+    color: var(--text);
+    width: 160px;
+  }
+  .set-input:focus { outline: none; border-color: var(--gold); }
+  .set-input::placeholder { color: var(--text3); }
+
+  .load-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 6px 16px;
+    border: 0.5px solid var(--gold);
+    border-radius: var(--radius);
+    background: var(--gold-light);
+    color: var(--gold);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .load-btn:hover { background: rgba(184,115,51,0.25); }
+
+  /* ── STATS ── */
+  .stats-bar {
+    background: var(--bg2);
+    border-bottom: 0.5px solid var(--border);
+    padding: 10px 20px;
+    display: none;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .stat span {
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    color: var(--text);
+    font-weight: 700;
+    margin-left: 4px;
+  }
+
+  .stat-value {
+    margin-left: auto;
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--gold);
+    transition: width 0.4s ease;
+  }
+
+  /* ── FILTROS ── */
+  .filter-bar {
+    padding: 10px 20px;
+    border-bottom: 0.5px solid var(--border);
+    display: none;
+    gap: 8px;
+    background: var(--bg2);
+  }
+
+  .filter-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 4px 12px;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--border2); color: var(--text); }
+  .filter-btn.active { border-color: var(--border2); color: var(--text); background: var(--bg3); }
+
+  /* ── GRID ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 12px;
+    padding: 20px;
+  }
+
+  .card-wrap {
+    cursor: pointer;
+  }
+
+  .card-img-box {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 0.5px solid var(--border);
+    aspect-ratio: 63/88;
+    background: var(--bg3);
+    position: relative;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .card-wrap:hover .card-img-box {
+    transform: translateY(-3px);
+    border-color: var(--border2);
+  }
+  .card-wrap:hover .card-img-box.owned {
+    border-color: var(--gold);
+  }
+
+  .card-img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .card-img-box.missing {
+    filter: grayscale(1) brightness(0.4);
+  }
+
+  .owned-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  }
+  .owned-badge svg { width: 10px; height: 10px; }
+
+  .card-num {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    color: var(--text3);
+    text-align: center;
+    margin-top: 5px;
+  }
+  .card-name {
+    font-size: 11px;
+    color: var(--text2);
+    text-align: center;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── ESTADOS VAZIOS ── */
+  .empty {
+    grid-column: 1 / -1;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text3);
+  }
+  .empty-title {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+    color: var(--text2);
+  }
+  .empty-sub { font-size: 13px; }
+
+  .loading {
+    grid-column: 1 / -1;
+    padding: 60px 20px;
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--text3);
+  }
+  .loading::after {
+    content: '';
+    animation: dots 1.2s steps(3, end) infinite;
+  }
+  @keyframes dots {
+    0%   { content: '.'; }
+    33%  { content: '..'; }
+    66%  { content: '...'; }
+  }
+
+  /* ── MODAL ── */
+  .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-bg.open { display: flex; }
+
+  .modal {
+    background: var(--bg2);
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    width: 360px;
+    max-width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .modal-name {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .modal-meta { font-size: 12px; color: var(--text3); margin-top: 3px; }
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.15s;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .modal-img {
+    width: 140px;
+    border-radius: 10px;
+    display: block;
+    margin: 0 auto 18px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+
+  .modal-section {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin: 14px 0 8px;
+    border-bottom: 0.5px solid var(--border);
+    padding-bottom: 6px;
+  }
+
+  .var-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .var-check {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--gold);
+    flex-shrink: 0;
+  }
+  .var-label { font-size: 14px; color: var(--text); flex: 1; }
+  .var-price-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .var-price-prefix { font-size: 12px; color: var(--text3); }
+  .price-input {
+    font-family: 'Crimson Pro', serif;
+    font-size: 13px;
+    width: 80px;
+    padding: 4px 8px;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius);
+    background: var(--bg3);
+    color: var(--text);
+    text-align: right;
+  }
+  .price-input:focus { outline: none; border-color: var(--gold); }
+
+  .save-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    width: 100%;
+    margin-top: 18px;
+    padding: 10px;
+    border: 0.5px solid var(--gold);
+    border-radius: var(--radius);
+    background: var(--gold-light);
+    color: var(--gold);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .save-btn:hover { background: rgba(184,115,51,0.25); }
+
+  /* ── EXPORTAR / IMPORTAR ── */
+  .toolbar {
+    padding: 10px 20px;
+    border-bottom: 0.5px solid var(--border);
+    background: var(--bg2);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .toolbar-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 4px 12px;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .toolbar-btn:hover { border-color: var(--border2); color: var(--text); }
+  .toolbar-label { font-size: 11px; color: var(--text3); margin-left: auto; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="app-title">Pokédex do Colecionador</div>
+  <div class="set-bar">
+    <button class="set-btn active" data-set="sv8" onclick="loadSet('sv8',this)">Megaevolução</button>
+    <button class="set-btn" data-set="sv6" onclick="loadSet('sv6',this)">Máscaras do Abismo</button>
+    <button class="set-btn" data-set="sv5" onclick="loadSet('sv5',this)">Forças Temporais</button>
+    <button class="set-btn" data-set="sv4" onclick="loadSet('sv4',this)">Paradoxo Temporal</button>
+    <input class="set-input" id="customSetId" placeholder="Código do set (ex: sv7)" />
+    <button class="load-btn" onclick="loadCustomSet()">Carregar</button>
+  </div>
+</header>
+
+<div class="stats-bar" id="statsBar">
+  <div class="stat">Coletadas<span id="statOwned">0</span></div>
+  <div class="stat">Total<span id="statTotal">0</span></div>
+  <div class="stat">Progresso<span id="statPct">0%</span></div>
+  <div class="stat-value" id="statValue">R$ 0,00</div>
+</div>
+<div class="progress-bar" id="progressBar" style="display:none">
+  <div class="progress-fill" id="progressFill" style="width:0%"></div>
+</div>
+
+<div class="filter-bar" id="filterBar">
+  <button class="filter-btn active" onclick="setFilter('all',this)">Todas</button>
+  <button class="filter-btn" onclick="setFilter('owned',this)">Tenho</button>
+  <button class="filter-btn" onclick="setFilter('missing',this)">Faltando</button>
+</div>
+
+<div class="toolbar" id="toolBar" style="display:none">
+  <button class="toolbar-btn" onclick="exportData()">⬇ Exportar coleção</button>
+  <button class="toolbar-btn" onclick="document.getElementById('importFile').click()">⬆ Importar coleção</button>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)" />
+  <span class="toolbar-label" id="setName"></span>
+</div>
+
+<div class="card-grid" id="cardGrid">
+  <div class="empty">
+    <div class="empty-title">Nenhuma coleção carregada</div>
+    <div class="empty-sub">Selecione uma coleção acima para começar</div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal" onclick="closeModalBg(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <div>
+        <div class="modal-name" id="mName"></div>
+        <div class="modal-meta" id="mMeta"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <img class="modal-img" id="mImg" src="" alt="" />
+    <div class="modal-section">Variações que possuo</div>
+    <div id="mVariants"></div>
+    <div class="modal-section" id="mPriceSection">Preço médio (Liga Pokémon)</div>
+    <div id="mPriceHint" style="font-size:12px;color:var(--text3);margin-bottom:4px;">Digite o preço médio de cada variação</div>
+    <button class="save-btn" onclick="saveCard()">Salvar carta</button>
+  </div>
+</div>
+
+<script>
+  const API = 'https://api.pokemontcg.io/v2';
+  const VARIANTS = [
+    { key: 'normal',          label: 'Normal' },
+    { key: 'holofoil',        label: 'Holofoil' },
+    { key: 'reverseHolofoil', label: 'Reverse Holo' },
+  ];
+
+  let allCards = [];
+  let currentFilter = 'all';
+  let openCardId = null;
+  let collection = {};
+  let currentSetName = '';
+
+  // ── STORAGE ──────────────────────────────────────────────
+  function loadCollection() {
+    try { collection = JSON.parse(localStorage.getItem('pkm_collection') || '{}'); }
+    catch(e) { collection = {}; }
+  }
+
+  function saveCollection() {
+    localStorage.setItem('pkm_collection', JSON.stringify(collection));
+  }
+
+  loadCollection();
+
+  // ── CARREGAR SET ─────────────────────────────────────────
+  function loadSet(setId, btn) {
+    document.querySelectorAll('.set-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    fetchSet(setId);
+  }
+
+  function loadCustomSet() {
+    const val = document.getElementById('customSetId').value.trim();
+    if (!val) return;
+    document.querySelectorAll('.set-btn').forEach(b => b.classList.remove('active'));
+    fetchSet(val);
+  }
+
+  async function fetchSet(setId) {
+    const grid = document.getElementById('cardGrid');
+    grid.innerHTML = '<div class="loading" style="grid-column:1/-1">Buscando cartas</div>';
+    document.getElementById('statsBar').style.display = 'none';
+    document.getElementById('progressBar').style.display = 'none';
+    document.getElementById('filterBar').style.display = 'none';
+    document.getElementById('toolBar').style.display = 'none';
+
+    try {
+      let page = 1, cards = [];
+      while (true) {
+        const r = await fetch(
+          `${API}/cards?q=set.id:${setId}&pageSize=250&page=${page}&orderBy=number`
+        );
+        if (!r.ok) throw new Error('Set "' + setId + '" não encontrado. Verifique o código.');
+        const data = await r.json();
+        cards = cards.concat(data.data);
+        if (cards.length >= data.totalCount) break;
+        page++;
+      }
+      if (!cards.length) throw new Error('Nenhuma carta encontrada para este set.');
+
+      allCards = cards;
+      currentSetName = cards[0]?.set?.name || setId;
+      document.getElementById('setName').textContent = currentSetName;
+
+      renderGrid();
+      document.getElementById('statsBar').style.display = 'flex';
+      document.getElementById('progressBar').style.display = 'block';
+      document.getElementById('filterBar').style.display = 'flex';
+      document.getElementById('toolBar').style.display = 'flex';
+
+    } catch(e) {
+      grid.innerHTML = `<div class="empty"><div class="empty-title">Erro ao carregar</div><div class="empty-sub">${e.message}</div></div>`;
+    }
+  }
+
+  // ── HELPERS ───────────────────────────────────────────────
+  function isOwned(cardId) {
+    const c = collection[cardId];
+    if (!c) return false;
+    return VARIANTS.some(v => c[v.key]?.owned);
+  }
+
+  function getCardValue(cardId) {
+    const c = collection[cardId];
+    if (!c) return 0;
+    return VARIANTS.reduce((s, v) => {
+      if (c[v.key]?.owned) s += parseFloat(c[v.key].price || 0);
+      return s;
+    }, 0);
+  }
+
+  function fmtBRL(val) {
+    return 'R$ ' + val.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  // ── RENDER GRID ───────────────────────────────────────────
+  function renderGrid() {
+    const grid = document.getElementById('cardGrid');
+    const filtered = allCards.filter(card => {
+      if (currentFilter === 'owned')   return isOwned(card.id);
+      if (currentFilter === 'missing') return !isOwned(card.id);
+      return true;
+    });
+
+    if (!filtered.length) {
+      grid.innerHTML = '<div class="empty"><div class="empty-title">Nenhuma carta aqui</div><div class="empty-sub">Tente outro filtro</div></div>';
+    } else {
+      grid.innerHTML = filtered.map(card => {
+        const owned = isOwned(card.id);
+        const img   = card.images?.small || '';
+        return `
+        <div class="card-wrap" onclick="openCard('${card.id}')">
+          <div class="card-img-box ${owned ? 'owned' : 'missing'}">
+            <img src="${img}" alt="${card.name}" loading="lazy" />
+            ${owned ? `<div class="owned-badge">
+              <svg viewBox="0 0 10 10" fill="none">
+                <polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg></div>` : ''}
+          </div>
+          <div class="card-num">${card.number}/${card.set?.printedTotal || '?'}</div>
+          <div class="card-name">${card.name}</div>
+        </div>`;
+      }).join('');
+    }
+    updateStats();
+  }
+
+  function updateStats() {
+    const total  = allCards.length;
+    const owned  = allCards.filter(c => isOwned(c.id)).length;
+    const pct    = total ? Math.round(owned / total * 100) : 0;
+    const value  = allCards.reduce((s, c) => s + getCardValue(c.id), 0);
+    document.getElementById('statOwned').textContent = owned;
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statPct').textContent   = pct + '%';
+    document.getElementById('statValue').textContent = fmtBRL(value);
+    document.getElementById('progressFill').style.width = pct + '%';
+  }
+
+  function setFilter(f, btn) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderGrid();
+  }
+
+  // ── MODAL ─────────────────────────────────────────────────
+  function openCard(cardId) {
+    const card = allCards.find(c => c.id === cardId);
+    if (!card) return;
+    openCardId = cardId;
+
+    document.getElementById('mName').textContent = card.name;
+    document.getElementById('mMeta').textContent =
+      `#${card.number} · ${card.set?.name || ''} · ${card.rarity || ''}`;
+    document.getElementById('mImg').src = card.images?.large || card.images?.small || '';
+    document.getElementById('mImg').alt = card.name;
+
+    const c = collection[cardId] || {};
+
+    document.getElementById('mVariants').innerHTML = VARIANTS.map(v => {
+      const owned = c[v.key]?.owned || false;
+      const price = c[v.key]?.price !== undefined ? parseFloat(c[v.key].price).toFixed(2) : '';
+      return `
+      <div class="var-row">
+        <input type="checkbox" class="var-check" id="var_${v.key}" ${owned ? 'checked' : ''} />
+        <label for="var_${v.key}" class="var-label">${v.label}</label>
+        <div class="var-price-wrap">
+          <span class="var-price-prefix">R$</span>
+          <input type="number" class="price-input" id="price_${v.key}"
+            value="${price}" placeholder="0,00" step="0.01" min="0" />
+        </div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('modal').classList.add('open');
+  }
+
+  function saveCard() {
+    if (!openCardId) return;
+    const data = {};
+    VARIANTS.forEach(v => {
+      const owned = document.getElementById('var_' + v.key)?.checked || false;
+      const price = parseFloat(document.getElementById('price_' + v.key)?.value || '0') || 0;
+      data[v.key] = { owned, price };
+    });
+    collection[openCardId] = data;
+    saveCollection();
+    renderGrid();
+    closeModal();
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+    openCardId = null;
+  }
+
+  function closeModalBg(e) {
+    if (e.target === document.getElementById('modal')) closeModal();
+  }
+
+  // ── EXPORTAR / IMPORTAR ───────────────────────────────────
+  function exportData() {
+    const blob = new Blob([JSON.stringify(collection, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'pokemon_colecao.json';
+    a.click();
+  }
+
+  function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        collection = { ...collection, ...data };
+        saveCollection();
+        renderGrid();
+        alert('Coleção importada com sucesso!');
+      } catch(err) {
+        alert('Arquivo inválido. Use um JSON exportado por este app.');
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  // ── INIT ──────────────────────────────────────────────────
+  document.getElementById('customSetId').addEventListener('keydown', e => {
+    if (e.key === 'Enter') loadCustomSet();
+  });
+
+  loadSet('sv8', document.querySelector('.set-btn.active'));
+</script>
+</body>
+</html>
