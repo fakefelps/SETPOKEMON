@@ -123,6 +123,10 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 .save-note.synced{color:var(--green)}
 .save-note.error{color:#e24b4a}
 
+.vbadge{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;padding:3px 8px;border-radius:4px;background:var(--bg3);border:0.5px solid var(--border2);color:var(--text2)}
+.vbadge-holo{border-color:#ffd54f;color:#ffd54f;background:rgba(255,213,79,0.08)}
+.vbadge-rev{border-color:#ce93d8;color:#ce93d8;background:rgba(206,147,216,0.08)}
+.var-disabled{opacity:0.4}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
@@ -209,6 +213,7 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
       <button class="modal-close" onclick="closeCard()">×</button>
     </div>
     <img class="cm-img" id="cmImg" src="" alt="" />
+    <div id="cmVersionBadges" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"></div>
     <div class="cm-section">Variações que possuo</div>
     <div id="cmVariants"></div>
     <div class="hint-box">
@@ -220,6 +225,9 @@ header{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:14p
 </div>
 
 <script>
+// ── Dados locais ME01 (raridade + versões) ─────────────────
+const ME01_DATA = {"001":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"002":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"003":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"004":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"005":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"006":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"007":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"008":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"009":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"010":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"011":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"012":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"013":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"014":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"015":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"016":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"017":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"018":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"019":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"020":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"021":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"022":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"023":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"024":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"025":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"026":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"027":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"028":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"029":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"030":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"031":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"032":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"033":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"034":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"035":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"036":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"037":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"038":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"039":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"040":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"041":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"042":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"043":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"044":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"045":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"046":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"047":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"048":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"049":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"050":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"051":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"052":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"053":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"054":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"055":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"056":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"057":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"058":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"059":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"060":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"061":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"062":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"063":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"064":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"065":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"066":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"067":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"068":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"069":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"070":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"071":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"072":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"073":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"074":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"075":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"076":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"077":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"078":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"079":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"080":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"081":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"082":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"083":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"084":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"085":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"086":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"087":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"088":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"089":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"090":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"091":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"092":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"093":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"094":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"095":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"096":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"097":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"098":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"099":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"100":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"101":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"102":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"103":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"104":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"105":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"106":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"107":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"108":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"109":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"110":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"111":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"112":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"113":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"114":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"115":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"116":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"117":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"118":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"119":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"120":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"121":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"122":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"123":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"124":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"125":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"126":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"127":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"128":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"129":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"130":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"131":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"132":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"133":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"134":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"135":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"136":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"137":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"138":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"139":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"140":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"141":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"142":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"143":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"144":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"145":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"146":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"147":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"148":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"149":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"150":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"151":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"152":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"153":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"154":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"155":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"156":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"157":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"158":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"159":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"160":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"161":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"162":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"163":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"164":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"165":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"166":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"167":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"168":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"169":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"170":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"171":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"172":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"173":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"174":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"175":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"176":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"177":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"178":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"179":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"180":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"181":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"182":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"183":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"184":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"185":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"186":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"187":{"rarity":"Mega Hiper Raro","normal":false,"holo":true,"reverse":false},"188":{"rarity":"Mega Hiper Raro","normal":false,"holo":true,"reverse":false}};
+
 const API = 'https://api.pokemontcg.io/v2';
 const VARIANTS = [
   {key:'normal',          label:'Normal'},
@@ -426,18 +434,58 @@ function filterSets(){
 function pickSet(id){closeSearch();document.getElementById('setInput').value=id;fetchSet(id);}
 
 // ── Modal carta ───────────────────────────────────────────
+// Cores por raridade
+const RARITY_COLORS = {
+  'Comum':                  '#a09888',
+  'Incomum':                '#4fc3f7',
+  'Rara':                   '#ffd54f',
+  'Rara Dupla':             '#ff8a65',
+  'Ilustração Rara':        '#ce93d8',
+  'Ultra Rara':             '#f48fb1',
+  'Ilustração Rara Especial':'#80cbc4',
+  'Mega Hiper Raro':        '#C8973A',
+};
+
+function getCardMeta(cardNumber) {
+  if (!cardNumber) return null;
+  const num = String(cardNumber).padStart(3, '0');
+  return ME01_DATA[num] || null;
+}
+
 function openCard(cardId){
   const card=allCards.find(c=>c.id===cardId);
   if(!card)return;
   openCardId=cardId;
   document.getElementById('cmName').textContent=card.name;
-  document.getElementById('cmMeta').textContent=`#${card.number} · ${card.set?.name||''} · ${card.rarity||''}`;
+
+  // Tenta buscar dados locais (ME01 por enquanto)
+  const meta = getCardMeta(card.number);
+  const rarityLabel = meta ? meta.rarity : (card.rarity || '');
+  const rarityColor = RARITY_COLORS[rarityLabel] || 'var(--text2)';
+
+  document.getElementById('cmMeta').innerHTML =
+    `#${card.number} · ${card.set?.name||''} · <span style="color:${rarityColor};font-weight:600">${rarityLabel}</span>`;
+
   document.getElementById('cmImg').src=card.images?.large||card.images?.small||'';
   document.getElementById('cmImg').alt=card.name;
   const c=collection[cardId]||{};
+
+  // Mapeia quais versões existem para essa carta
+  const available = meta
+    ? { normal: meta.normal, holofoil: meta.holo, reverseHolofoil: meta.reverse }
+    : { normal: true, holofoil: true, reverseHolofoil: true };
+
   document.getElementById('cmVariants').innerHTML=VARIANTS.map(v=>{
+    const exists = available[v.key] !== false;
     const owned=c[v.key]?.owned||false;
     const price=c[v.key]?.price!==undefined?parseFloat(c[v.key].price).toFixed(2):'';
+    if (!exists) {
+      return `<div class="var-row var-disabled">
+        <input type="checkbox" class="var-check" id="v_${v.key}" disabled/>
+        <label for="v_${v.key}" class="var-label" style="color:var(--text3);text-decoration:line-through">${v.label}</label>
+        <span style="font-size:11px;color:var(--text3);margin-left:auto">não existe</span>
+      </div>`;
+    }
     return `<div class="var-row">
       <input type="checkbox" class="var-check" id="v_${v.key}" ${owned?'checked':''}/>
       <label for="v_${v.key}" class="var-label">${v.label}</label>
@@ -445,6 +493,14 @@ function openCard(cardId){
       <input type="number" class="price-inp" id="p_${v.key}" value="${price}" placeholder="0,00" step="0.01" min="0"/></div>
     </div>`;
   }).join('');
+
+  // Mostra badge de versões disponíveis
+  const badges = [];
+  if (available.normal) badges.push('<span class="vbadge">Normal</span>');
+  if (available.holofoil) badges.push('<span class="vbadge vbadge-holo">Holo</span>');
+  if (available.reverseHolofoil) badges.push('<span class="vbadge vbadge-rev">Reverse</span>');
+  document.getElementById('cmVersionBadges').innerHTML = badges.join('');
+
   setNoteStatus('','');
   document.getElementById('cardModal').classList.add('open');
 }
