@@ -100,6 +100,9 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
 .coll-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
 .coll{background:var(--panel);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
 .coll-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.coll-del{border:none;background:none;color:var(--ink3);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;border-radius:6px}
+.coll-del:hover{background:#ffe9e9;color:#c0392b}
+.tools-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
 .coll-name{font-family:'Poppins';font-weight:700;font-size:15px;color:var(--ink);cursor:pointer}
 .coll-name:hover{color:var(--blue)}
 .coll-id{font-size:10px;font-weight:700;color:var(--blue);background:#eaf2fb;padding:2px 7px;border-radius:6px;letter-spacing:.5px}
@@ -257,7 +260,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
     <button class="tb-btn red" onclick="openLigaPaste()">📋 Colar da Liga</button>
     <button class="tb-btn" id="loadPromosBtn" onclick="loadCompanionPromos()" style="display:none">+ Promos</button>
     <button class="tb-btn" onclick="saveAsFav()">★ Favorito</button>
-    <button class="tb-btn" id="delSetBtn" onclick="deleteCustomSet()" style="display:none">🗑 Excluir coleção</button>
+    <button class="tb-btn" id="delSetBtn" onclick="excluirColecao(currentSetId)" style="display:none">🗑 Excluir coleção</button>
   </div>
 </div>
 <div class="card-grid" id="cardGrid"></div>
@@ -371,6 +374,40 @@ function normalizeEntry(raw){
 }
 
 function jparse(k,d){try{return JSON.parse(localStorage.getItem(k))||d;}catch(e){return d;}}
+
+/* ---------- Gravacao segura no aparelho ----------
+   O localStorage do navegador tem limite (~5 MB). Quando enche, o
+   localStorage.setItem NAO devolve erro: ele LANCA uma excecao. Como as
+   gravacoes estavam soltas, um aparelho cheio derrubava o app inteiro em
+   silencio — favoritos sumiam, colecao nao salvava, set nao abria.
+   Agora toda gravacao passa por aqui: se faltar espaco, o app joga fora o que
+   e descartavel (imagens importadas e cache de cartas, que sao refeitos
+   sozinhos) e tenta de novo. Os dados de verdade (colecao, favoritos) sao os
+   ultimos a serem sacrificados. */
+function descartaveis(){
+  const alvos=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&(k.startsWith('pkm_imgs_')||k.startsWith('pkm_cards_')))alvos.push(k);
+  }
+  return alvos;
+}
+let avisouCheio=false;
+function lsSet(chave,valor){
+  for(let tentativa=0;tentativa<6;tentativa++){
+    try{localStorage.setItem(chave,valor);return true;}
+    catch(e){
+      const alvos=descartaveis().filter(k=>k!==chave);
+      if(!alvos.length)break;
+      // joga fora primeiro as imagens (mais pesadas), depois os caches de cartas
+      alvos.sort((a,b)=>(b.startsWith('pkm_imgs_')?1:0)-(a.startsWith('pkm_imgs_')?1:0));
+      try{localStorage.removeItem(alvos[0]);}catch(_){break;}
+    }
+  }
+  if(!avisouCheio){avisouCheio=true;
+    showWarn('A memória deste navegador encheu. Liberei o que dava (imagens e cache), mas se voltar a acontecer use "🧹 Liberar espaço" na tela inicial.');}
+  return false;
+}
 function loadStorage(){
   collection=jparse('pkm_col',{});
   savedSets=jparse('pkm_favs',[]);
@@ -383,12 +420,12 @@ function loadStorage(){
   ownerName=localStorage.getItem('pkm_owner')||CFG.owner||'';
   renderSaved();renderOwner();renderPending();
 }
-function saveCol(){localStorage.setItem('pkm_col',JSON.stringify(collection));}
-function saveFavs(){localStorage.setItem('pkm_favs',JSON.stringify(savedSets));}
-function saveMeta(){localStorage.setItem('pkm_setnames',JSON.stringify(setNames));localStorage.setItem('pkm_setsizes',JSON.stringify(setSizes));localStorage.setItem('pkm_setbases',JSON.stringify(setBases));}
-function saveSpent(){localStorage.setItem('pkm_spent',JSON.stringify(spent));}
-function saveCustomSets(){localStorage.setItem('pkm_customsets',JSON.stringify(customSets));}
-function savePending(){localStorage.setItem('pkm_pending',JSON.stringify(pending));renderPending();}
+function saveCol(){lsSet('pkm_col',JSON.stringify(collection));}
+function saveFavs(){lsSet('pkm_favs',JSON.stringify(savedSets));}
+function saveMeta(){lsSet('pkm_setnames',JSON.stringify(setNames));lsSet('pkm_setsizes',JSON.stringify(setSizes));lsSet('pkm_setbases',JSON.stringify(setBases));}
+function saveSpent(){lsSet('pkm_spent',JSON.stringify(spent));}
+function saveCustomSets(){lsSet('pkm_customsets',JSON.stringify(customSets));}
+function savePending(){lsSet('pkm_pending',JSON.stringify(pending));renderPending();}
 function renderPending(){
   const el=document.getElementById('pendStatus');if(!el)return;
   const n=Object.keys(pending).length;
@@ -415,14 +452,7 @@ function fatCard(s,setId){
     __av:s.av};
 }
 function saveCardsCache(setId,cards){
-  try{localStorage.setItem(cacheKey(setId),JSON.stringify({t:Date.now(),cards:cards.map(slimCard)}));}
-  catch(e){ // localStorage cheio: joga fora os caches mais antigos e tenta de novo
-    try{
-      Object.keys(localStorage).filter(k=>k.startsWith('pkm_cards_')&&k!==cacheKey(setId))
-        .slice(0,5).forEach(k=>localStorage.removeItem(k));
-      localStorage.setItem(cacheKey(setId),JSON.stringify({t:Date.now(),cards:cards.map(slimCard)}));
-    }catch(_){}
-  }
+  try{lsSet(cacheKey(setId),JSON.stringify({t:Date.now(),cards:cards.map(slimCard)}));}catch(_){}
 }
 function loadCardsCache(setId){
   const d=jparse(cacheKey(setId),null);
@@ -611,7 +641,9 @@ function renderHome(){
       const dTxt=sp!==''?`<span class="spent-diff ${d>=0?'diff-pos':'diff-neg'}">${d>=0?'+':''}${fmtBRL(d)}</span>`:'';
       const mini=(n)=>`<span style="font-size:12px;color:var(--ink3)">/${n}</span>`;
       return `<div class="coll">
-        <div class="coll-top"><div class="coll-name" onclick="fetchSet('${s.id}')">${name}</div><span class="coll-id">${s.id}</span></div>
+        <div class="coll-top"><div class="coll-name" onclick="fetchSet('${s.id}')">${name}</div>
+          <div style="display:flex;align-items:center;gap:4px"><span class="coll-id">${s.id}</span>
+          <button class="coll-del" title="Excluir esta coleção" onclick="excluirColecao('${s.id}')">🗑</button></div></div>
         <div class="coll-stats">
           <div class="coll-stat"><div class="n">${s.base}${bSize?mini(bSize):''}</div><div class="l">base</div></div>
           <div class="coll-stat"><div class="n">${s.spec}${sSize?mini(sSize):''}</div><div class="l">especiais</div></div>
@@ -623,7 +655,61 @@ function renderHome(){
       </div>`;
     }).join('')+'</div>';
   }
-  el.innerHTML=hero+colls;
+  const ferramentas=`<div class="tools-row">
+    <button class="tb-btn" onclick="liberarEspaco()">🧹 Liberar espaço</button>
+    <span style="font-size:11px;color:var(--ink3);align-self:center">${espacoUsado()}</span>
+  </div>`;
+  el.innerHTML=hero+colls+ferramentas;
+}
+// Quanto do aparelho as imagens/caches estao ocupando (aproximado).
+function espacoUsado(){
+  let total=0,desc=0;
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);if(!k||!k.startsWith('pkm_'))continue;
+    const n=(localStorage.getItem(k)||'').length;total+=n;
+    if(k.startsWith('pkm_imgs_')||k.startsWith('pkm_cards_'))desc+=n;
+  }
+  const mb=x=>(x/1048576).toFixed(1).replace('.',',')+' MB';
+  return `Guardado neste aparelho: ${mb(total)} (${mb(desc)} são imagens e cache, dá pra liberar)`;
+}
+function liberarEspaco(){
+  const alvos=descartaveis();
+  if(!alvos.length){alert('Não há nada descartável guardado — sua coleção não ocupa espaço relevante.');return;}
+  if(!confirm(`Liberar espaço apagando ${alvos.length} item(ns) de imagens e cache de cartas?\n\nSuas marcações e preços NÃO são afetados. Os sets voltam a ser baixados da internet quando você abrir de novo.`))return;
+  alvos.forEach(k=>{try{localStorage.removeItem(k);}catch(_){}});
+  avisouCheio=false;hideWarn();renderHome();
+}
+
+/* Exclui uma coleção inteira da Pokédex, com confirmação.
+   Fica na tela inicial de propósito: se o set não abre (API fora do ar, por
+   exemplo), você ainda consegue removê-lo sem precisar entrar nele. */
+async function excluirColecao(sid){
+  const nome=setNames[sid]||sid;
+  const ids=Object.keys(collection).filter(cid=>!cid.startsWith(SET_DEF_PREFIX)&&setIdOf(cid)===sid&&isOwned(cid));
+  const ehLiga=!!customSets[sid];
+  let aviso=`Excluir a coleção "${nome}" da sua Pokédex?`;
+  if(ids.length)aviso+=`\n\nAtenção: isso apaga também as ${ids.length} carta(s) que você marcou nela (e o valor delas sai do total).`;
+  if(ehLiga)aviso+=`\n\nA lista de cartas importada da Liga também será removida.`;
+  aviso+=`\n\nEssa ação não tem desfazer.`;
+  if(!confirm(aviso))return;
+
+  savedSets=savedSets.filter(x=>x.id!==sid);saveFavs();renderSaved();
+  try{localStorage.removeItem(cacheKey(sid));localStorage.removeItem(imgsKey(sid));}catch(_){}
+  if(ehLiga){
+    delete customSets[sid];saveCustomSets();
+    collection[SET_DEF_PREFIX+sid]={id:sid,deleted:true,ts:Date.now()};
+    saveToSheet(SET_DEF_PREFIX+sid,{id:sid,deleted:true,ts:Date.now()},true);
+  }
+  const lote=[];
+  ids.forEach(cid=>{const vazio={price:0,types:{normal:false,holofoil:false,reverseHolofoil:false},ts:Date.now()};
+    collection[cid]=vazio;lote.push({card_id:cid,variants:vazio});});
+  delete spent[sid];saveSpent();
+  delete setNames[sid];delete setSizes[sid];delete setBases[sid];saveMeta();
+  saveCol();
+  if(currentSetId===sid){allCards=[];currentSetId='';}
+  showHome();
+  if(lote.length)await saveManyToSheet(lote);
+  renderHome();
 }
 function setSpent(sid,val){const n=parseFloat(val);if(isNaN(n)||val===''){delete spent[sid];}else{spent[sid]=n;}saveSpent();renderHome();}
 
@@ -634,15 +720,20 @@ document.getElementById('setInput').addEventListener('keydown',e=>{if(e.key==='E
 async function fetchAllCards(setId){
   let page=1,cards=[];
   while(true){
-    let r,attempt=0;
+    let r,data,attempt=0;
     while(true){
       r=await fetch(`${API}/cards?q=set.id:${setId}&pageSize=250&page=${page}&orderBy=number`,{headers:apiHeaders});
-      if(r.ok||attempt>=2)break;
+      data=r.ok?await r.json().catch(()=>null):null;
+      // A pokemontcg.io as vezes responde 200 com lista VAZIA quando esta instavel.
+      // Para a primeira pagina isso e sintoma de falha, nao de set inexistente:
+      // vale insistir antes de dizer "nenhuma carta encontrada".
+      const vazioSuspeito=page===1&&data&&Array.isArray(data.data)&&data.data.length===0;
+      if((r.ok&&data&&!vazioSuspeito)||attempt>=3)break;
       attempt++;await new Promise(res=>setTimeout(res,700*attempt));
     }
-    if(!r.ok)throw new Error(`API da pokemontcg.io recusou o set "${setId}" (HTTP ${r.status}). Costuma ser instabilidade temporária deles — tente de novo em alguns segundos.`);
-    const data=await r.json();cards=cards.concat(data.data);
-    if(!data.data.length||cards.length>=data.totalCount)break;page++;
+    if(!r.ok||!data)throw new Error(`A API da pokemontcg.io não respondeu para o set "${setId}" (HTTP ${r.status}). Costuma ser instabilidade temporária deles — tente de novo em alguns segundos.`);
+    cards=cards.concat(data.data||[]);
+    if(!data.data||!data.data.length||cards.length>=data.totalCount)break;page++;
   }
   return cards;
 }
@@ -660,7 +751,7 @@ function showCards(setId,cards,token){
   document.getElementById('statsBar').style.display='flex';
   document.getElementById('progressBar').style.display='block';
   document.getElementById('filterBar').style.display='flex';
-  document.getElementById('delSetBtn').style.display=customSets[setId]?'':'none';
+  document.getElementById('delSetBtn').style.display='';
   renderGrid();
 }
 async function fetchSet(setId){
@@ -690,7 +781,7 @@ async function fetchSet(setId){
   try{
     const cards=await fetchAllCards(setId);
     if(token!==setLoadToken)return;
-    if(!cards.length)throw new Error('Nenhuma carta encontrada.');
+    if(!cards.length)throw new Error(`A API não devolveu nenhuma carta para "${setId}" agora. Se o código estiver certo, é instabilidade deles — tente de novo.`);
     saveCardsCache(setId,cards);
     showCards(setId,cards,token);
   }catch(e){
@@ -835,11 +926,11 @@ function parsePriceBetween(text,from,to){
   return m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null;
 }
 function parseLigaListings(text){
-  const re=/^(.*?)\s*\(#\s*(\d{1,4})\s*([a-z]?)\s*\/[^)\n]*\)\s*$/gim;
+  const re=/^(.*?)\s*\(#\s*(\d{1,4})\s*([a-z]?)\s*\/([^)\n]*)\)\s*$/gim;
   const out=[];let m;
   while((m=re.exec(text))){
     out.push({name:(m[1]||'').trim(),number:parseInt(m[2],10),suffix:(m[3]||'').toLowerCase(),
-      at:m.index,end:m.index+m[0].length});
+      tot:(m[4]||'').trim(),at:m.index,end:m.index+m[0].length});
   }
   // preço de cada carta = primeiro "R$" depois da âncora dela e antes da âncora da próxima
   out.forEach((it,i)=>{it.price=parsePriceBetween(text,it.end,i+1<out.length?out[i+1].at:text.length);});
@@ -880,18 +971,30 @@ async function applyLigaPaste(){
   status.className='save-note syncing';
   // Categorias: o que MUDOU de preco, o que foi PREENCHIDO (estava zerado),
   // o que ja estava IGUAL, e o que simplesmente nao veio nesta pagina da Liga.
-  const mudou=[],preencheu=[],lote=[];let igual=0,naoVeio=0;
+  const mudou=[],preencheu=[],lote=[],conferir=[];let igual=0,naoVeio=0;
   const upd=(i)=>{status.textContent=`Conferindo ${i}/${owned.length} carta(s)... ${mudou.length+preencheu.length} para atualizar`;};
   upd(0);
   for(let i=0;i<owned.length;i++){
     const card=owned[i];
     const num=cardNumberInt(card.number),sfx=cardNumberSuffix(card.number);
     let hit=null;
-    if(num!=null)hit=byNum[num+'|'+sfx]||null;                       // 1) pelo numero: exato
-    if(!hit){const c=byName[normName(card.name)];                    // 2) pelo nome: so se for unico
+    // Casa SO pelo numero da carta. O nome nunca decide.
+    // Motivo: cartas especiais repetem o nome da carta base (a #133 "Bulbasaur"
+    // e a #001 "Bulbasaur" sao cartas diferentes, com precos muito diferentes).
+    // Quando a #133 nao vinha na pagina colada, o casamento por nome pegava o
+    // preco da #001 e colocava nela. Agora, se o numero nao esta no texto, a
+    // carta simplesmente fica como estava.
+    if(num!=null)hit=byNum[num+'|'+sfx]||null;
+    // Unica excecao: cartas cuja numeracao nao e numerica (ex.: "SWSH123"),
+    // onde nao ha numero para comparar. Ai vale o nome, se for unico no texto.
+    if(!hit&&num==null){const c=byName[normName(card.name)];
       if(c&&c!=='DUP'&&!usado[c.__i])hit=c;}
     if(!hit||hit.price==null){naoVeio++;if(i%20===0)upd(i+1);continue;}
     usado[hit.__i]=true;
+    // Conferencia: numero igual mas nome completamente diferente = sinal de que
+    // o texto colado talvez seja de OUTRA colecao. Aplica, mas avisa no fim.
+    const na=normName(card.name),nb=normName(hit.name);
+    if(na&&nb&&na!==nb&&nb.indexOf(na)<0&&na.indexOf(nb)<0)conferir.push(`${card.number} ${card.name} ≠ "${hit.name}"`);
     const e=normalizeEntry(collection[card.id]);
     const antigo=e.price||0;
     if(Math.abs(antigo-hit.price)<0.005){igual++;if(i%20===0)upd(i+1);continue;} // ja estava certo: nao regrava
@@ -911,6 +1014,7 @@ async function applyLigaPaste(){
   status.className='save-note synced';
   let msg=`✓ Página ${ligaSessao.paginas}: ${mudou.length} preço(s) mudaram, ${preencheu.length} estavam zerados e foram preenchidos, ${igual} já estavam iguais.`;
   if(naoVeio)msg+=` (${naoVeio} carta(s) não vieram nesta página — sem problema, elas continuam como estavam.)`;
+  if(conferir.length)msg+=`\n\n⚠ ${conferir.length} carta(s) com o número certo mas nome diferente — confira se o texto é desta coleção mesmo: ${conferir.slice(0,8).join('; ')}${conferir.length>8?'...':''}.`;
   msg+=`\n\nSituação do set: ${comPreco} de ${owned.length} carta(s) suas já têm preço.`;
   if(semPreco.length){
     msg+=` Ainda faltam ${semPreco.length}: ${semPreco.slice(0,14).map(c=>c.number+' '+c.name).join(', ')}${semPreco.length>14?'...':''}.`;
@@ -1004,22 +1108,43 @@ function imagePlacements(ops,OPS){
     else if(fn===OPS.restore)ctm=pilha.pop()||[1,0,0,1,0,0];
     else if(fn===OPS.transform)ctm=matMul(args,ctm);
     else if(fn===OPS.paintImageXObject||fn===OPS.paintJpegXObject||fn===OPS.paintImageXObjectRepeat){
-      const w=Math.abs(ctm[0]),h=Math.abs(ctm[3]);
+      // Mede os lados pelos VETORES da matriz, nao pelos eixos: assim funciona
+      // igual quando a pagina foi impressa deitada (o PDF em grade sai girado
+      // 90 graus, e ai a carta "parece" paisagem se olharmos so ctm[0]/ctm[3]).
+      const w=Math.hypot(ctm[0],ctm[1]),h=Math.hypot(ctm[2],ctm[3]);
       const prop=h?w/h:0;
-      // so nos interessam retangulos com cara de carta (nem logo, nem banner)
-      if(w>40&&h>60&&prop>0.55&&prop<0.9)out.push({x:ctm[4],y:ctm[5],w,h,ctm:ctm.slice()});
+      // Carta em pe (proporcao ~0,71) OU deitada (~1,4). A versao deitada
+      // aparece nos PDFs impressos em paisagem/grade, onde o proprio arquivo de
+      // imagem ja vem girado. Nesse caso marcamos `girada` para endireitar no
+      // recorte.
+      const emPe=prop>0.55&&prop<0.9, deitada=prop>1.1&&prop<1.8;
+      if(Math.max(w,h)>60&&Math.min(w,h)>40&&(emPe||deitada))
+        out.push({x:ctm[4],y:ctm[5],w,h,girada:deitada,ctm:ctm.slice()});
     }
   }
   return out;
 }
 
-// Recorta um pedaco do canvas da pagina e devolve um JPEG pequeno (data URL).
-function cropToDataUrl(canvas,rect,larguraFinal){
-  const w=Math.max(1,Math.round(rect.x2-rect.x1)),h=Math.max(1,Math.round(rect.y2-rect.y1));
-  const lw=Math.min(larguraFinal,w),lh=Math.max(1,Math.round(h*(lw/w)));
-  const c=document.createElement('canvas');c.width=lw;c.height=lh;
-  c.getContext('2d').drawImage(canvas,Math.round(rect.x1),Math.round(rect.y1),w,h,0,0,lw,lh);
-  return c.toDataURL('image/jpeg',0.7);
+/* Recorta a carta do canvas da pagina e devolve um JPEG pequeno (data URL).
+   Em vez de recortar um retangulo alinhado aos eixos, aplica a INVERSA da
+   matriz de desenho da imagem. Com isso a carta sai sempre em pe, na proporcao
+   certa, mesmo que a pagina tenha sido impressa deitada (PDF em grade) ou
+   espelhada — nao e preciso adivinhar para que lado girar. */
+function recortarCarta(canvasPagina,M,larg,alt,girada){
+  const det=M[0]*M[3]-M[1]*M[2];
+  if(!det)return null;
+  const inv=[M[3]/det,-M[1]/det,-M[2]/det,M[0]/det,
+             (M[2]*M[5]-M[3]*M[4])/det,(M[1]*M[4]-M[0]*M[5])/det];
+  // quadrado unitario da imagem -> canvas de destino.
+  // Normal: u vira a largura, v vira a altura (invertida).
+  // Girada: gira 90 graus no sentido horario para a carta ficar em pe.
+  const A=girada?[0,alt,larg,0,0,0]:[larg,0,0,-alt,0,alt];
+  const T=matMul(inv,A);                // tela da pagina -> carta em pe
+  const c=document.createElement('canvas');c.width=larg;c.height=alt;
+  const ctx=c.getContext('2d');
+  ctx.setTransform(T[0],T[1],T[2],T[3],T[4],T[5]);
+  ctx.drawImage(canvasPagina,0,0);
+  return c.toDataURL('image/jpeg',0.68);
 }
 
 let ligaPdfImages={}; // { "003": "data:image/jpeg;base64,..." } do ultimo PDF lido
@@ -1086,13 +1211,63 @@ async function onLigaPdf(input){
       });
       try{
         const ops=await page.getOperatorList();
-        imagePlacements(ops,OPS).forEach(im=>imgs.push({pg:p,ctm:im.ctm}));
+        imagePlacements(ops,OPS).forEach(im=>imgs.push({pg:p,ctm:im.ctm,girada:im.girada}));
       }catch(_){}
     }
-    document.getElementById('ligaSetArea').value=out;
+    const area=document.getElementById('ligaSetArea');
+    const temTexto=ancoras.length>0;
 
-    // ---- PASSO 2: casar imagem <-> carta pela ordem ----
-    const pares=parearImagens(ancoras,imgs);
+    // ---- PASSO 2: casar imagem <-> carta ----
+    let pares;
+    if(temTexto){
+      area.value=out;                       // PDF traz nomes, numeros e precos
+      pares=parearImagens(ancoras,imgs);
+    }else{
+      /* PDF SEM camada de texto (impresso "como imagem", ou a visao em grade
+         gerada por impressora virtual tipo Foxit). Ele so serve para fornecer
+         as FIGURAS. As cartas vem do texto que voce colou na caixa, e o
+         casamento e 1 pra 1 na ordem: 1a figura = 1a carta. */
+      const lista=parseLigaListings(area.value);
+      if(!lista.length){
+        drop.textContent='📄 Escolher o PDF da Liga';
+        st.className='save-note error';
+        st.textContent='Esse PDF não tem texto dentro (foi impresso como imagem), então sozinho ele não monta a coleção. Cole primeiro o texto da página da Liga na caixa abaixo e depois escolha este PDF de novo — aí eu uso só as figuras dele.';
+        return;
+      }
+      if(!imgs.length){
+        drop.textContent='📄 Escolher o PDF da Liga';
+        st.className='save-note error';st.textContent='Não encontrei nem texto nem figuras de carta nesse PDF.';
+        return;
+      }
+      /* A visao em grade da Liga mostra cada carta DUAS vezes (a impressao em
+         portugues e a em ingles). Quando o numero de figuras for perto do dobro
+         do numero de cartas, pegamos uma sim, uma nao — ficando com a primeira
+         de cada par. */
+      let fila=imgs;
+      const dobro=lista.length&&Math.abs(imgs.length/lista.length-2)<0.25;
+      if(dobro)fila=imgs.filter((_,i)=>i%2===0);
+      pares=[];
+      const n=Math.min(lista.length,fila.length);
+      for(let i=0;i<n;i++)pares.push({im:fila[i],num:String(lista[i].number).padStart(3,'0')+lista[i].suffix});
+      /* Aviso honesto: sem texto no arquivo, o casamento e um palpite baseado na
+         ordem. Na visao em GRADE da Liga isso costuma sair deslocado, porque a
+         grade mostra a impressao em portugues e a em ingles de cada carta, e
+         esse ritmo nem sempre bate com a lista de variacoes ([Staff] etc).
+         Por isso pedimos confirmacao em vez de aplicar calado. */
+      const ok=confirm(
+        `Esse PDF não tem texto dentro (foi impresso como imagem).\n\n`+
+        `Consigo aproveitar só as figuras, ligando-as às ${n} primeiras cartas na ordem`+
+        `${dobro?' (descartando a segunda versão de cada par)':''}.\n\n`+
+        `ATENÇÃO: isso é um palpite pela ordem e costuma sair DESLOCADO na visão em grade.\n`+
+        `O jeito confiável é imprimir a Liga na visão em LISTA, que sai com texto.\n\n`+
+        `Quer usar as figuras assim mesmo?`);
+      if(!ok){
+        drop.textContent='📄 Escolher o PDF da Liga';
+        st.className='save-note';st.textContent='Beleza — nenhuma figura foi usada. A coleção sai só com o texto colado.';
+        return;
+      }
+      showWarn(`Figuras ligadas pela ordem (${n} carta(s)). Confira na grade — se estiver deslocado, refaça o PDF pela visão em LISTA da Liga.`);
+    }
 
     // ---- PASSO 3: desenhar SO as paginas que tem imagem aproveitada e recortar ----
     const porPagina={};
@@ -1108,16 +1283,10 @@ async function onLigaPdf(input){
         const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
         await page.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
         porPagina[pg].forEach(par=>{
-          const c=par.im.ctm,t=vp.transform;
-          const cantos=[[0,0],[1,0],[0,1],[1,1]].map(([ux,uy])=>{
-            const px=c[0]*ux+c[2]*uy+c[4],py=c[1]*ux+c[3]*uy+c[5];
-            return [t[0]*px+t[2]*py+t[4], t[1]*px+t[3]*py+t[5]];
-          });
-          const xs=cantos.map(k=>k[0]),ys=cantos.map(k=>k[1]);
-          const rect={x1:Math.max(0,Math.min(...xs)),y1:Math.max(0,Math.min(...ys)),
-                      x2:Math.min(cv.width,Math.max(...xs)),y2:Math.min(cv.height,Math.max(...ys))};
-          if(rect.x2-rect.x1<20||rect.y2-rect.y1<28)return;
-          ligaPdfImages[par.num]=cropToDataUrl(cv,rect,150);
+          // matriz completa: quadrado unitario da imagem -> pixels do canvas
+          const M=matMul(par.im.ctm,vp.transform);
+          const d=recortarCarta(cv,M,140,196,par.im.girada);
+          if(d)ligaPdfImages[par.num]=d;
         });
       }catch(_){}
     }
@@ -1147,7 +1316,7 @@ function createLigaSet(){
   listings.forEach(l=>{
     const n=String(l.number).padStart(3,'0')+l.suffix;
     if(seen[n])return;seen[n]=1;
-    cards.push({n,name:l.name,price:l.price||0});
+    cards.push({n,name:l.name,price:l.price||0,t:l.tot||''});
   });
   // "base" = maior numero SEM sufixo de variacao; o resto conta como especial
   let base=0;cards.forEach(c=>{if(!/[a-z]$/i.test(c.n))base=Math.max(base,parseInt(c.n,10)||0);});
@@ -1172,12 +1341,19 @@ function loadLigaImages(setId){return jparse(imgsKey(setId),{})||{};}
 function saveLigaImages(setId,imgs){
   let lista=Object.keys(imgs);
   while(lista.length){
-    try{const obj={};lista.forEach(k=>obj[k]=imgs[k]);
-      localStorage.setItem(imgsKey(setId),JSON.stringify(obj));return lista.length;}
-    catch(e){lista=lista.slice(0,Math.floor(lista.length*0.8));}
+    const obj={};lista.forEach(k=>obj[k]=imgs[k]);
+    try{localStorage.setItem(imgsKey(setId),JSON.stringify(obj));return lista.length;}
+    catch(e){lista=lista.slice(0,Math.floor(lista.length*0.75));} // nao cabe: guarda menos
   }
   try{localStorage.removeItem(imgsKey(setId));}catch(_){}
   return 0;
+}
+// Link direto da carta no site da Liga. Padrao conferido em 09/08/2026:
+// ...?view=cards/card&card=Alakazam%20%5BStaff%5D%20(003b%2F%E2%88%9E)&ed=MEP&num=003b
+function ligaCardUrl(def,c){
+  const alvo=c.name+' ('+c.n+'/'+(c.t||def.total||'')+')';
+  return 'https://www.ligapokemon.com.br/?view=cards/card&card='+encodeURIComponent(alvo)
+    +'&ed='+encodeURIComponent(def.code||'')+'&num='+encodeURIComponent(c.n);
 }
 function customSetCards(def){
   const total=def.total||def.cards.length;
@@ -1186,19 +1362,10 @@ function customSetCards(def){
     id:def.id+'-'+c.n,name:c.name,number:c.n,rarity:'',
     set:{id:def.id,name:def.name,printedTotal:def.base||total,total:total},
     images:imgs[c.n]?{small:imgs[c.n],large:imgs[c.n]}:{},
-    __liga:true,__ligaPrice:c.price||0
+    __liga:true,__ligaPrice:c.price||0,__ligaUrl:ligaCardUrl(def,c)
   }));
 }
-function deleteCustomSet(){
-  const id=currentSetId,def=customSets[id];if(!def)return;
-  if(!confirm(`Excluir a coleção "${def.name}"? As cartas que você marcou continuam salvas, mas a lista some.`))return;
-  delete customSets[id];saveCustomSets();
-  try{localStorage.removeItem(imgsKey(id));}catch(_){}
-  savedSets=savedSets.filter(s=>s.id!==id);saveFavs();renderSaved();
-  collection[SET_DEF_PREFIX+id]={id,deleted:true};saveCol();
-  saveToSheet(SET_DEF_PREFIX+id,{id,deleted:true},true);
-  showHome();
-}
+
 
 async function openSearch(){
   document.getElementById('searchModal').classList.add('open');setTimeout(()=>document.getElementById('searchQ').focus(),50);
@@ -1243,6 +1410,9 @@ function openCard(cardId){
   if(card.__ligaPrice&&Math.abs((e.price||0)-card.__ligaPrice)>0.001)
     srcHtml+=`<span class="use" onclick="useLigaPrice(${card.__ligaPrice})">usar ${fmtBRL(card.__ligaPrice)} (Liga)</span>`;
   document.getElementById('cmPriceSrc').innerHTML=srcHtml;
+  const hint=document.getElementById('cmHint');
+  hint.innerHTML='É um preço só por carta (a Liga não separa por Normal/Holo/Reverse). Use "📋 Colar da Liga" na tela do set pra preencher em massa, ou digite aqui na mão. Marcar/desmarcar e editar já salva automático.'
+    +(card.__ligaUrl?`<div style="margin-top:8px"><a href="${card.__ligaUrl}" target="_blank" rel="noopener">🔗 Ver esta carta no site da Liga</a></div>`:'');
   const b=[];if(av.normal)b.push('<span class="vbadge">Normal</span>');if(av.holofoil)b.push('<span class="vbadge vbadge-holo">Holo</span>');if(av.reverseHolofoil)b.push('<span class="vbadge vbadge-rev">Reverse</span>');
   document.getElementById('cmVersionBadges').innerHTML=b.join('');
   setNoteStatus('','');document.getElementById('cardModal').classList.add('open');
