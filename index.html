@@ -253,7 +253,8 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
     <div class="hint-box" style="margin-bottom:12px">
       1) Abra a página desse set no site da Liga Pokémon, no seu navegador normal.<br>
       2) Clique em qualquer lugar da página, aperte <b>Ctrl+A</b> (selecionar tudo) e depois <b>Ctrl+C</b> (copiar).<br>
-      3) Cole aqui embaixo e clique em <b>Aplicar preços</b>. Só atualiza cartas que você já marcou como "tenho" — o resto continua pra preencher na mão.
+      3) Cole aqui embaixo e clique em <b>Aplicar preços</b>. Só atualiza cartas que você já marcou como "tenho" — o resto continua pra preencher na mão.<br>
+      4) Em sets de promo com variações "[Staff]"/reimpressão (mesmo nome, cartas diferentes), o app agora só aplica o preço quando consegue confirmar pelo número da carta — se não conseguir, avisa no resultado em vez de arriscar o valor errado.
     </div>
     <textarea id="ligaPasteArea" style="width:100%;min-height:160px;font-size:12px;padding:8px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink);font-family:inherit" placeholder="Cole aqui o texto copiado da página da Liga..."></textarea>
     <button class="save-btn" style="margin-top:10px" onclick="applyLigaPaste()">Aplicar preços</button>
@@ -558,6 +559,36 @@ function openLigaPaste(){document.getElementById('ligaPasteModal').classList.add
 function closeLigaPaste(){document.getElementById('ligaPasteModal').classList.remove('open');}
 function closeLigaPasteBg(e){if(e.target===document.getElementById('ligaPasteModal'))closeLigaPaste();}
 
+// Acha TODAS as posições onde um nome aparece "de corpo inteiro" no texto (minúsculas) —
+// isto é, sem letra colada antes/depois. Evita bater "Mew" dentro de "Mewtwo", por exemplo.
+function findWholeWordOccurrences(haystackLower,needleLower){
+  const out=[];let from=0;
+  const isWordChar=c=>!!c&&/[a-zà-öø-ÿ0-9]/i.test(c);
+  while(true){
+    const idx=haystackLower.indexOf(needleLower,from);
+    if(idx===-1)break;
+    const prev=haystackLower[idx-1],next=haystackLower[idx+needleLower.length];
+    if(!isWordChar(prev)&&!isWordChar(next))out.push(idx);
+    from=idx+needleLower.length;
+  }
+  return out;
+}
+
+// Confere se o número da carta (ex: "7" de "007/188") aparece perto de uma posição no
+// texto colado — usado pra desempatar quando o MESMO nome aparece mais de uma vez.
+// Isso é comum em sets de promo: "Alakazam" normal e "Alakazam [Staff]" (ou uma
+// reimpressão com outro número) são cartas DIFERENTES, com preços diferentes, mas
+// compartilham o mesmo nome.
+function numberConfirmedNear(text,pos,cardNumber,radius){
+  radius=radius||60;
+  const wanted=parseInt(String(cardNumber||'').replace(/\D/g,''),10);
+  if(isNaN(wanted))return false;
+  const from=Math.max(0,pos-radius),to=Math.min(text.length,pos+radius);
+  const re=/(\d{1,4})/g;let m;
+  while((m=re.exec(text.slice(from,to)))){if(parseInt(m[1],10)===wanted)return true;}
+  return false;
+}
+
 // Acha o primeiro "R$ x.xxx,xx" a partir de fromIndex (é o "menor preço",
 // já que na página da Liga o menor sempre vem antes do maior).
 function parsePriceAfter(text,fromIndex){
@@ -577,24 +608,41 @@ async function applyLigaPaste(){
   if(!owned.length){status.className='save-note error';status.textContent='Nenhuma carta marcada como "tenho" nesse set ainda.';return;}
   status.className='save-note syncing';
   const lowerText=text.toLowerCase();
-  let cursor=0,found=0;const notFound=[];
+  let found=0;const notFound=[],ambiguous=[];
   const upd=(i)=>{status.textContent=`Aplicando... ${i}/${owned.length} carta(s) verificada(s), ${found} preço(s) atualizado(s)`;};
   upd(0);
   for(let i=0;i<owned.length;i++){
     const card=owned[i];
     const nameLower=card.name.toLowerCase();
-    const idx=lowerText.indexOf(nameLower,cursor);
-    if(idx===-1){notFound.push(card.name);upd(i+1);continue;}
-    const price=parsePriceAfter(text,idx+nameLower.length);
+    // Busca TODAS as ocorrências do nome no texto inteiro (não avança um "cursor" —
+    // isso é o que causava pegar o preço errado quando o texto colado tinha mais de
+    // uma carta com o mesmo nome, tipo variações de promo/staff).
+    const occurrences=findWholeWordOccurrences(lowerText,nameLower);
+    if(!occurrences.length){notFound.push(card.name);upd(i+1);continue;}
+    let chosenIdx;
+    if(occurrences.length===1){
+      chosenIdx=occurrences[0];
+    }else{
+      // Nome repetido no texto colado (comum em sets de promo, com "[Staff]" ou
+      // reimpressões) — só aplica se conseguir confirmar pelo número da carta perto
+      // de UMA das ocorrências. Senão, não arrisca pegar o preço errado.
+      const confirmed=occurrences.filter(idx=>numberConfirmedNear(text,idx,card.number));
+      if(confirmed.length===1){chosenIdx=confirmed[0];}
+      else{ambiguous.push(card.name);upd(i+1);continue;}
+    }
+    const price=parsePriceAfter(text,chosenIdx+nameLower.length);
     if(price==null){notFound.push(card.name);upd(i+1);continue;}
     const e=normalizeEntry(collection[card.id]);
     e.price=price;e.src='Liga (colado)';collection[card.id]=e;await saveToSheet(card.id,e);found++;
-    cursor=idx+nameLower.length;renderGrid();
+    renderGrid();
     upd(i+1);
   }
   saveCol();renderGrid();
   status.className='save-note'+(found?' synced':' error');
-  status.textContent=`✓ ${found} preço(s) atualizado(s) de ${owned.length} carta(s) que você tem.`+(notFound.length?` ${notFound.length} não encontrado(s) no texto colado: ${notFound.join(', ')}.`:'');
+  let msg=`✓ ${found} preço(s) atualizado(s) de ${owned.length} carta(s) que você tem.`;
+  if(ambiguous.length)msg+=` ${ambiguous.length} carta(s) com nome repetido no texto colado (variações tipo "[Staff]"/reimpressão) — não arrisquei o preço errado, confira na mão: ${ambiguous.join(', ')}.`;
+  if(notFound.length)msg+=` ${notFound.length} não encontrado(s) no texto colado: ${notFound.join(', ')}.`;
+  status.textContent=msg;
 }
 
 async function openSearch(){
