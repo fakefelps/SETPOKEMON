@@ -8,9 +8,12 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --red:#E3350D;--red-dark:#B3271A;--red-deep:#8f1e12;
-  --yellow:#FFCB05;--yellow-soft:#FFDE59;
-  --blue:#2A75BB;--blue-dark:#1F5A93;--blue-navy:#3B4CCA;
+  /* Paleta reformulada: azul e dourado do verso das cartas Pokémon.
+     Os nomes das variáveis (--red/--yellow) foram mantidos para não precisar
+     reescrever cada regra do CSS abaixo — só o valor de cor mudou. */
+  --red:#1B3F91;--red-dark:#10285E;--red-deep:#081638;
+  --yellow:#F4C430;--yellow-soft:#FFE18C;
+  --blue:#2E7DD1;--blue-dark:#1F5A93;--blue-navy:#16337A;
   --bg:#f3f5f8;--panel:#ffffff;--panel2:#f7f9fc;
   --ink:#1c2430;--ink2:#5a6577;--ink3:#95a0b2;
   --line:#e6eaf1;--line2:#d7dde8;
@@ -196,14 +199,6 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
     <button class="load-btn" onclick="loadFromInput()">Carregar</button>
     <button class="search-btn" onclick="openSearch()">🔍 Buscar</button>
   </div>
-  <div class="quick-sets">
-    <span class="qs-label">Rápidos:</span>
-    <span class="qs-chip" data-id="me1" onclick="quickLoad(this)">Megaevolução</span>
-    <span class="qs-chip" data-id="sv8" onclick="quickLoad(this)">Surging Sparks</span>
-    <span class="qs-chip" data-id="sv6" onclick="quickLoad(this)">Twilight Masq.</span>
-    <span class="qs-chip" data-id="sv5" onclick="quickLoad(this)">Temporal Forces</span>
-    <span class="qs-chip promo" data-id="svp" onclick="quickLoad(this)">★ Promos SV</span>
-  </div>
   <div class="saved-bar">
     <span class="saved-label">Favoritos:</span>
     <span id="savedChips"></span>
@@ -217,10 +212,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
 </div>
 
 <div class="sync-bar">
-  <span class="sync-label">Planilha (Apps Script):</span>
-  <input class="sync-url-input" id="scriptUrl" placeholder="Cole a URL do SEU Apps Script (deixe vazio p/ usar só este aparelho)" value="" />
-  <button class="sync-btn" onclick="saveScriptUrl()">Salvar URL</button>
-  <button class="sync-btn" onclick="syncFromSheet()">↺ Carregar</button>
+  <button class="sync-btn" onclick="syncFromSheet()">↺ Sincronizar</button>
   <span class="sync-status" id="syncStatus"></span>
   <span class="fx-badge" id="fxBadge">câmbio: …</span>
 </div>
@@ -240,8 +232,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
   <button class="filter-btn" onclick="setFilter('missing',this)">Faltando</button>
   <span class="set-title-lbl" id="setTitleLbl"></span>
   <div class="toolbar-right">
-    <button class="tb-btn blue" id="autoPriceBtn" onclick="autoPriceSet()">⟳ Preços (prévia)</button>
-    <button class="tb-btn red" id="ligaAllBtn" onclick="ligaPriceSet()" style="display:none">₽ Atualizar via Liga</button>
+    <button class="tb-btn red" id="ligaAllBtn" onclick="ligaPriceSet()" style="display:none">₽ Atualizar tudo (Liga)</button>
     <button class="tb-btn" id="loadPromosBtn" onclick="loadCompanionPromos()" style="display:none">+ Promos</button>
     <button class="tb-btn" onclick="saveAsFav()">★ Favorito</button>
   </div>
@@ -267,10 +258,9 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
     <div class="cm-section">Variações que possuo</div>
     <div id="cmVariants"></div>
     <div class="hint-box" id="cmHint">
-      Preço da <b>Liga Pokémon</b> é o oficial (mercado BR). A prévia ao lado vem do mercado internacional convertido.
+      Preço da <b>Liga Pokémon</b> é o único usado no app (mercado BR oficial). Marcar/desmarcar e editar preço já salva automaticamente.
       <span id="ligaHint"></span>
     </div>
-    <button class="save-btn" onclick="saveCard()">Salvar</button>
     <div class="save-note" id="saveNote"></div>
   </div>
 </div>
@@ -322,7 +312,6 @@ function loadStorage(){
   setSizes=jparse('pkm_setsizes',{});
   spent=jparse('pkm_spent',{});
   ownerName=localStorage.getItem('pkm_owner')||CFG.owner||'';
-  document.getElementById('scriptUrl').value=localStorage.getItem('pkm_script_url')||CFG.scriptUrl||'';
   renderSaved();renderOwner();
 }
 function saveCol(){localStorage.setItem('pkm_col',JSON.stringify(collection));}
@@ -330,12 +319,12 @@ function saveFavs(){localStorage.setItem('pkm_favs',JSON.stringify(savedSets));}
 function saveMeta(){localStorage.setItem('pkm_setnames',JSON.stringify(setNames));localStorage.setItem('pkm_setsizes',JSON.stringify(setSizes));}
 function saveSpent(){localStorage.setItem('pkm_spent',JSON.stringify(spent));}
 loadStorage();loadFX();
+if(getScriptUrl())syncFromSheet();
 
 function renderOwner(){document.getElementById('ownerLbl').textContent=ownerName?('de '+ownerName):'Toque para colocar seu nome';}
 function editOwner(){const n=prompt('De quem é esta Pokédex?',ownerName||'');if(n!==null){ownerName=n.trim();localStorage.setItem('pkm_owner',ownerName);renderOwner();if(homeVisible())renderHome();}}
 
-function getScriptUrl(){return document.getElementById('scriptUrl').value.trim();}
-function saveScriptUrl(){const url=getScriptUrl();localStorage.setItem('pkm_script_url',url);setSyncStatus(url?'URL salva!':'Modo local (sem planilha)','ok');setTimeout(()=>setSyncStatus('',''),2000);}
+function getScriptUrl(){return (CFG.scriptUrl||'').trim();}
 function setSyncStatus(m,c){const el=document.getElementById('syncStatus');el.textContent=m;el.className='sync-status'+(c?' '+c:'');}
 
 async function syncFromSheet(){
@@ -458,26 +447,31 @@ async function fetchSet(setId){
     setNames[setId]=setName;setSizes[setId]=cards[0]?.set?.total||cards.length;saveMeta();
     document.getElementById('setTitleLbl').textContent=setName;
     document.getElementById('setInput').value=setId;
-    document.querySelectorAll('.qs-chip').forEach(c=>c.classList.toggle('active',c.dataset.id===setId));
     setFilter('all',document.querySelector('.filter-btn'));renderGrid();
     document.getElementById('statsBar').style.display='flex';
     document.getElementById('progressBar').style.display='block';
     document.getElementById('filterBar').style.display='flex';
-    const comp=companionPromoId(setId),pbtn=document.getElementById('loadPromosBtn');
-    pbtn.style.display=(comp&&comp!==setId)?'':'none';
-    if(comp&&comp!==setId)pbtn.textContent=`+ Promos (${comp})`;
     document.getElementById('ligaAllBtn').style.display=getScriptUrl()?'':'none';
+    document.getElementById('loadPromosBtn').style.display='none';
+    const comp=companionPromoId(setId);
+    if(comp&&comp!==setId)await loadCompanionPromos(comp);
   }catch(e){grid.innerHTML=`<div class="empty"><div class="empty-title">Erro</div><div class="empty-sub">${e.message}</div></div>`;}
 }
 function companionPromoId(setId){const m=String(setId).match(/^([a-z]+)/i);const p=m?m[1].toLowerCase():'';return PROMO_COMPANION[p]||null;}
-async function loadCompanionPromos(){
-  const comp=companionPromoId(currentSetId);if(!comp)return;
-  const btn=document.getElementById('loadPromosBtn');btn.textContent='Carregando...';
-  try{const promo=await fetchAllCards(comp);const ex=new Set(allCards.map(c=>c.id));
+async function loadCompanionPromos(compOverride){
+  const comp=compOverride||companionPromoId(currentSetId);if(!comp)return;
+  const btn=document.getElementById('loadPromosBtn');
+  btn.style.display='';btn.textContent='Carregando promos...';btn.onclick=()=>loadCompanionPromos(comp);
+  try{
+    const promo=await fetchAllCards(comp);const ex=new Set(allCards.map(c=>c.id));
     const add=promo.filter(c=>!ex.has(c.id)).map(c=>{c.__isPromo=true;return c;});
     allCards=allCards.concat(add);renderGrid();
-    btn.textContent=`✓ +${add.length} promos`;setTimeout(()=>btn.style.display='none',2500);
-  }catch(e){btn.textContent='Erro';}
+    if(add.length){btn.textContent=`✓ +${add.length} promos`;setTimeout(()=>btn.style.display='none',2000);}
+    else{btn.style.display='none';}
+  }catch(e){
+    btn.textContent='↺ Tentar promos novamente';
+    showWarn(`Não consegui carregar as promos (${comp}): ${e.message}`);
+  }
 }
 
 function getCardMeta(n){if(!n)return null;return ME01_DATA[String(n).padStart(3,'0')]||null;}
@@ -497,18 +491,6 @@ function deriveAvailability(card){
     if(a.normal||a.holofoil||a.reverseHolofoil)return a;}
   return rarityRule(card.rarity);
 }
-function marketBRL(card,vkey){
-  const tcgKey=(VARIANTS.find(v=>v.key===vkey)||{}).tcg;
-  const tp=card.tcgplayer&&card.tcgplayer.prices?card.tcgplayer.prices:null;
-  if(tp){const rk=Object.keys(tp).find(x=>x.toLowerCase()===tcgKey.toLowerCase());
-    if(rk){const p=tp[rk];const usd=p.market??p.mid??p.low??p.high??null;if(usd!=null&&fx.USD)return{brl:usd*fx.USD,src:'TCGplayer'};}}
-  const cm=card.cardmarket&&card.cardmarket.prices?card.cardmarket.prices:null;
-  if(cm){let eur=null;if(vkey==='reverseHolofoil')eur=cm.reverseHoloSell??cm.reverseHoloTrend??null;
-    if(eur==null)eur=cm.averageSellPrice??cm.trendPrice??cm.avg7??null;
-    if(eur!=null&&fx.EUR)return{brl:eur*fx.EUR,src:'Cardmarket'};}
-  return null;
-}
-
 function isOwned(id){const c=collection[id];return c&&VARIANTS.some(v=>c[v.key]&&c[v.key].owned);}
 function getVal(id){const c=collection[id];if(!c)return 0;return VARIANTS.reduce((s,v)=>s+(c[v.key]&&c[v.key].owned?parseFloat(c[v.key].price||0):0),0);}
 function fmtBRL(v){return'R$ '+(v||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
@@ -535,16 +517,8 @@ function updateStats(){
 }
 function setFilter(f,btn){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderGrid();}
 
-function autoPriceSet(){
-  if(!allCards.length)return;const btn=document.getElementById('autoPriceBtn');btn.textContent='⟳ ...';let n=0;
-  allCards.forEach(card=>{const c=collection[card.id];if(!c)return;
-    VARIANTS.forEach(v=>{if(c[v.key]&&c[v.key].owned&&(!c[v.key].price||parseFloat(c[v.key].price)===0)){
-      const m=marketBRL(card,v.key);if(m){c[v.key].price=+m.brl.toFixed(2);c[v.key].src=m.src;n++;}}});});
-  saveCol();renderGrid();btn.textContent=`✓ ${n} preços`;setTimeout(()=>btn.textContent='⟳ Preços (prévia)',2600);
-}
-
 async function ligaPriceSet(){
-  const url=getScriptUrl();if(!url){showWarn('Configure a URL do Apps Script para usar preços da Liga.');return;}
+  const url=getScriptUrl();if(!url){showWarn('Apps Script indisponível — verifique se a implantação está publicada.');return;}
   const owned=allCards.filter(c=>isOwned(c.id));if(!owned.length)return;
   if(!confirm(`Buscar preço na Liga para ${owned.length} carta(s)? Vai levar ~${Math.ceil(owned.length*1.2)}s.`))return;
   const btn=document.getElementById('ligaAllBtn');let done=0,fails=0;
@@ -553,11 +527,11 @@ async function ligaPriceSet(){
     const res=await ligaLookup(card);
     if(res&&res.changed){showWarn('A leitura da Liga falhou (o site pode ter mudado de layout). Ajuste o Code.gs — os preços da Liga não vão atualizar até lá.');fails++;}
     else if(res&&res.price){const c=collection[card.id]||{};const v=VARIANTS.find(v=>c[v.key]&&c[v.key].owned);
-      if(v){c[v.key].price=+res.price.toFixed(2);c[v.key].src='Liga';collection[card.id]=c;}}
+      if(v){c[v.key].price=+res.price.toFixed(2);c[v.key].src='Liga';collection[card.id]=c;await saveToSheet(card.id,c);}}
     done++;await new Promise(r=>setTimeout(r,700));
     if(fails>=3)break;
   }
-  saveCol();renderGrid();btn.textContent='₽ Atualizar via Liga';
+  saveCol();renderGrid();btn.textContent='₽ Atualizar tudo (Liga)';
 }
 async function ligaLookup(card){
   const url=getScriptUrl();if(!url)return null;
@@ -596,13 +570,11 @@ function openCard(cardId){
   document.getElementById('cmVariants').innerHTML=VARIANTS.map(v=>{
     const exists=av[v.key]!==false,owned=c[v.key]?.owned||false;
     let price=(c[v.key]?.price!==undefined&&c[v.key]?.price!==0)?parseFloat(c[v.key].price).toFixed(2):'';
-    const est=marketBRL(card,v.key),ph=est?est.brl.toFixed(2):'0,00';
     if(!exists)return `<div class="var-row var-disabled"><input type="checkbox" class="var-check" id="v_${v.key}" disabled/><label class="var-label" style="color:var(--ink3);text-decoration:line-through">${v.label}</label><span style="font-size:11px;color:var(--ink3);margin-left:auto">não existe</span></div>`;
-    const savedSrc=c[v.key]?.src?` <span class="vbadge vbadge-src">${c[v.key].src}</span>`:'';
-    const srcLine=est?`<div class="price-src" id="src_${v.key}">prévia ≈ ${fmtBRL(est.brl)} <span class="vbadge vbadge-src">${est.src}</span> <span class="use" onclick="usePrice('${v.key}',${est.brl.toFixed(2)})">usar</span>${savedSrc}</div>`
-      :`<div class="price-src" style="color:var(--ink3)">sem prévia${savedSrc}</div>`;
-    return `<div class="var-row"><input type="checkbox" class="var-check" id="v_${v.key}" ${owned?'checked':''}/><label class="var-label">${v.label}</label>
-      <div class="price-wrap"><span class="price-pfx">R$</span><input type="number" class="price-inp" id="p_${v.key}" value="${price}" placeholder="${ph}" step="0.01" min="0"/></div>${srcLine}</div>`;
+    const savedSrc=c[v.key]?.src?`<span class="vbadge vbadge-src">${c[v.key].src}</span>`:'<span class="vbadge vbadge-src">sem preço da Liga ainda</span>';
+    return `<div class="var-row"><input type="checkbox" class="var-check" id="v_${v.key}" ${owned?'checked':''} onchange="persistCard()"/><label class="var-label">${v.label}</label>
+      <div class="price-wrap"><span class="price-pfx">R$</span><input type="number" class="price-inp" id="p_${v.key}" value="${price}" step="0.01" min="0" onchange="persistCard('${v.key}','Manual')"/></div>
+      <div class="price-src">${savedSrc}</div></div>`;
   }).join('');
   const b=[];if(av.normal)b.push('<span class="vbadge">Normal</span>');if(av.holofoil)b.push('<span class="vbadge vbadge-holo">Holo</span>');if(av.reverseHolofoil)b.push('<span class="vbadge vbadge-rev">Reverse</span>');
   document.getElementById('cmVersionBadges').innerHTML=b.join('');
@@ -610,29 +582,33 @@ function openCard(cardId){
   lh.innerHTML=getScriptUrl()?` <span class="mini-btn liga" onclick="fetchLigaPrice('${cardId}')">₽ Buscar na Liga</span> <span id="ligaResult"></span>`:` — <a href="https://www.ligapokemon.com.br" target="_blank">consultar na Liga</a>`;
   setNoteStatus('','');document.getElementById('cardModal').classList.add('open');
 }
-function usePrice(vkey,val){const inp=document.getElementById('p_'+vkey);if(inp)inp.value=Number(val).toFixed(2);const chk=document.getElementById('v_'+vkey);if(chk&&!chk.checked)chk.checked=true;}
+function usePrice(vkey,val){const inp=document.getElementById('p_'+vkey);if(inp)inp.value=Number(val).toFixed(2);const chk=document.getElementById('v_'+vkey);if(chk&&!chk.checked)chk.checked=true;persistCard(vkey,'Liga');}
 
 async function fetchLigaPrice(cardId){
   const card=allCards.find(c=>c.id===cardId),out=document.getElementById('ligaResult');
   if(!card)return;out.textContent=' buscando…';
   const d=await ligaLookup(card);
   if(d&&d.changed){out.textContent=' (leitura falhou)';showWarn('A leitura da Liga falhou (o site pode ter mudado de layout). Ajuste o Code.gs — os preços da Liga não vão atualizar até lá.');return;}
-  if(d&&d.price){out.innerHTML=` → <b style="color:var(--red)">${fmtBRL(d.price)}</b> na Liga <span class="use" onclick="usePriceFirst(${d.price.toFixed(2)})">usar</span>`;}
-  else if(d&&d.error){out.textContent=' (habilite action=liga no Apps Script)';}
-  else{out.textContent=' (não encontrado)';}
+  if(d&&d.price){usePriceFirst(d.price);out.innerHTML=` → <b style="color:var(--red)">${fmtBRL(d.price)}</b> na Liga · salvo`;}
+  else if(d&&d.error){out.textContent=' (erro ao consultar — verifique se o Apps Script está publicado)';}
+  else{out.textContent=' (não encontrado na Liga)';}
 }
 function usePriceFirst(val){
   const v=VARIANTS.find(v=>document.getElementById('v_'+v.key)&&document.getElementById('v_'+v.key).checked)||VARIANTS.find(v=>document.getElementById('p_'+v.key));
   if(v)usePrice(v.key,val);
 }
 
-async function saveCard(){
-  if(!openCardId)return;const card=allCards.find(c=>c.id===openCardId),data={};
+async function persistCard(srcOverrideKey,srcOverrideVal){
+  if(!openCardId)return;const data={};
   VARIANTS.forEach(v=>{const chk=document.getElementById('v_'+v.key);if(!chk)return;
-    const owned=chk.checked;let price=parseFloat(document.getElementById('p_'+v.key)?.value||0)||0;
-    if(owned&&price===0&&card){const m=marketBRL(card,v.key);if(m)price=+m.brl.toFixed(2);}
-    data[v.key]={owned,price};});
-  collection[openCardId]=data;saveCol();renderGrid();await saveToSheet(openCardId,data);
+    const owned=chk.checked;const price=parseFloat(document.getElementById('p_'+v.key)?.value||0)||0;
+    const prev=(collection[openCardId]&&collection[openCardId][v.key])||{};
+    let src=prev.src;if(srcOverrideKey===v.key)src=srcOverrideVal;
+    data[v.key]={owned,price,src};});
+  collection[openCardId]=data;saveCol();renderGrid();
+  setNoteStatus('Salvando...','syncing');
+  await saveToSheet(openCardId,data);
+  setNoteStatus('✓ Salvo','synced');setTimeout(()=>setNoteStatus('',''),1500);
 }
 function closeCard(){document.getElementById('cardModal').classList.remove('open');openCardId=null;}
 function closeCardBg(e){if(e.target===document.getElementById('cardModal'))closeCard();}
