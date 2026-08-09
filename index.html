@@ -66,6 +66,20 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
 .sync-status.ok{color:var(--green)}
 .sync-status.err{color:var(--red)}
 .sync-status.loading{color:var(--blue)}
+/* Placeholder para cartas sem imagem (coleções criadas pelo PDF/texto da Liga:
+   a Liga não fornece a imagem, então desenhamos um "verso" com número e nome). */
+.card-ph{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:linear-gradient(160deg,var(--red) 0%,var(--red-deep) 100%);color:var(--yellow-soft);text-align:center;padding:8px}
+.card-ph .n{font-family:'Poppins';font-weight:800;font-size:16px;color:var(--yellow);line-height:1}
+.card-ph .t{font-size:9px;line-height:1.25;font-weight:600;word-break:break-word}
+.card-ph.big{border-radius:12px;width:150px;height:210px;margin:0 auto 16px}
+.card-ph.big .n{font-size:26px}.card-ph.big .t{font-size:12px}
+.liga-tag{position:absolute;left:5px;top:5px;font-family:'Poppins';font-weight:700;font-size:7px;letter-spacing:1px;padding:2px 6px;border-radius:6px;background:var(--blue);color:#fff}
+.file-drop{border:2px dashed var(--line2);border-radius:10px;padding:14px;text-align:center;font-size:12px;color:var(--ink2);cursor:pointer;background:var(--panel2)}
+.file-drop:hover{border-color:var(--blue);color:var(--blue)}
+.fld{margin-bottom:10px}
+.fld label{display:block;font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:4px}
+.fld input{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink)}
+.fld input:focus{outline:none;border-color:var(--blue)}
 .type-badges{position:absolute;bottom:5px;right:5px;display:flex;gap:2px}
 .type-chip{font-family:'Poppins';font-weight:700;font-size:8px;padding:1px 4px;border-radius:5px;background:rgba(20,30,50,.8);color:#fff;line-height:1.4}
 .type-chip.holo{background:var(--yellow);color:var(--red-deep)}
@@ -199,6 +213,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
     <input class="set-input" id="setInput" placeholder="Código do set (ex: me1, sv8, svp...)" />
     <button class="load-btn" onclick="loadFromInput()">Carregar</button>
     <button class="search-btn" onclick="openSearch()">🔍 Buscar</button>
+    <button class="search-btn" onclick="openLigaSet()">➕ Nova coleção (Liga)</button>
   </div>
   <div class="saved-bar">
     <span class="saved-label">Favoritos:</span>
@@ -215,6 +230,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
 <div class="sync-bar">
   <button class="sync-btn" onclick="syncFromSheet()">↺ Sincronizar</button>
   <span class="sync-status" id="syncStatus"></span>
+  <span class="sync-status" id="pendStatus" style="margin-left:auto"></span>
 </div>
 
 <div class="home" id="homeView"></div>
@@ -235,6 +251,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
     <button class="tb-btn red" onclick="openLigaPaste()">📋 Colar da Liga</button>
     <button class="tb-btn" id="loadPromosBtn" onclick="loadCompanionPromos()" style="display:none">+ Promos</button>
     <button class="tb-btn" onclick="saveAsFav()">★ Favorito</button>
+    <button class="tb-btn" id="delSetBtn" onclick="deleteCustomSet()" style="display:none">🗑 Excluir coleção</button>
   </div>
 </div>
 <div class="card-grid" id="cardGrid"></div>
@@ -254,11 +271,32 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
       1) Abra a página desse set no site da Liga Pokémon, no seu navegador normal.<br>
       2) Clique em qualquer lugar da página, aperte <b>Ctrl+A</b> (selecionar tudo) e depois <b>Ctrl+C</b> (copiar).<br>
       3) Cole aqui embaixo e clique em <b>Aplicar preços</b>. Só atualiza cartas que você já marcou como "tenho" — o resto continua pra preencher na mão.<br>
-      4) Em sets de promo com variações "[Staff]"/reimpressão (mesmo nome, cartas diferentes), o app agora só aplica o preço quando consegue confirmar pelo número da carta — se não conseguir, avisa no resultado em vez de arriscar o valor errado.
+      4) O casamento é feito pelo <b>número</b> da carta (#001, #003b...), não pelo nome — então variações "[Staff]"/reimpressão que têm o mesmo nome nunca trocam de preço entre si.
     </div>
     <textarea id="ligaPasteArea" style="width:100%;min-height:160px;font-size:12px;padding:8px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink);font-family:inherit" placeholder="Cole aqui o texto copiado da página da Liga..."></textarea>
     <button class="save-btn" style="margin-top:10px" onclick="applyLigaPaste()">Aplicar preços</button>
     <div class="save-note" id="ligaPasteStatus" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="ligaSetModal" onclick="closeLigaSetBg(event)">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Criar coleção pela Liga</span><button class="modal-close" onclick="closeLigaSet()">×</button></div>
+    <div class="hint-box" style="margin-bottom:12px">
+      Pra sets que a pokemontcg.io ainda não tem (promos, produtos novos). Duas formas:<br>
+      <b>a)</b> Abra a edição no site da Liga, aperte <b>Ctrl+A</b> e <b>Ctrl+C</b>, e cole no campo abaixo.<br>
+      <b>b)</b> Salve a página como PDF (<b>Ctrl+P</b> → "Salvar como PDF") e escolha o arquivo aqui.<br>
+      <b>Importante:</b> role a página inteira até o fim antes de copiar/imprimir — carta que não apareceu na página não entra na coleção.
+    </div>
+    <div class="file-drop" onclick="document.getElementById('ligaSetPdf').click()" id="ligaSetDrop">📄 Escolher o PDF da Liga</div>
+    <input type="file" id="ligaSetPdf" accept="application/pdf,.pdf" style="display:none" onchange="onLigaPdf(this)"/>
+    <div style="text-align:center;font-size:11px;color:var(--ink3);margin:8px 0">— ou cole o texto —</div>
+    <textarea id="ligaSetArea" style="width:100%;min-height:110px;font-size:12px;padding:8px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink);font-family:inherit" placeholder="Cole aqui o texto copiado da página da edição na Liga..." oninput="previewLigaSet()"></textarea>
+    <div class="save-note" id="ligaSetPreview" style="margin:8px 0"></div>
+    <div class="fld"><label>Nome da coleção</label><input id="ligaSetName" placeholder="Ex: Mega Evolution Promos"/></div>
+    <div class="fld"><label>Código curto (vira o "id" da coleção)</label><input id="ligaSetCode" placeholder="Ex: MEP"/></div>
+    <button class="save-btn" onclick="createLigaSet()">Criar coleção</button>
+    <div class="save-note" id="ligaSetStatus" style="margin-top:8px"></div>
   </div>
 </div>
 
@@ -269,6 +307,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
       <button class="modal-close" onclick="closeCard()">×</button>
     </div>
     <img class="cm-img" id="cmImg" src="" alt="" />
+    <div class="card-ph big" id="cmPh" style="display:none"><div class="n"></div><div class="t"></div></div>
     <div id="cmVersionBadges" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"></div>
     <div class="cm-section">Variações que possuo</div>
     <div id="cmVariants"></div>
@@ -307,6 +346,11 @@ const PROMO_COMPANION={sv:'svp',swsh:'swshp',sm:'smp',xy:'xyp',bw:'bwp'};
 
 let allCards=[],allSets=[],currentFilter='all',openCardId=null,currentSetId='';
 let collection={},savedSets=[],setNames={},setSizes={},spent={},ownerName='';
+// customSets: coleções criadas por você a partir do texto/PDF da Liga (sets que a
+// pokemontcg.io ainda não tem). pending: cartas marcadas que ainda NÃO tiveram o
+// salvamento confirmado pela planilha — usado pra nunca perder uma marcação.
+let customSets={},pending={},setLoadToken=0;
+const SET_DEF_PREFIX='__set__'; // como as coleções da Liga ficam guardadas na planilha
 
 // Lê uma entrada da coleção e devolve sempre no formato atual — {price, src, types:{normal,holofoil,reverseHolofoil}} —
 // mesmo que tenha sido salva no formato antigo (preço por variação, de antes de 10/08/2026).
@@ -327,13 +371,57 @@ function loadStorage(){
   setNames=jparse('pkm_setnames',{});
   setSizes=jparse('pkm_setsizes',{});
   spent=jparse('pkm_spent',{});
+  customSets=jparse('pkm_customsets',{});
+  pending=jparse('pkm_pending',{});
   ownerName=localStorage.getItem('pkm_owner')||CFG.owner||'';
-  renderSaved();renderOwner();
+  renderSaved();renderOwner();renderPending();
 }
 function saveCol(){localStorage.setItem('pkm_col',JSON.stringify(collection));}
 function saveFavs(){localStorage.setItem('pkm_favs',JSON.stringify(savedSets));}
 function saveMeta(){localStorage.setItem('pkm_setnames',JSON.stringify(setNames));localStorage.setItem('pkm_setsizes',JSON.stringify(setSizes));}
 function saveSpent(){localStorage.setItem('pkm_spent',JSON.stringify(spent));}
+function saveCustomSets(){localStorage.setItem('pkm_customsets',JSON.stringify(customSets));}
+function savePending(){localStorage.setItem('pkm_pending',JSON.stringify(pending));renderPending();}
+function renderPending(){
+  const el=document.getElementById('pendStatus');if(!el)return;
+  const n=Object.keys(pending).length;
+  el.textContent=n?`⏳ ${n} carta(s) esperando salvar na nuvem`:'';
+  el.className='sync-status'+(n?' err':'');
+}
+
+/* ---------- Cache local das cartas de cada set ----------
+   A API da pokemontcg.io cai de vez em quando (HTTP 500/502). Depois que um set
+   carrega UMA vez, guardamos a lista de cartas aqui no aparelho. Nas próximas
+   vezes o set abre na hora, direto do cache, e a API só é consultada em segundo
+   plano pra atualizar. Se a API estiver fora, você nem percebe.                */
+function cacheKey(setId){return 'pkm_cards_'+setId;}
+function slimCard(c){ // guarda só o que o app usa, pra caber no localStorage
+  return {id:c.id,name:c.name,number:c.number,rarity:c.rarity||'',
+    img:(c.images&&c.images.small)||'',imgL:(c.images&&c.images.large)||'',
+    sn:(c.set&&c.set.name)||'',pt:(c.set&&c.set.printedTotal)||0,tt:(c.set&&c.set.total)||0,
+    av:deriveAvailability(c)};
+}
+function fatCard(s,setId){
+  return {id:s.id,name:s.name,number:s.number,rarity:s.rarity,
+    images:{small:s.img,large:s.imgL},
+    set:{id:setId,name:s.sn,printedTotal:s.pt,total:s.tt},
+    __av:s.av};
+}
+function saveCardsCache(setId,cards){
+  try{localStorage.setItem(cacheKey(setId),JSON.stringify({t:Date.now(),cards:cards.map(slimCard)}));}
+  catch(e){ // localStorage cheio: joga fora os caches mais antigos e tenta de novo
+    try{
+      Object.keys(localStorage).filter(k=>k.startsWith('pkm_cards_')&&k!==cacheKey(setId))
+        .slice(0,5).forEach(k=>localStorage.removeItem(k));
+      localStorage.setItem(cacheKey(setId),JSON.stringify({t:Date.now(),cards:cards.map(slimCard)}));
+    }catch(_){}
+  }
+}
+function loadCardsCache(setId){
+  const d=jparse(cacheKey(setId),null);
+  if(!d||!Array.isArray(d.cards)||!d.cards.length)return null;
+  return d.cards.map(s=>fatCard(s,setId));
+}
 loadStorage();
 if(getScriptUrl())syncFromSheet();
 
@@ -350,23 +438,73 @@ async function refreshCollection(){
   for(let attempt=0;attempt<2;attempt++){
     try{const r=await fetch(url+'?action=get');const d=await r.json();
       if(!d.ok)throw new Error(d.error||'Erro');
-      collection={...d.collection};saveCol();return true;
+      const remote={...d.collection};
+      // NUNCA deixa a planilha apagar uma marcação que ainda não confirmou o salvamento.
+      // (Era isso que fazia carta marcada "sumir" depois de recarregar a página.)
+      Object.keys(pending).forEach(id=>{if(collection[id]!==undefined)remote[id]=collection[id];});
+      collection=remote;saveCol();
+      extractCustomSets();   // coleções da Liga também viajam pela planilha
+      flushPending();        // reenvia em segundo plano o que ficou pendente
+      return true;
     }catch(e){if(attempt>=1)return false;await new Promise(res=>setTimeout(res,600));}
   }
   return false;
+}
+// Lê da coleção as linhas "__set__xxx" (definições das coleções criadas pela Liga)
+// e recria os sets neste aparelho. Assim uma coleção criada no celular aparece no PC.
+function extractCustomSets(){
+  let changed=false;
+  Object.keys(collection).forEach(k=>{
+    if(!k.startsWith(SET_DEF_PREFIX))return;
+    const def=collection[k];
+    if(!def||def.deleted||!Array.isArray(def.cards))return;
+    if(JSON.stringify(customSets[def.id])!==JSON.stringify(def)){customSets[def.id]=def;changed=true;}
+    setNames[def.id]=def.name;setSizes[def.id]=def.total||def.cards.length;
+  });
+  if(changed){saveCustomSets();saveMeta();}
+}
+// Reenvia tudo que ficou pendente de salvar (falha de rede, Apps Script fora do ar...).
+let flushing=false;
+async function flushPending(){
+  if(flushing)return;const ids=Object.keys(pending);if(!ids.length)return;
+  flushing=true;
+  for(const id of ids){
+    if(collection[id]===undefined){delete pending[id];savePending();continue;}
+    await saveToSheet(id,collection[id],true);
+  }
+  flushing=false;
+  if(!homeVisible()&&allCards.length)renderGrid();
 }
 async function syncFromSheet(){
   if(!getScriptUrl()){setSyncStatus('Sem URL: os dados ficam só neste aparelho','err');return;}
   setSyncStatus('Carregando...','loading');
   const ok=await refreshCollection();
-  if(ok){if(homeVisible())renderHome();else renderGrid();setSyncStatus('✓ Sincronizado','ok');setTimeout(()=>setSyncStatus('',''),3000);}
+  if(ok){
+    // Só redesenha a grade se realmente já existe um set carregado na tela —
+    // senão um sync lento chegando depois pinta "Nenhuma carta aqui" por cima.
+    if(homeVisible())renderHome();else if(allCards.length)renderGrid();
+    setSyncStatus('✓ Sincronizado','ok');setTimeout(()=>setSyncStatus('',''),3000);
+  }
   else setSyncStatus('Erro ao sincronizar — tenta de novo','err');
 }
-async function saveToSheet(card_id,variants){
-  const url=getScriptUrl();if(!url)return;setNoteStatus('Sincronizando...','syncing');
-  try{await fetch(url,{method:'POST',body:JSON.stringify({action:'save',card_id,variants})});
-    setNoteStatus('✓ Salvo na planilha','synced');setTimeout(()=>setNoteStatus('',''),2500);
-  }catch(e){setNoteStatus('Salvo local (sem conexão)','error');setTimeout(()=>setNoteStatus('',''),3000);}
+// Salva uma carta na planilha com até 3 tentativas e confirmação de resposta.
+// Enquanto não confirmar, o id fica em `pending` (e é reenviado depois).
+async function saveToSheet(card_id,variants,silent){
+  const url=getScriptUrl();if(!url)return true;
+  pending[card_id]=true;savePending();
+  if(!silent)setNoteStatus('Salvando...','syncing');
+  for(let attempt=0;attempt<3;attempt++){
+    try{
+      const r=await fetch(url,{method:'POST',body:JSON.stringify({action:'save',card_id,variants})});
+      const d=await r.json();
+      if(!d||!d.ok)throw new Error((d&&d.error)||'resposta inesperada');
+      delete pending[card_id];savePending();
+      if(!silent){setNoteStatus('✓ Salvo na planilha','synced');setTimeout(()=>setNoteStatus('',''),2000);}
+      return true;
+    }catch(e){if(attempt<2)await new Promise(res=>setTimeout(res,500*(attempt+1)));}
+  }
+  if(!silent){setNoteStatus('⚠ Guardado no aparelho — vou tentar salvar de novo sozinho','error');setTimeout(()=>setNoteStatus('',''),4000);}
+  return false;
 }
 function setNoteStatus(m,c){const el=document.getElementById('saveNote');el.textContent=m;el.className='save-note'+(c?' '+c:'');}
 
@@ -463,29 +601,65 @@ async function fetchAllCards(setId){
   }
   return cards;
 }
+// Mostra a tela do set já com as cartas na mão (venham do cache ou da API).
+function showCards(setId,cards,token){
+  if(token!==setLoadToken)return; // outra coleção começou a carregar: ignora esta
+  allCards=cards;currentSetId=setId;
+  const setName=(cards[0]&&cards[0].set&&cards[0].set.name)||setNames[setId]||setId;
+  setNames[setId]=setName;setSizes[setId]=(cards[0]&&cards[0].set&&cards[0].set.total)||cards.length;saveMeta();
+  document.getElementById('setTitleLbl').textContent=setName;
+  document.getElementById('setInput').value=setId;
+  document.getElementById('statsBar').style.display='flex';
+  document.getElementById('progressBar').style.display='block';
+  document.getElementById('filterBar').style.display='flex';
+  document.getElementById('delSetBtn').style.display=customSets[setId]?'':'none';
+  renderGrid();
+}
 async function fetchSet(setId){
+  const token=++setLoadToken;
   showSetView();
   const grid=document.getElementById('cardGrid');
-  grid.style.display='grid';grid.innerHTML='<div class="loading">Buscando cartas...</div>';
+  grid.style.display='grid';
   ['statsBar','filterBar'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('progressBar').style.display='none';currentSetId='';
+  document.getElementById('loadPromosBtn').style.display='none';
+  currentFilter='all';document.querySelectorAll('.filter-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+
+  // 1) Coleção criada por você pela Liga: não depende de API nenhuma.
+  if(customSets[setId]){
+    showCards(setId,customSetCards(customSets[setId]),token);
+    if(getScriptUrl())refreshCollection().then(()=>{if(token===setLoadToken)renderGrid();});
+    return;
+  }
+
+  // 2) Cache local: se esse set já abriu uma vez neste aparelho, aparece na hora.
+  const cached=loadCardsCache(setId);
+  if(cached){showCards(setId,cached,token);}
+  else{grid.innerHTML='<div class="loading">Buscando cartas...</div>';}
+
+  // 3) Atualiza coleção (marcações/preços) e cartas em paralelo, em segundo plano.
+  const syncP=getScriptUrl()?refreshCollection():Promise.resolve(false);
   try{
-    if(getScriptUrl())await refreshCollection(); // garante que "tenho"/preços estão atualizados antes de mostrar
     const cards=await fetchAllCards(setId);
+    if(token!==setLoadToken)return;
     if(!cards.length)throw new Error('Nenhuma carta encontrada.');
-    allCards=cards;currentSetId=setId;
-    const setName=cards[0]?.set?.name||setId;
-    setNames[setId]=setName;setSizes[setId]=cards[0]?.set?.total||cards.length;saveMeta();
-    document.getElementById('setTitleLbl').textContent=setName;
-    document.getElementById('setInput').value=setId;
-    setFilter('all',document.querySelector('.filter-btn'));renderGrid();
-    document.getElementById('statsBar').style.display='flex';
-    document.getElementById('progressBar').style.display='block';
-    document.getElementById('filterBar').style.display='flex';
-    document.getElementById('loadPromosBtn').style.display='none';
-    const comp=companionPromoId(setId);
-    if(comp&&comp!==setId)await loadCompanionPromos(comp);
-  }catch(e){grid.innerHTML=`<div class="empty"><div class="empty-title">Erro</div><div class="empty-sub">${e.message}</div></div>`;}
+    saveCardsCache(setId,cards);
+    showCards(setId,cards,token);
+  }catch(e){
+    if(token!==setLoadToken)return;
+    if(cached){ // já tem o set na tela pelo cache: só avisa, não quebra nada
+      showWarn(`Não deu pra atualizar "${setId}" agora (${e.message}) — mostrando a última versão salva no aparelho.`);
+    }else{
+      grid.innerHTML=`<div class="empty"><div class="empty-title">Erro</div><div class="empty-sub">${e.message}</div>
+        <div style="margin-top:14px"><button class="tb-btn blue" onclick="fetchSet('${setId}')">↺ Tentar de novo</button></div></div>`;
+      return;
+    }
+  }
+  await syncP;
+  if(token!==setLoadToken)return;
+  renderGrid();
+  const comp=companionPromoId(setId);
+  if(comp&&comp!==setId)await loadCompanionPromos(comp);
 }
 function companionPromoId(setId){const m=String(setId).match(/^([a-z]+)/i);const p=m?m[1].toLowerCase():'';return PROMO_COMPANION[p]||null;}
 async function loadCompanionPromos(compOverride){
@@ -514,6 +688,7 @@ function rarityRule(rarity){
   return{normal:true,holofoil:true,reverseHolofoil:true};
 }
 function deriveAvailability(card){
+  if(card.__av)return card.__av; // veio do cache local, já calculado
   if(card.set&&card.set.id==='me1'){const m=getCardMeta(card.number);if(m)return{normal:m.normal,holofoil:m.holo,reverseHolofoil:m.reverse};}
   const tp=card.tcgplayer&&card.tcgplayer.prices?card.tcgplayer.prices:null;
   if(tp){const k=Object.keys(tp);const has=n=>k.some(x=>x.toLowerCase()===n.toLowerCase());
@@ -536,8 +711,12 @@ function renderGrid(){
   const list=allCards.filter(c=>currentFilter==='owned'?isOwned(c.id):currentFilter==='missing'?!isOwned(c.id):true);
   if(!list.length){grid.innerHTML='<div class="empty"><div class="empty-title">Nenhuma carta aqui</div><div class="empty-sub">Tente outro filtro</div></div>';}
   else{grid.innerHTML=list.map(c=>{const owned=isOwned(c.id),val=getVal(c.id);
+    const face=(c.images&&c.images.small)
+      ?`<img src="${c.images.small}" alt="${c.name}" loading="lazy"/>`
+      :`<div class="card-ph"><div class="n">${c.number}</div><div class="t">${c.name}</div></div>`;
     return `<div class="card-wrap" onclick="openCard('${c.id}')"><div class="card-img-box ${owned?'owned':'missing'}">
-      <img src="${c.images?.small||''}" alt="${c.name}" loading="lazy"/>
+      ${face}
+      ${c.__liga?'<div class="liga-tag">LIGA</div>':''}
       ${c.__isPromo?'<div class="promo-tag">PROMO</div>':''}
       ${owned?'<div class="owned-badge"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>':''}
       ${owned&&val>0?`<div class="price-tag">${fmtBRL(val)}</div>`:''}
@@ -559,46 +738,42 @@ function openLigaPaste(){document.getElementById('ligaPasteModal').classList.add
 function closeLigaPaste(){document.getElementById('ligaPasteModal').classList.remove('open');}
 function closeLigaPasteBg(e){if(e.target===document.getElementById('ligaPasteModal'))closeLigaPaste();}
 
-// Acha TODAS as posições onde um nome aparece "de corpo inteiro" no texto (minúsculas) —
-// isto é, sem letra colada antes/depois. Evita bater "Mew" dentro de "Mewtwo", por exemplo.
-function findWholeWordOccurrences(haystackLower,needleLower){
-  const out=[];let from=0;
-  const isWordChar=c=>!!c&&/[a-zà-öø-ÿ0-9]/i.test(c);
-  while(true){
-    const idx=haystackLower.indexOf(needleLower,from);
-    if(idx===-1)break;
-    const prev=haystackLower[idx-1],next=haystackLower[idx+needleLower.length];
-    if(!isWordChar(prev)&&!isWordChar(next))out.push(idx);
-    from=idx+needleLower.length;
+/* ============================================================
+   LEITOR DO TEXTO DA LIGA
+
+   Toda página de edição da Liga imprime cada carta assim:
+
+       Meganium
+       Meganium (#001/∞)          <- linha "âncora": nome + número
+       R$ 34,99                   <- menor preço
+       R$ 349,99                  <- maior preço
+
+   Em vez de procurar o nome solto (que se repete em "[Staff]", reimpressão,
+   Pokémon Center...), a gente lê a linha-âncora e pega o preço que está
+   DENTRO daquele bloco. Cada carta fica com o preço dela, sem chance de
+   pegar o de outra.
+   ============================================================ */
+function parsePriceBetween(text,from,to){
+  const m=text.slice(from,Math.min(to,from+800)).match(/R\$\s*([\d]{1,3}(?:\.\d{3})*,\d{2})/);
+  return m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null;
+}
+function parseLigaListings(text){
+  const re=/^(.*?)\s*\(#\s*(\d{1,4})\s*([a-z]?)\s*\/[^)\n]*\)\s*$/gim;
+  const out=[];let m;
+  while((m=re.exec(text))){
+    out.push({name:(m[1]||'').trim(),number:parseInt(m[2],10),suffix:(m[3]||'').toLowerCase(),
+      at:m.index,end:m.index+m[0].length});
   }
-  return out;
+  // preço de cada carta = primeiro "R$" depois da âncora dela e antes da âncora da próxima
+  out.forEach((it,i)=>{it.price=parsePriceBetween(text,it.end,i+1<out.length?out[i+1].at:text.length);});
+  return out.filter(x=>x.name);
 }
-
-// Confere se o número da carta (ex: "7" de "007/188") aparece perto de uma posição no
-// texto colado — usado pra desempatar quando o MESMO nome aparece mais de uma vez.
-// Isso é comum em sets de promo: "Alakazam" normal e "Alakazam [Staff]" (ou uma
-// reimpressão com outro número) são cartas DIFERENTES, com preços diferentes, mas
-// compartilham o mesmo nome.
-function numberConfirmedNear(text,pos,cardNumber,radius){
-  radius=radius||60;
-  const wanted=parseInt(String(cardNumber||'').replace(/\D/g,''),10);
-  if(isNaN(wanted))return false;
-  const from=Math.max(0,pos-radius),to=Math.min(text.length,pos+radius);
-  const re=/(\d{1,4})/g;let m;
-  while((m=re.exec(text.slice(from,to)))){if(parseInt(m[1],10)===wanted)return true;}
-  return false;
+// Normaliza nome pra comparar: minúsculo, sem acento, só letras e números.
+function normName(s){
+  return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
 }
-
-// Acha o primeiro "R$ x.xxx,xx" a partir de fromIndex (é o "menor preço",
-// já que na página da Liga o menor sempre vem antes do maior).
-function parsePriceAfter(text,fromIndex){
-  const re=/R\$\s*([\d]{1,3}(?:\.\d{3})*,\d{2})/g;
-  re.lastIndex=fromIndex;
-  const m=re.exec(text);
-  if(!m)return null;
-  if(m.index-fromIndex>600)return null; // preço longe demais do nome, provavelmente não é dessa carta
-  return parseFloat(m[1].replace(/\./g,'').replace(',','.'));
-}
+function cardNumberInt(n){const v=parseInt(String(n||'').replace(/\D/g,''),10);return isNaN(v)?null:v;}
+function cardNumberSuffix(n){const m=String(n||'').match(/\d+([a-z])$/i);return m?m[1].toLowerCase():'';}
 
 async function applyLigaPaste(){
   const text=document.getElementById('ligaPasteArea').value;
@@ -606,43 +781,194 @@ async function applyLigaPaste(){
   if(!text.trim()){status.className='save-note error';status.textContent='Cola o texto copiado da Liga primeiro.';return;}
   const owned=allCards.filter(c=>isOwned(c.id));
   if(!owned.length){status.className='save-note error';status.textContent='Nenhuma carta marcada como "tenho" nesse set ainda.';return;}
+
+  const listings=parseLigaListings(text);
+  if(!listings.length){
+    status.className='save-note error';
+    status.textContent='Não achei nenhuma carta no texto colado. Confirme que copiou a página da EDIÇÃO na Liga (a que lista "Nome (#001/...)" com os preços) usando Ctrl+A e Ctrl+C.';
+    return;
+  }
+  // Índices para busca: por número (só variação base) e por nome.
+  const byNum={},byName={};
+  listings.forEach(l=>{
+    if(l.price==null)return;
+    const nk=l.number+'|'+l.suffix;
+    if(byNum[nk]===undefined)byNum[nk]=l;
+    const key=normName(l.name);
+    if(byName[key]===undefined)byName[key]=l;else byName[key]='DUP'; // nome repetido: não confiável
+  });
+
   status.className='save-note syncing';
-  const lowerText=text.toLowerCase();
-  let found=0;const notFound=[],ambiguous=[];
+  let found=0;const notFound=[],changed=[];
   const upd=(i)=>{status.textContent=`Aplicando... ${i}/${owned.length} carta(s) verificada(s), ${found} preço(s) atualizado(s)`;};
   upd(0);
   for(let i=0;i<owned.length;i++){
     const card=owned[i];
-    const nameLower=card.name.toLowerCase();
-    // Busca TODAS as ocorrências do nome no texto inteiro (não avança um "cursor" —
-    // isso é o que causava pegar o preço errado quando o texto colado tinha mais de
-    // uma carta com o mesmo nome, tipo variações de promo/staff).
-    const occurrences=findWholeWordOccurrences(lowerText,nameLower);
-    if(!occurrences.length){notFound.push(card.name);upd(i+1);continue;}
-    let chosenIdx;
-    if(occurrences.length===1){
-      chosenIdx=occurrences[0];
-    }else{
-      // Nome repetido no texto colado (comum em sets de promo, com "[Staff]" ou
-      // reimpressões) — só aplica se conseguir confirmar pelo número da carta perto
-      // de UMA das ocorrências. Senão, não arrisca pegar o preço errado.
-      const confirmed=occurrences.filter(idx=>numberConfirmedNear(text,idx,card.number));
-      if(confirmed.length===1){chosenIdx=confirmed[0];}
-      else{ambiguous.push(card.name);upd(i+1);continue;}
-    }
-    const price=parsePriceAfter(text,chosenIdx+nameLower.length);
-    if(price==null){notFound.push(card.name);upd(i+1);continue;}
+    const num=cardNumberInt(card.number),sfx=cardNumberSuffix(card.number);
+    let hit=null;
+    // 1º) casa pelo NÚMERO da carta (é o jeito exato — cada número é uma carta só)
+    if(num!=null)hit=byNum[num+'|'+sfx]||null;
+    // 2º) se o nome bate com o do anúncio, ótimo; se não bate, confia no número mesmo assim
+    //     (a Liga às vezes mostra o nome traduzido).
+    // 3º) sem número, tenta pelo nome — só se aquele nome aparecer UMA vez no texto.
+    if(!hit){const c=byName[normName(card.name)];if(c&&c!=='DUP')hit=c;}
+    if(!hit||hit.price==null){notFound.push(`${card.number} ${card.name}`);upd(i+1);continue;}
     const e=normalizeEntry(collection[card.id]);
-    e.price=price;e.src='Liga (colado)';collection[card.id]=e;await saveToSheet(card.id,e);found++;
-    renderGrid();
-    upd(i+1);
+    if(e.price!==hit.price)changed.push(card.name);
+    e.price=hit.price;e.src='Liga (colado)';collection[card.id]=e;
+    saveCol();
+    await saveToSheet(card.id,e,true);
+    found++;renderGrid();upd(i+1);
   }
   saveCol();renderGrid();
   status.className='save-note'+(found?' synced':' error');
-  let msg=`✓ ${found} preço(s) atualizado(s) de ${owned.length} carta(s) que você tem.`;
-  if(ambiguous.length)msg+=` ${ambiguous.length} carta(s) com nome repetido no texto colado (variações tipo "[Staff]"/reimpressão) — não arrisquei o preço errado, confira na mão: ${ambiguous.join(', ')}.`;
-  if(notFound.length)msg+=` ${notFound.length} não encontrado(s) no texto colado: ${notFound.join(', ')}.`;
+  let msg=`✓ ${found} de ${owned.length} carta(s) com preço aplicado (li ${listings.length} anúncio(s) no texto).`;
+  if(notFound.length)msg+=` ${notFound.length} não estava(m) no texto colado — provavelmente ficaram em outra página da Liga: ${notFound.slice(0,25).join(', ')}${notFound.length>25?'...':''}.`;
   status.textContent=msg;
+}
+
+/* ============================================================
+   CRIAR UMA COLEÇÃO INTEIRA PELO TEXTO/PDF DA LIGA
+   (para sets que a pokemontcg.io ainda não cadastrou, tipo as promos)
+   ============================================================ */
+function openLigaSet(){
+  document.getElementById('ligaSetModal').classList.add('open');
+  ['ligaSetArea','ligaSetName','ligaSetCode'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ligaSetStatus').textContent='';
+  document.getElementById('ligaSetPreview').textContent='';
+  document.getElementById('ligaSetDrop').textContent='📄 Escolher o PDF da Liga';
+}
+function closeLigaSet(){document.getElementById('ligaSetModal').classList.remove('open');}
+function closeLigaSetBg(e){if(e.target===document.getElementById('ligaSetModal'))closeLigaSet();}
+
+// Tenta descobrir sozinho o nome, o total de cartas e o código da edição.
+// No texto da Liga isso vem assim: "Mega Evolution Promos" / "135 cards" / data / "MEP".
+function detectLigaSetInfo(text){
+  const lines=text.split('\n').map(l=>l.trim());
+  let name='',code='',total=0;
+  for(let i=0;i<lines.length;i++){
+    const m=lines[i].match(/^(\d{1,4})\s*cards?$/i);
+    if(!m)continue;
+    total=parseInt(m[1],10);
+    // nome = primeira linha com texto ACIMA de "N cards" (ignorando linhas em branco)
+    for(let j=i-1,seen=0;j>=0&&seen<4;j--){
+      const l=lines[j];if(!l)continue;seen++;
+      if(!/^\d+$/.test(l)){name=l;break;}
+    }
+    // codigo = primeira linha curta em MAIUSCULAS ABAIXO (pulando a data de lancamento)
+    for(let j=i+1,seen=0;j<lines.length&&seen<6;j++){
+      const l=lines[j];if(!l)continue;seen++;
+      if(/^\d{2}\/\d{2}\/\d{4}$/.test(l))continue;
+      if(/^[A-Z0-9]{2,6}$/.test(l)){code=l;break;}
+    }
+    break;
+  }
+  return {name,code,total};
+}
+function previewLigaSet(){
+  const text=document.getElementById('ligaSetArea').value;
+  const pv=document.getElementById('ligaSetPreview');
+  if(!text.trim()){pv.textContent='';return;}
+  const listings=parseLigaListings(text),info=detectLigaSetInfo(text);
+  const nameEl=document.getElementById('ligaSetName'),codeEl=document.getElementById('ligaSetCode');
+  if(info.name&&!nameEl.value)nameEl.value=info.name;
+  if(info.code&&!codeEl.value)codeEl.value=info.code;
+  pv.className='save-note'+(listings.length?' synced':' error');
+  pv.textContent=listings.length
+    ?`Encontrei ${listings.length} carta(s)${info.total?` (a edição tem ${info.total} no total)`:''}.`
+    :'Não achei cartas nesse texto. Copie a página da EDIÇÃO na Liga (a lista com "Nome (#001/...)" e os preços).';
+}
+
+// Lê um PDF no próprio navegador usando pdf.js (carregado só quando você usa).
+function loadPdfJs(){
+  if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);
+  return new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload=()=>{window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';res(window.pdfjsLib);};
+    s.onerror=()=>rej(new Error('não consegui carregar o leitor de PDF (sem internet?)'));
+    document.head.appendChild(s);
+  });
+}
+async function onLigaPdf(input){
+  const file=input.files&&input.files[0];if(!file)return;
+  const drop=document.getElementById('ligaSetDrop'),st=document.getElementById('ligaSetStatus');
+  drop.textContent='📄 Lendo '+file.name+'...';st.className='save-note syncing';st.textContent='Abrindo o PDF...';
+  try{
+    const pdfjsLib=await loadPdfJs();
+    const buf=await file.arrayBuffer();
+    const doc=await pdfjsLib.getDocument({data:buf}).promise;
+    let out='';
+    for(let p=1;p<=doc.numPages;p++){
+      st.textContent=`Lendo página ${p} de ${doc.numPages}...`;
+      const page=await doc.getPage(p);
+      const tc=await page.getTextContent();
+      // Reagrupa os pedaços de texto em LINHAS pela posição vertical (o leitor
+      // precisa das linhas inteiras pra achar o padrão "Nome (#001/...)").
+      const rows={};
+      tc.items.forEach(it=>{
+        const y=Math.round(it.transform[5]);
+        (rows[y]=rows[y]||[]).push({x:it.transform[4],s:it.str});
+      });
+      Object.keys(rows).map(Number).sort((a,b)=>b-a).forEach(y=>{
+        out+=rows[y].sort((a,b)=>a.x-b.x).map(o=>o.s).join('').trim()+'\n';
+      });
+    }
+    document.getElementById('ligaSetArea').value=out;
+    drop.textContent='✓ '+file.name;
+    st.className='save-note';st.textContent='';
+    previewLigaSet();
+  }catch(e){
+    drop.textContent='📄 Escolher o PDF da Liga';
+    st.className='save-note error';st.textContent='Erro ao ler o PDF: '+e.message+'. Dá pra usar o Ctrl+A / Ctrl+C na página no lugar disso.';
+  }
+}
+
+function createLigaSet(){
+  const text=document.getElementById('ligaSetArea').value;
+  const st=document.getElementById('ligaSetStatus');
+  const listings=parseLigaListings(text);
+  if(!listings.length){st.className='save-note error';st.textContent='Cole o texto (ou escolha o PDF) da página da edição primeiro.';return;}
+  const info=detectLigaSetInfo(text);
+  const name=(document.getElementById('ligaSetName').value||info.name||'Coleção da Liga').trim();
+  const rawCode=(document.getElementById('ligaSetCode').value||info.code||'').trim();
+  const clean=rawCode.toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(!clean){st.className='save-note error';st.textContent='Preencha o código curto da coleção (ex: MEP).';return;}
+  const id='liga'+clean; // sem hífen de propósito: o app usa o hífen pra separar set-carta
+  // Uma carta por âncora encontrada; número vira "001", "003b"...
+  const seen={},cards=[];
+  listings.forEach(l=>{
+    const n=String(l.number).padStart(3,'0')+l.suffix;
+    if(seen[n])return;seen[n]=1;
+    cards.push({n,name:l.name,price:l.price||0});
+  });
+  const def={id,name,code:rawCode.toUpperCase(),total:info.total||cards.length,cards};
+  customSets[id]=def;saveCustomSets();
+  setNames[id]=name;setSizes[id]=def.total;saveMeta();
+  if(!savedSets.find(s=>s.id===id)){savedSets.push({id,name});saveFavs();renderSaved();}
+  // guarda a definição na planilha também, pra coleção aparecer nos outros aparelhos
+  collection[SET_DEF_PREFIX+id]=def;saveCol();
+  saveToSheet(SET_DEF_PREFIX+id,def,true);
+  st.className='save-note synced';st.textContent=`✓ Coleção "${name}" criada com ${cards.length} carta(s).`;
+  closeLigaSet();fetchSet(id);
+}
+
+function customSetCards(def){
+  const total=def.total||def.cards.length;
+  return def.cards.map(c=>({
+    id:def.id+'-'+c.n,name:c.name,number:c.n,rarity:'',
+    set:{id:def.id,name:def.name,printedTotal:total,total:total},
+    images:{},__liga:true,__ligaPrice:c.price||0
+  }));
+}
+function deleteCustomSet(){
+  const id=currentSetId,def=customSets[id];if(!def)return;
+  if(!confirm(`Excluir a coleção "${def.name}"? As cartas que você marcou continuam salvas, mas a lista some.`))return;
+  delete customSets[id];saveCustomSets();
+  savedSets=savedSets.filter(s=>s.id!==id);saveFavs();renderSaved();
+  collection[SET_DEF_PREFIX+id]={id,deleted:true};saveCol();
+  saveToSheet(SET_DEF_PREFIX+id,{id,deleted:true},true);
+  showHome();
 }
 
 async function openSearch(){
@@ -670,7 +996,13 @@ function openCard(cardId){
   const meta=(card.set&&card.set.id==='me1')?getCardMeta(card.number):null;
   const rl=meta?meta.rarity:(card.rarity||''),rc=RARITY_COLORS[rl]||'var(--ink2)';
   document.getElementById('cmMeta').innerHTML=`#${card.number} · ${card.set?.name||''} · <span style="color:${rc};font-weight:700">${rl}</span>`+(card.__isPromo?' · <span style="color:var(--red);font-weight:700">PROMO</span>':'');
-  document.getElementById('cmImg').src=card.images?.large||card.images?.small||'';
+  const src=card.images?.large||card.images?.small||'';
+  const imgEl=document.getElementById('cmImg'),phEl=document.getElementById('cmPh');
+  if(src){imgEl.src=src;imgEl.style.display='';phEl.style.display='none';}
+  else{ // coleção da Liga: não temos a imagem, desenhamos um "verso" com número e nome
+    imgEl.style.display='none';phEl.style.display='flex';
+    phEl.querySelector('.n').textContent=card.number;phEl.querySelector('.t').textContent=card.name;
+  }
   const e=normalizeEntry(collection[cardId]),av=deriveAvailability(card);
   document.getElementById('cmVariants').innerHTML=VARIANTS.map(v=>{
     const exists=av[v.key]!==false,owned=e.types[v.key];
@@ -678,24 +1010,35 @@ function openCard(cardId){
     return `<div class="var-row"><input type="checkbox" class="var-check" id="v_${v.key}" ${owned?'checked':''} onchange="persistCard()"/><label class="var-label">${v.label}</label></div>`;
   }).join('');
   document.getElementById('cmPrice').value=e.price?e.price.toFixed(2):'';
-  document.getElementById('cmPriceSrc').innerHTML=e.src?`<span class="vbadge vbadge-src">${e.src}</span>`:'<span class="vbadge vbadge-src">sem preço ainda</span>';
+  let srcHtml=e.src?`<span class="vbadge vbadge-src">${e.src}</span>`:'<span class="vbadge vbadge-src">sem preço ainda</span>';
+  if(card.__ligaPrice&&Math.abs((e.price||0)-card.__ligaPrice)>0.001)
+    srcHtml+=`<span class="use" onclick="useLigaPrice(${card.__ligaPrice})">usar ${fmtBRL(card.__ligaPrice)} (Liga)</span>`;
+  document.getElementById('cmPriceSrc').innerHTML=srcHtml;
   const b=[];if(av.normal)b.push('<span class="vbadge">Normal</span>');if(av.holofoil)b.push('<span class="vbadge vbadge-holo">Holo</span>');if(av.reverseHolofoil)b.push('<span class="vbadge vbadge-rev">Reverse</span>');
   document.getElementById('cmVersionBadges').innerHTML=b.join('');
   setNoteStatus('','');document.getElementById('cardModal').classList.add('open');
 }
 
+function useLigaPrice(p){
+  const inp=document.getElementById('cmPrice');if(!inp)return;
+  inp.value=p.toFixed(2);persistCard('Liga (importado)');
+}
 async function persistCard(srcOverride){
   if(!openCardId)return;
+  const card=allCards.find(c=>c.id===openCardId);
   const prev=normalizeEntry(collection[openCardId]);
   const types={};VARIANTS.forEach(v=>{const chk=document.getElementById('v_'+v.key);types[v.key]=chk?chk.checked:false;});
-  const price=parseFloat(document.getElementById('cmPrice')?.value||0)||0;
-  const src=srcOverride||prev.src;
+  let price=parseFloat(document.getElementById('cmPrice')?.value||0)||0;
+  let src=srcOverride||prev.src;
+  // Coleção da Liga: se você acabou de marcar que tem a carta e ainda não há preço,
+  // já preenche com o preço que veio do texto/PDF da Liga.
+  const owning=types.normal||types.holofoil||types.reverseHolofoil;
+  if(!price&&owning&&card&&card.__ligaPrice){price=card.__ligaPrice;src='Liga (importado)';
+    const inp=document.getElementById('cmPrice');if(inp)inp.value=price.toFixed(2);}
   const data={price,src,types};
   collection[openCardId]=data;saveCol();renderGrid();
   document.getElementById('cmPriceSrc').innerHTML=data.src?`<span class="vbadge vbadge-src">${data.src}</span>`:'<span class="vbadge vbadge-src">sem preço ainda</span>';
-  setNoteStatus('Salvando...','syncing');
   await saveToSheet(openCardId,data);
-  setNoteStatus('✓ Salvo','synced');setTimeout(()=>setNoteStatus('',''),1500);
 }
 function closeCard(){document.getElementById('cardModal').classList.remove('open');openCardId=null;}
 function closeCardBg(e){if(e.target===document.getElementById('cardModal'))closeCard();}
