@@ -251,6 +251,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
   <button class="filter-btn" onclick="setFilter('missing',this)">Faltando</button>
   <button class="filter-btn" onclick="setFilter('base',this)">Base</button>
   <button class="filter-btn" onclick="setFilter('special',this)">Especiais</button>
+  <button class="filter-btn" onclick="setFilter('noprice',this)">Sem preço</button>
   <span class="set-title-lbl" id="setTitleLbl"></span>
   <div class="toolbar-right">
     <button class="tb-btn red" onclick="openLigaPaste()">📋 Colar da Liga</button>
@@ -777,6 +778,7 @@ function renderGrid(){
     if(currentFilter==='missing')return !isOwned(c.id);
     if(currentFilter==='base')return !isSpecialCard(c);
     if(currentFilter==='special')return isSpecialCard(c);
+    if(currentFilter==='noprice')return isOwned(c.id)&&!getVal(c.id);
     return true;
   });
   if(!list.length){grid.innerHTML='<div class="empty"><div class="empty-title">Nenhuma carta aqui</div><div class="empty-sub">Tente outro filtro</div></div>';}
@@ -809,7 +811,7 @@ function updateStats(){
 }
 function setFilter(f,btn){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderGrid();}
 
-function openLigaPaste(){document.getElementById('ligaPasteModal').classList.add('open');document.getElementById('ligaPasteStatus').textContent='';document.getElementById('ligaPasteArea').value='';setTimeout(()=>document.getElementById('ligaPasteArea').focus(),50);}
+function openLigaPaste(){document.getElementById('ligaPasteModal').classList.add('open');ligaSessao={paginas:0,mudou:0,preencheu:0};document.getElementById('ligaPasteStatus').textContent='';document.getElementById('ligaPasteArea').value='';setTimeout(()=>document.getElementById('ligaPasteArea').focus(),50);}
 function closeLigaPaste(){document.getElementById('ligaPasteModal').classList.remove('open');}
 function closeLigaPasteBg(e){if(e.target===document.getElementById('ligaPasteModal'))closeLigaPaste();}
 
@@ -850,6 +852,8 @@ function normName(s){
 function cardNumberInt(n){const v=parseInt(String(n||'').replace(/\D/g,''),10);return isNaN(v)?null:v;}
 function cardNumberSuffix(n){const m=String(n||'').match(/\d+([a-z])$/i);return m?m[1].toLowerCase():'';}
 
+let ligaSessao={paginas:0,mudou:0,preencheu:0};
+
 async function applyLigaPaste(){
   const text=document.getElementById('ligaPasteArea').value;
   const status=document.getElementById('ligaPasteStatus');
@@ -863,47 +867,61 @@ async function applyLigaPaste(){
     status.textContent='Não achei nenhuma carta no texto colado. Confirme que copiou a página da EDIÇÃO na Liga (a que lista "Nome (#001/...)" com os preços) usando Ctrl+A e Ctrl+C.';
     return;
   }
-  // Índices para busca: por número (só variação base) e por nome.
-  const byNum={},byName={};
-  listings.forEach(l=>{
-    if(l.price==null)return;
+  // Indices de busca: pelo numero (exato) e pelo nome (so quando o nome e unico).
+  const byNum={},byName={},usado={};
+  listings.forEach((l,i)=>{
+    if(l.price==null)return;l.__i=i;
     const nk=l.number+'|'+l.suffix;
     if(byNum[nk]===undefined)byNum[nk]=l;
     const key=normName(l.name);
-    if(byName[key]===undefined)byName[key]=l;else byName[key]='DUP'; // nome repetido: não confiável
+    if(byName[key]===undefined)byName[key]=l;else byName[key]='DUP';
   });
 
   status.className='save-note syncing';
-  let found=0;const notFound=[],changed=[],lote=[];
-  const upd=(i)=>{status.textContent=`Aplicando... ${i}/${owned.length} carta(s) verificada(s), ${found} preço(s) atualizado(s)`;};
+  // Categorias: o que MUDOU de preco, o que foi PREENCHIDO (estava zerado),
+  // o que ja estava IGUAL, e o que simplesmente nao veio nesta pagina da Liga.
+  const mudou=[],preencheu=[],lote=[];let igual=0,naoVeio=0;
+  const upd=(i)=>{status.textContent=`Conferindo ${i}/${owned.length} carta(s)... ${mudou.length+preencheu.length} para atualizar`;};
   upd(0);
   for(let i=0;i<owned.length;i++){
     const card=owned[i];
     const num=cardNumberInt(card.number),sfx=cardNumberSuffix(card.number);
     let hit=null;
-    // 1º) casa pelo NÚMERO da carta (é o jeito exato — cada número é uma carta só)
-    if(num!=null)hit=byNum[num+'|'+sfx]||null;
-    // 2º) se o nome bate com o do anúncio, ótimo; se não bate, confia no número mesmo assim
-    //     (a Liga às vezes mostra o nome traduzido).
-    // 3º) sem número, tenta pelo nome — só se aquele nome aparecer UMA vez no texto.
-    if(!hit){const c=byName[normName(card.name)];if(c&&c!=='DUP')hit=c;}
-    if(!hit||hit.price==null){notFound.push(`${card.number} ${card.name}`);upd(i+1);continue;}
+    if(num!=null)hit=byNum[num+'|'+sfx]||null;                       // 1) pelo numero: exato
+    if(!hit){const c=byName[normName(card.name)];                    // 2) pelo nome: so se for unico
+      if(c&&c!=='DUP'&&!usado[c.__i])hit=c;}
+    if(!hit||hit.price==null){naoVeio++;if(i%20===0)upd(i+1);continue;}
+    usado[hit.__i]=true;
     const e=normalizeEntry(collection[card.id]);
-    if(e.price!==hit.price)changed.push(card.name);
+    const antigo=e.price||0;
+    if(Math.abs(antigo-hit.price)<0.005){igual++;if(i%20===0)upd(i+1);continue;} // ja estava certo: nao regrava
     e.price=hit.price;e.src='Liga (colado)';e.ts=Date.now();
     collection[card.id]=e;lote.push({card_id:card.id,variants:e});
-    found++;
-    if(i%10===0)renderGrid();
-    upd(i+1);
+    (antigo>0?mudou:preencheu).push(`${card.number} ${card.name}`);
+    if(i%20===0){renderGrid();upd(i+1);}
   }
   saveCol();renderGrid();
-  // manda tudo numa tacada so (evita 137 chamadas em paralelo na planilha,
-  // que era onde algumas gravacoes se perdiam)
   if(lote.length){status.textContent=`Salvando ${lote.length} carta(s) na planilha...`;await saveManyToSheet(lote);}
-  status.className='save-note'+(found?' synced':' error');
-  let msg=`✓ ${found} de ${owned.length} carta(s) com preço aplicado (li ${listings.length} anúncio(s) no texto).`;
-  if(notFound.length)msg+=` ${notFound.length} não estava(m) no texto colado — provavelmente ficaram em outra página da Liga: ${notFound.slice(0,25).join(', ')}${notFound.length>25?'...':''}.`;
+
+  // ---- Situacao geral do set depois desta colada ----
+  ligaSessao.paginas++;ligaSessao.mudou+=mudou.length;ligaSessao.preencheu+=preencheu.length;
+  const semPreco=allCards.filter(c=>isOwned(c.id)&&!getVal(c.id));
+  const comPreco=owned.length-semPreco.length;
+
+  status.className='save-note synced';
+  let msg=`✓ Página ${ligaSessao.paginas}: ${mudou.length} preço(s) mudaram, ${preencheu.length} estavam zerados e foram preenchidos, ${igual} já estavam iguais.`;
+  if(naoVeio)msg+=` (${naoVeio} carta(s) não vieram nesta página — sem problema, elas continuam como estavam.)`;
+  msg+=`\n\nSituação do set: ${comPreco} de ${owned.length} carta(s) suas já têm preço.`;
+  if(semPreco.length){
+    msg+=` Ainda faltam ${semPreco.length}: ${semPreco.slice(0,14).map(c=>c.number+' '+c.name).join(', ')}${semPreco.length>14?'...':''}.`;
+    msg+=`\nVá para a próxima página da Liga, copie (Ctrl+A, Ctrl+C) e cole aqui de novo.`;
+  }else{
+    msg+=` Não falta nenhuma. 🎉`;
+  }
+  status.style.whiteSpace='pre-line';
   status.textContent=msg;
+  // deixa a caixa limpa e pronta para a proxima pagina
+  const area=document.getElementById('ligaPasteArea');area.value='';area.focus();
 }
 
 /* ============================================================
@@ -1006,6 +1024,38 @@ function cropToDataUrl(canvas,rect,larguraFinal){
 
 let ligaPdfImages={}; // { "003": "data:image/jpeg;base64,..." } do ultimo PDF lido
 
+/* Como as imagens sao ligadas as cartas
+   -------------------------------------
+   No PDF da Liga cada carta ocupa uma faixa [imagem | nome (#001/...) | precos],
+   mas ao imprimir a quebra de pagina separa a imagem do texto: a imagem quase
+   sempre cai UMA PAGINA depois da linha de texto dela. Tentar casar "a imagem
+   mais proxima do texto na mesma pagina" erra por uma posicao (o Golduck ficava
+   com a arte do Psyduck).
+   O que vale e a ORDEM: a 1a imagem do documento e a 1a carta, a 2a e a 2a, etc.
+   Confirmado abrindo as imagens do PDF: pag 10 = Meganium 001, pag 11 = Meganium
+   [Staff] 001b, pag 12 = Inteleon 002, pag 13 = Inteleon [Staff] 002b.
+   O "deslocamento de pagina" tipico e medido no proprio arquivo e serve de
+   trava: se o PDF tiver deixado de carregar imagens no meio, o pareamento
+   percebe a defasagem e reencontra o lugar certo em vez de sair errando tudo. */
+function parearImagens(ancoras,imgs){
+  if(!ancoras.length||!imgs.length)return [];
+  // 1) passada ingenua so pra medir o deslocamento normal entre imagem e carta
+  const desl=[];
+  for(let i=0;i<Math.min(ancoras.length,imgs.length);i++)desl.push(imgs[i].pg-ancoras[i].pg);
+  desl.sort((x,y)=>x-y);
+  const mediana=desl[Math.floor(desl.length/2)]||0;
+  const tolerancia=mediana+1;
+  // 2) passada real, na ordem, pulando cartas cuja imagem nao foi impressa
+  const pares=[];let ia=0;
+  for(const im of imgs){
+    while(ia<ancoras.length&&(im.pg-ancoras[ia].pg)>tolerancia)ia++;
+    if(ia>=ancoras.length)break;
+    if(im.pg<ancoras[ia].pg)continue;     // imagem antes da carta: nao e dela
+    pares.push({im,num:ancoras[ia].num});ia++;
+  }
+  return pares;
+}
+
 async function onLigaPdf(input){
   const file=input.files&&input.files[0];if(!file)return;
   const drop=document.getElementById('ligaSetDrop'),st=document.getElementById('ligaSetStatus');
@@ -1016,58 +1066,63 @@ async function onLigaPdf(input){
     const OPS=pdfjsLib.OPS;
     const buf=await file.arrayBuffer();
     const doc=await pdfjsLib.getDocument({data:buf}).promise;
-    let out='',comImagem=0;
+
+    // ---- PASSO 1: ler texto e ANOTAR onde estao as imagens (sem desenhar nada) ----
+    let out='';const ancoras=[],imgs=[];
     for(let p=1;p<=doc.numPages;p++){
       st.textContent=`Lendo página ${p} de ${doc.numPages}...`;
       const page=await doc.getPage(p);
       const tc=await page.getTextContent();
-      // Reagrupa os pedacos de texto em LINHAS pela posicao vertical (o leitor
-      // precisa das linhas inteiras pra achar o padrao "Nome (#001/...)").
       const rows={};
       tc.items.forEach(it=>{
         const y=Math.round(it.transform[5]);
         (rows[y]=rows[y]||[]).push({x:it.transform[4],s:it.str});
       });
-      const ancoras=[]; // linhas que sao carta, com a altura (y) delas na pagina
       Object.keys(rows).map(Number).sort((a,b)=>b-a).forEach(y=>{
         const linha=rows[y].sort((a,b)=>a.x-b.x).map(o=>o.s).join('').trim();
         out+=linha+'\n';
         const m=linha.match(/\(#\s*(\d{1,4})\s*([a-z]?)\s*\//i);
-        if(m)ancoras.push({num:String(parseInt(m[1],10)).padStart(3,'0')+(m[2]||'').toLowerCase(),y});
+        if(m)ancoras.push({num:String(parseInt(m[1],10)).padStart(3,'0')+(m[2]||'').toLowerCase(),pg:p});
       });
-      // --- imagens desta pagina, ligadas a carta que estiver na mesma altura ---
       try{
         const ops=await page.getOperatorList();
-        const imgs=imagePlacements(ops,OPS);
-        if(imgs.length&&ancoras.length){
-          const escala=1.6;
-          const vp=page.getViewport({scale:escala});
-          const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
-          await page.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
-          imgs.forEach(im=>{
-            // centro vertical da imagem, em coordenadas do PDF
-            const cy=im.ctm[5]+im.ctm[3]/2;
-            let melhor=null,dist=1e9;
-            ancoras.forEach(a=>{const d=Math.abs(a.y-cy);if(d<dist){dist=d;melhor=a;}});
-            if(!melhor||ligaPdfImages[melhor.num])return;
-            // canto a canto da imagem, convertido pro canvas
-            const cantos=[[0,0],[1,0],[0,1],[1,1]].map(([ux,uy])=>{
-              const px=im.ctm[0]*ux+im.ctm[2]*uy+im.ctm[4];
-              const py=im.ctm[1]*ux+im.ctm[3]*uy+im.ctm[5];
-              const t=vp.transform;
-              return [t[0]*px+t[2]*py+t[4], t[1]*px+t[3]*py+t[5]];
-            });
-            const xs=cantos.map(c=>c[0]),ys=cantos.map(c=>c[1]);
-            const rect={x1:Math.max(0,Math.min(...xs)),y1:Math.max(0,Math.min(...ys)),
-                        x2:Math.min(cv.width,Math.max(...xs)),y2:Math.min(cv.height,Math.max(...ys))};
-            if(rect.x2-rect.x1<20||rect.y2-rect.y1<28)return;
-            ligaPdfImages[melhor.num]=cropToDataUrl(cv,rect,150);comImagem++;
-          });
-        }
-      }catch(_){ /* sem imagem nessa pagina: segue o baile, o texto e o que importa */ }
+        imagePlacements(ops,OPS).forEach(im=>imgs.push({pg:p,ctm:im.ctm}));
+      }catch(_){}
     }
     document.getElementById('ligaSetArea').value=out;
-    drop.textContent='✓ '+file.name+(comImagem?` (${comImagem} imagens)`:'');
+
+    // ---- PASSO 2: casar imagem <-> carta pela ordem ----
+    const pares=parearImagens(ancoras,imgs);
+
+    // ---- PASSO 3: desenhar SO as paginas que tem imagem aproveitada e recortar ----
+    const porPagina={};
+    pares.forEach(par=>{(porPagina[par.im.pg]=porPagina[par.im.pg]||[]).push(par);});
+    const paginas=Object.keys(porPagina).map(Number).sort((a,b)=>a-b);
+    let feitas=0;
+    for(const pg of paginas){
+      feitas++;
+      st.textContent=`Recortando imagens... ${feitas}/${paginas.length}`;
+      try{
+        const page=await doc.getPage(pg);
+        const vp=page.getViewport({scale:1.6});
+        const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
+        await page.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+        porPagina[pg].forEach(par=>{
+          const c=par.im.ctm,t=vp.transform;
+          const cantos=[[0,0],[1,0],[0,1],[1,1]].map(([ux,uy])=>{
+            const px=c[0]*ux+c[2]*uy+c[4],py=c[1]*ux+c[3]*uy+c[5];
+            return [t[0]*px+t[2]*py+t[4], t[1]*px+t[3]*py+t[5]];
+          });
+          const xs=cantos.map(k=>k[0]),ys=cantos.map(k=>k[1]);
+          const rect={x1:Math.max(0,Math.min(...xs)),y1:Math.max(0,Math.min(...ys)),
+                      x2:Math.min(cv.width,Math.max(...xs)),y2:Math.min(cv.height,Math.max(...ys))};
+          if(rect.x2-rect.x1<20||rect.y2-rect.y1<28)return;
+          ligaPdfImages[par.num]=cropToDataUrl(cv,rect,150);
+        });
+      }catch(_){}
+    }
+    const n=Object.keys(ligaPdfImages).length;
+    drop.textContent='✓ '+file.name+(n?` (${n} imagens)`:'');
     st.className='save-note';st.textContent='';
     previewLigaSet();
   }catch(e){
