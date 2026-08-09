@@ -426,8 +426,13 @@ document.getElementById('setInput').addEventListener('keydown',e=>{if(e.key==='E
 async function fetchAllCards(setId){
   let page=1,cards=[];
   while(true){
-    const r=await fetch(`${API}/cards?q=set.id:${setId}&pageSize=250&page=${page}&orderBy=number`,{headers:apiHeaders});
-    if(!r.ok)throw new Error(`Set "${setId}" não encontrado.`);
+    let r,attempt=0;
+    while(true){
+      r=await fetch(`${API}/cards?q=set.id:${setId}&pageSize=250&page=${page}&orderBy=number`,{headers:apiHeaders});
+      if(r.ok||attempt>=2)break;
+      attempt++;await new Promise(res=>setTimeout(res,700*attempt));
+    }
+    if(!r.ok)throw new Error(`API da pokemontcg.io recusou o set "${setId}" (HTTP ${r.status}). Costuma ser instabilidade temporária deles — tente de novo em alguns segundos.`);
     const data=await r.json();cards=cards.concat(data.data);
     if(!data.data.length||cards.length>=data.totalCount)break;page++;
   }
