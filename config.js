@@ -3,10 +3,10 @@
 // opcional e de uso público, então tudo bem deixá-lo aqui também se você tiver um.
 window.POKEDEX_CONFIG = {
   // URL do Web App do Apps Script (Implantar > Gerenciar implantações > copiar /exec).
-  // ATENÇÃO: este link está retornando 404 no teste feito em 09/08/2026 — a
-  // implantação parece estar fora do ar. Republique o Web App e, se o ID mudar,
-  // atualize a linha abaixo.
+  // Confirmado ativo em 09/08/2026 (action=get e action=liga testados e funcionando).
   scriptUrl: "https://script.google.com/macros/s/AKfycbwYxmpbZ6DLfNu6cKpBkniKN3WzVfTnyGDG0WfchPMVScOidcpK1kcPgVYpzKuE4XL1/exec",
-  apiKey: "",
+  // Chave da Pokémon TCG API (dev.pokemontcg.io) — sobe o limite de 1.000/dia (30/min)
+  // para 20.000/dia. Se um dia quiser trocar, gere outra no portal e substitua aqui.
+  apiKey: "15ab449c-1bbd-4893-b296-c57091cbf0a9",
   owner: ""
 };
