@@ -66,9 +66,10 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
 .sync-status.ok{color:var(--green)}
 .sync-status.err{color:var(--red)}
 .sync-status.loading{color:var(--blue)}
-.fx-badge{font-size:11px;color:var(--ink2);margin-left:auto;white-space:nowrap}
-.fx-badge b{color:var(--blue);font-weight:700}
-.fx-badge .stale{color:#c98a1a}
+.type-badges{position:absolute;bottom:5px;right:5px;display:flex;gap:2px}
+.type-chip{font-family:'Poppins';font-weight:700;font-size:8px;padding:1px 4px;border-radius:5px;background:rgba(20,30,50,.8);color:#fff;line-height:1.4}
+.type-chip.holo{background:var(--yellow);color:var(--red-deep)}
+.type-chip.rev{background:#8046a3;color:#fff}
 .home{max-width:900px;margin:0 auto;padding:20px 16px 60px}
 .hero{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px}
 .hero-card{background:var(--panel);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
@@ -214,7 +215,6 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
 <div class="sync-bar">
   <button class="sync-btn" onclick="syncFromSheet()">↺ Sincronizar</button>
   <span class="sync-status" id="syncStatus"></span>
-  <span class="fx-badge" id="fxBadge">câmbio: …</span>
 </div>
 
 <div class="home" id="homeView"></div>
@@ -232,8 +232,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
   <button class="filter-btn" onclick="setFilter('missing',this)">Faltando</button>
   <span class="set-title-lbl" id="setTitleLbl"></span>
   <div class="toolbar-right">
-    <button class="tb-btn red" id="ligaAllBtn" onclick="ligaPriceSet()" style="display:none">₽ Atualizar tudo (Liga)</button>
-    <button class="tb-btn" onclick="openLigaPaste()">📋 Colar da Liga</button>
+    <button class="tb-btn red" onclick="openLigaPaste()">📋 Colar da Liga</button>
     <button class="tb-btn" id="loadPromosBtn" onclick="loadCompanionPromos()" style="display:none">+ Promos</button>
     <button class="tb-btn" onclick="saveAsFav()">★ Favorito</button>
   </div>
@@ -272,9 +271,13 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
     <div id="cmVersionBadges" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"></div>
     <div class="cm-section">Variações que possuo</div>
     <div id="cmVariants"></div>
+    <div class="cm-section">Preço (Liga Pokémon)</div>
+    <div class="var-row">
+      <div class="price-wrap"><span class="price-pfx">R$</span><input type="number" class="price-inp" id="cmPrice" step="0.01" min="0" onchange="persistCard('Manual')"/></div>
+      <div class="price-src" id="cmPriceSrc"></div>
+    </div>
     <div class="hint-box" id="cmHint">
-      Preço da <b>Liga Pokémon</b> é o único usado no app (mercado BR oficial). Marcar/desmarcar e editar preço já salva automaticamente.
-      <span id="ligaHint"></span>
+      É um preço só por carta (a Liga não separa por Normal/Holo/Reverse). Use "📋 Colar da Liga" na tela do set pra preencher em massa, ou digite aqui na mão. Marcar/desmarcar e editar já salva automático.
     </div>
     <div class="save-note" id="saveNote"></div>
   </div>
@@ -303,25 +306,17 @@ const PROMO_COMPANION={sv:'svp',swsh:'swshp',sm:'smp',xy:'xyp',bw:'bwp'};
 
 let allCards=[],allSets=[],currentFilter='all',openCardId=null,currentSetId='';
 let collection={},savedSets=[],setNames={},setSizes={},spent={},ownerName='';
-let fx={USD:null,EUR:null,ts:null};
 
-async function loadFX(){
-  try{
-    const r=await fetch('https://api.frankfurter.app/latest?from=BRL&to=USD,EUR');
-    const d=await r.json();
-    if(d.rates&&d.rates.USD)fx.USD=1/d.rates.USD;
-    if(d.rates&&d.rates.EUR)fx.EUR=1/d.rates.EUR;
-    fx.ts=Date.now();localStorage.setItem('pkm_fx',JSON.stringify(fx));
-  }catch(e){
-    try{const c=JSON.parse(localStorage.getItem('pkm_fx'));if(c&&c.USD)fx=c;}catch(_){}
-    if(!fx.USD)fx.USD=5.40;if(!fx.EUR)fx.EUR=5.90;
-  }
-  renderFX();
-}
-function renderFX(){
-  const el=document.getElementById('fxBadge');if(!el)return;
-  const stale=!fx.ts||(Date.now()-fx.ts>864e5);
-  el.innerHTML=`câmbio: <b>US$ ${fx.USD?fx.USD.toFixed(2):'?'}</b> · <b>€ ${fx.EUR?fx.EUR.toFixed(2):'?'}</b>`+(stale?` <span class="stale">(est.)</span>`:``);
+// Lê uma entrada da coleção e devolve sempre no formato atual — {price, src, types:{normal,holofoil,reverseHolofoil}} —
+// mesmo que tenha sido salva no formato antigo (preço por variação, de antes de 10/08/2026).
+// Assim nenhum dado antigo já salvo na planilha ou no aparelho se perde.
+function normalizeEntry(raw){
+  const empty={price:0,src:undefined,types:{normal:false,holofoil:false,reverseHolofoil:false}};
+  if(!raw)return empty;
+  if(raw.types)return {price:parseFloat(raw.price)||0,src:raw.src,types:{normal:!!raw.types.normal,holofoil:!!raw.types.holofoil,reverseHolofoil:!!raw.types.reverseHolofoil}};
+  const types={normal:false,holofoil:false,reverseHolofoil:false};let price=0,src;
+  VARIANTS.forEach(v=>{const sub=raw[v.key];if(sub&&sub.owned){types[v.key]=true;if(!price&&sub.price){price=parseFloat(sub.price)||0;src=sub.src;}}});
+  return {price,src,types};
 }
 
 function jparse(k,d){try{return JSON.parse(localStorage.getItem(k))||d;}catch(e){return d;}}
@@ -338,7 +333,7 @@ function saveCol(){localStorage.setItem('pkm_col',JSON.stringify(collection));}
 function saveFavs(){localStorage.setItem('pkm_favs',JSON.stringify(savedSets));}
 function saveMeta(){localStorage.setItem('pkm_setnames',JSON.stringify(setNames));localStorage.setItem('pkm_setsizes',JSON.stringify(setSizes));}
 function saveSpent(){localStorage.setItem('pkm_spent',JSON.stringify(spent));}
-loadStorage();loadFX();
+loadStorage();
 if(getScriptUrl())syncFromSheet();
 
 function renderOwner(){document.getElementById('ownerLbl').textContent=ownerName?('de '+ownerName):'Toque para colocar seu nome';}
@@ -394,11 +389,11 @@ function setIdOf(cardId){return String(cardId).split('-')[0];}
 function collectionSummary(){
   const g={};
   Object.keys(collection).forEach(cid=>{
-    const c=collection[cid];const owned=VARIANTS.some(v=>c[v.key]&&c[v.key].owned);if(!owned)return;
+    if(!isOwned(cid))return;
     const sid=setIdOf(cid);
     if(!g[sid])g[sid]={id:sid,count:0,value:0};
     g[sid].count++;
-    g[sid].value+=VARIANTS.reduce((s,v)=>s+(c[v.key]&&c[v.key].owned?parseFloat(c[v.key].price||0):0),0);
+    g[sid].value+=getVal(cid);
   });
   savedSets.forEach(s=>{if(!g[s.id])g[s.id]={id:s.id,count:0,value:0};});
   return Object.values(g).sort((a,b)=>b.value-a.value);
@@ -476,7 +471,6 @@ async function fetchSet(setId){
     document.getElementById('statsBar').style.display='flex';
     document.getElementById('progressBar').style.display='block';
     document.getElementById('filterBar').style.display='flex';
-    document.getElementById('ligaAllBtn').style.display=getScriptUrl()?'':'none';
     document.getElementById('loadPromosBtn').style.display='none';
     const comp=companionPromoId(setId);
     if(comp&&comp!==setId)await loadCompanionPromos(comp);
@@ -516,8 +510,15 @@ function deriveAvailability(card){
     if(a.normal||a.holofoil||a.reverseHolofoil)return a;}
   return rarityRule(card.rarity);
 }
-function isOwned(id){const c=collection[id];return c&&VARIANTS.some(v=>c[v.key]&&c[v.key].owned);}
-function getVal(id){const c=collection[id];if(!c)return 0;return VARIANTS.reduce((s,v)=>s+(c[v.key]&&c[v.key].owned?parseFloat(c[v.key].price||0):0),0);}
+function isOwned(id){const e=normalizeEntry(collection[id]);return e.types.normal||e.types.holofoil||e.types.reverseHolofoil;}
+function getVal(id){if(!isOwned(id))return 0;return normalizeEntry(collection[id]).price;}
+function typeBadgesHtml(id){
+  const t=normalizeEntry(collection[id]).types,b=[];
+  if(t.normal)b.push('<span class="type-chip">N</span>');
+  if(t.holofoil)b.push('<span class="type-chip holo">H</span>');
+  if(t.reverseHolofoil)b.push('<span class="type-chip rev">R</span>');
+  return b.length?`<div class="type-badges">${b.join('')}</div>`:'';
+}
 function fmtBRL(v){return'R$ '+(v||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
 function renderGrid(){
   const grid=document.getElementById('cardGrid');
@@ -529,6 +530,7 @@ function renderGrid(){
       ${c.__isPromo?'<div class="promo-tag">PROMO</div>':''}
       ${owned?'<div class="owned-badge"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>':''}
       ${owned&&val>0?`<div class="price-tag">${fmtBRL(val)}</div>`:''}
+      ${owned?typeBadgesHtml(c.id):''}
     </div><div class="card-num">${c.number}/${c.set?.printedTotal||'?'}</div><div class="card-name">${c.name}</div></div>`;
   }).join('');}
   updateStats();
@@ -541,23 +543,6 @@ function updateStats(){
   document.getElementById('progressFill').style.width=pct+'%';
 }
 function setFilter(f,btn){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderGrid();}
-
-async function ligaPriceSet(){
-  const url=getScriptUrl();if(!url){showWarn('Apps Script indisponível — verifique se a implantação está publicada.');return;}
-  const owned=allCards.filter(c=>isOwned(c.id));if(!owned.length)return;
-  if(!confirm(`Buscar preço na Liga para ${owned.length} carta(s)? Vai levar ~${Math.ceil(owned.length*1.2)}s.`))return;
-  const btn=document.getElementById('ligaAllBtn');let done=0,fails=0;
-  for(const card of owned){
-    btn.textContent=`₽ Liga ${done+1}/${owned.length}`;
-    const res=await ligaLookup(card);
-    if(res&&res.changed){showWarn('A leitura da Liga falhou (o site pode ter mudado de layout). Ajuste o Code.gs — os preços da Liga não vão atualizar até lá.');fails++;}
-    else if(res&&res.price){const c=collection[card.id]||{};const v=VARIANTS.find(v=>c[v.key]&&c[v.key].owned);
-      if(v){c[v.key].price=+res.price.toFixed(2);c[v.key].src='Liga';collection[card.id]=c;await saveToSheet(card.id,c);}}
-    done++;await new Promise(r=>setTimeout(r,700));
-    if(fails>=3)break;
-  }
-  saveCol();renderGrid();btn.textContent='₽ Atualizar tudo (Liga)';
-}
 
 function openLigaPaste(){document.getElementById('ligaPasteModal').classList.add('open');document.getElementById('ligaPasteStatus').textContent='';document.getElementById('ligaPasteArea').value='';setTimeout(()=>document.getElementById('ligaPasteArea').focus(),50);}
 function closeLigaPaste(){document.getElementById('ligaPasteModal').classList.remove('open');}
@@ -589,19 +574,13 @@ async function applyLigaPaste(){
     if(idx===-1){notFound.push(card.name);continue;}
     const price=parsePriceAfter(text,idx+nameLower.length);
     if(price==null){notFound.push(card.name);continue;}
-    const c=collection[card.id]||{};const v=VARIANTS.find(v=>c[v.key]&&c[v.key].owned);
-    if(v){c[v.key].price=price;c[v.key].src='Liga (colado)';collection[card.id]=c;await saveToSheet(card.id,c);found++;}
+    const e=normalizeEntry(collection[card.id]);
+    e.price=price;e.src='Liga (colado)';collection[card.id]=e;await saveToSheet(card.id,e);found++;
     cursor=idx+nameLower.length;
   }
   saveCol();renderGrid();
   status.className='save-note'+(found?' synced':' error');
   status.textContent=`✓ ${found} preço(s) atualizado(s).`+(notFound.length?` ${notFound.length} não encontrado(s) no texto colado: ${notFound.join(', ')}.`:'');
-}
-async function ligaLookup(card){
-  const url=getScriptUrl();if(!url)return null;
-  try{const q=new URLSearchParams({action:'liga',name:card.name,number:String(card.number),set:card.set?.name||''});
-    const r=await fetch(url+'?'+q.toString());return await r.json();
-  }catch(e){return {error:String(e)};}
 }
 
 async function openSearch(){
@@ -630,46 +609,28 @@ function openCard(cardId){
   const rl=meta?meta.rarity:(card.rarity||''),rc=RARITY_COLORS[rl]||'var(--ink2)';
   document.getElementById('cmMeta').innerHTML=`#${card.number} · ${card.set?.name||''} · <span style="color:${rc};font-weight:700">${rl}</span>`+(card.__isPromo?' · <span style="color:var(--red);font-weight:700">PROMO</span>':'');
   document.getElementById('cmImg').src=card.images?.large||card.images?.small||'';
-  const c=collection[cardId]||{},av=deriveAvailability(card);
+  const e=normalizeEntry(collection[cardId]),av=deriveAvailability(card);
   document.getElementById('cmVariants').innerHTML=VARIANTS.map(v=>{
-    const exists=av[v.key]!==false,owned=c[v.key]?.owned||false;
-    let price=(c[v.key]?.price!==undefined&&c[v.key]?.price!==0)?parseFloat(c[v.key].price).toFixed(2):'';
+    const exists=av[v.key]!==false,owned=e.types[v.key];
     if(!exists)return `<div class="var-row var-disabled"><input type="checkbox" class="var-check" id="v_${v.key}" disabled/><label class="var-label" style="color:var(--ink3);text-decoration:line-through">${v.label}</label><span style="font-size:11px;color:var(--ink3);margin-left:auto">não existe</span></div>`;
-    const savedSrc=c[v.key]?.src?`<span class="vbadge vbadge-src">${c[v.key].src}</span>`:'<span class="vbadge vbadge-src">sem preço da Liga ainda</span>';
-    return `<div class="var-row"><input type="checkbox" class="var-check" id="v_${v.key}" ${owned?'checked':''} onchange="persistCard()"/><label class="var-label">${v.label}</label>
-      <div class="price-wrap"><span class="price-pfx">R$</span><input type="number" class="price-inp" id="p_${v.key}" value="${price}" step="0.01" min="0" onchange="persistCard('${v.key}','Manual')"/></div>
-      <div class="price-src">${savedSrc}</div></div>`;
+    return `<div class="var-row"><input type="checkbox" class="var-check" id="v_${v.key}" ${owned?'checked':''} onchange="persistCard()"/><label class="var-label">${v.label}</label></div>`;
   }).join('');
+  document.getElementById('cmPrice').value=e.price?e.price.toFixed(2):'';
+  document.getElementById('cmPriceSrc').innerHTML=e.src?`<span class="vbadge vbadge-src">${e.src}</span>`:'<span class="vbadge vbadge-src">sem preço ainda</span>';
   const b=[];if(av.normal)b.push('<span class="vbadge">Normal</span>');if(av.holofoil)b.push('<span class="vbadge vbadge-holo">Holo</span>');if(av.reverseHolofoil)b.push('<span class="vbadge vbadge-rev">Reverse</span>');
   document.getElementById('cmVersionBadges').innerHTML=b.join('');
-  const lh=document.getElementById('ligaHint');
-  lh.innerHTML=getScriptUrl()?` <span class="mini-btn liga" onclick="fetchLigaPrice('${cardId}')">₽ Buscar na Liga</span> <span id="ligaResult"></span>`:` — <a href="https://www.ligapokemon.com.br" target="_blank">consultar na Liga</a>`;
   setNoteStatus('','');document.getElementById('cardModal').classList.add('open');
 }
-function usePrice(vkey,val){const inp=document.getElementById('p_'+vkey);if(inp)inp.value=Number(val).toFixed(2);const chk=document.getElementById('v_'+vkey);if(chk&&!chk.checked)chk.checked=true;persistCard(vkey,'Liga');}
 
-async function fetchLigaPrice(cardId){
-  const card=allCards.find(c=>c.id===cardId),out=document.getElementById('ligaResult');
-  if(!card)return;out.textContent=' buscando…';
-  const d=await ligaLookup(card);
-  if(d&&d.changed){out.textContent=' (leitura falhou)';showWarn('A leitura da Liga falhou (o site pode ter mudado de layout). Ajuste o Code.gs — os preços da Liga não vão atualizar até lá.');return;}
-  if(d&&d.price){usePriceFirst(d.price);out.innerHTML=` → <b style="color:var(--red)">${fmtBRL(d.price)}</b> na Liga · salvo`;}
-  else if(d&&d.error){out.textContent=' (erro ao consultar — verifique se o Apps Script está publicado)';}
-  else{out.textContent=' (não encontrado na Liga)';}
-}
-function usePriceFirst(val){
-  const v=VARIANTS.find(v=>document.getElementById('v_'+v.key)&&document.getElementById('v_'+v.key).checked)||VARIANTS.find(v=>document.getElementById('p_'+v.key));
-  if(v)usePrice(v.key,val);
-}
-
-async function persistCard(srcOverrideKey,srcOverrideVal){
-  if(!openCardId)return;const data={};
-  VARIANTS.forEach(v=>{const chk=document.getElementById('v_'+v.key);if(!chk)return;
-    const owned=chk.checked;const price=parseFloat(document.getElementById('p_'+v.key)?.value||0)||0;
-    const prev=(collection[openCardId]&&collection[openCardId][v.key])||{};
-    let src=prev.src;if(srcOverrideKey===v.key)src=srcOverrideVal;
-    data[v.key]={owned,price,src};});
+async function persistCard(srcOverride){
+  if(!openCardId)return;
+  const prev=normalizeEntry(collection[openCardId]);
+  const types={};VARIANTS.forEach(v=>{const chk=document.getElementById('v_'+v.key);types[v.key]=chk?chk.checked:false;});
+  const price=parseFloat(document.getElementById('cmPrice')?.value||0)||0;
+  const src=srcOverride||prev.src;
+  const data={price,src,types};
   collection[openCardId]=data;saveCol();renderGrid();
+  document.getElementById('cmPriceSrc').innerHTML=data.src?`<span class="vbadge vbadge-src">${data.src}</span>`:'<span class="vbadge vbadge-src">sem preço ainda</span>';
   setNoteStatus('Salvando...','syncing');
   await saveToSheet(openCardId,data);
   setNoteStatus('✓ Salvo','synced');setTimeout(()=>setNoteStatus('',''),1500);
