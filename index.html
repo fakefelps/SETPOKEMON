@@ -233,6 +233,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
   <span class="set-title-lbl" id="setTitleLbl"></span>
   <div class="toolbar-right">
     <button class="tb-btn red" id="ligaAllBtn" onclick="ligaPriceSet()" style="display:none">₽ Atualizar tudo (Liga)</button>
+    <button class="tb-btn" onclick="openLigaPaste()">📋 Colar da Liga</button>
     <button class="tb-btn" id="loadPromosBtn" onclick="loadCompanionPromos()" style="display:none">+ Promos</button>
     <button class="tb-btn" onclick="saveAsFav()">★ Favorito</button>
   </div>
@@ -244,6 +245,20 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
     <div class="modal-header"><span class="modal-title">Buscar Coleção</span><button class="modal-close" onclick="closeSearch()">×</button></div>
     <input class="search-modal-input" id="searchQ" placeholder="Nome do set (ex: Mega, Surging, svp, promo...)" oninput="filterSets()" />
     <div id="setResults"><div style="padding:12px;font-size:13px;color:var(--ink3)">Carregando lista de sets...</div></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="ligaPasteModal" onclick="closeLigaPasteBg(event)">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Colar preços da Liga</span><button class="modal-close" onclick="closeLigaPaste()">×</button></div>
+    <div class="hint-box" style="margin-bottom:12px">
+      1) Abra a página desse set no site da Liga Pokémon, no seu navegador normal.<br>
+      2) Clique em qualquer lugar da página, aperte <b>Ctrl+A</b> (selecionar tudo) e depois <b>Ctrl+C</b> (copiar).<br>
+      3) Cole aqui embaixo e clique em <b>Aplicar preços</b>. Só atualiza cartas que você já marcou como "tenho" — o resto continua pra preencher na mão.
+    </div>
+    <textarea id="ligaPasteArea" style="width:100%;min-height:160px;font-size:12px;padding:8px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink);font-family:inherit" placeholder="Cole aqui o texto copiado da página da Liga..."></textarea>
+    <button class="save-btn" style="margin-top:10px" onclick="applyLigaPaste()">Aplicar preços</button>
+    <div class="save-note" id="ligaPasteStatus" style="margin-top:8px"></div>
   </div>
 </div>
 
@@ -279,7 +294,12 @@ const VARIANTS=[
   {key:'holofoil',label:'Holofoil',tcg:'holofoil'},
   {key:'reverseHolofoil',label:'Reverse Holo',tcg:'reverseHolofoil'},
 ];
-const PROMO_COMPANION={sv:'svp',swsh:'swshp',sm:'smp',xy:'xyp',bw:'bwp',me:'svp'};
+// "me" (Mega Evolution) NÃO tem 'svp' como companion — svp é promo de Scarlet & Violet,
+// sem relação com Mega Evolution. O "Mega Evolution Promos" oficial existe como produto,
+// mas ainda não está cadastrado na base da pokemontcg.io (testado em 09/08/2026, 0 resultados).
+// Quando a API adicionar o set, é só achar o id certo (provavelmente algo como "mep") e
+// colocar aqui: me:'ID_DO_SET_QUANDO_EXISTIR'.
+const PROMO_COMPANION={sv:'svp',swsh:'swshp',sm:'smp',xy:'xyp',bw:'bwp'};
 
 let allCards=[],allSets=[],currentFilter='all',openCardId=null,currentSetId='';
 let collection={},savedSets=[],setNames={},setSizes={},spent={},ownerName='';
@@ -537,6 +557,45 @@ async function ligaPriceSet(){
     if(fails>=3)break;
   }
   saveCol();renderGrid();btn.textContent='₽ Atualizar tudo (Liga)';
+}
+
+function openLigaPaste(){document.getElementById('ligaPasteModal').classList.add('open');document.getElementById('ligaPasteStatus').textContent='';document.getElementById('ligaPasteArea').value='';setTimeout(()=>document.getElementById('ligaPasteArea').focus(),50);}
+function closeLigaPaste(){document.getElementById('ligaPasteModal').classList.remove('open');}
+function closeLigaPasteBg(e){if(e.target===document.getElementById('ligaPasteModal'))closeLigaPaste();}
+
+// Acha o primeiro "R$ x.xxx,xx" a partir de fromIndex (é o "menor preço",
+// já que na página da Liga o menor sempre vem antes do maior).
+function parsePriceAfter(text,fromIndex){
+  const re=/R\$\s*([\d]{1,3}(?:\.\d{3})*,\d{2})/g;
+  re.lastIndex=fromIndex;
+  const m=re.exec(text);
+  if(!m)return null;
+  if(m.index-fromIndex>600)return null; // preço longe demais do nome, provavelmente não é dessa carta
+  return parseFloat(m[1].replace(/\./g,'').replace(',','.'));
+}
+
+async function applyLigaPaste(){
+  const text=document.getElementById('ligaPasteArea').value;
+  const status=document.getElementById('ligaPasteStatus');
+  if(!text.trim()){status.className='save-note error';status.textContent='Cola o texto copiado da Liga primeiro.';return;}
+  const owned=allCards.filter(c=>isOwned(c.id));
+  if(!owned.length){status.className='save-note error';status.textContent='Nenhuma carta marcada como "tenho" nesse set ainda.';return;}
+  status.className='save-note syncing';status.textContent='Aplicando...';
+  const lowerText=text.toLowerCase();
+  let cursor=0,found=0;const notFound=[];
+  for(const card of owned){
+    const nameLower=card.name.toLowerCase();
+    const idx=lowerText.indexOf(nameLower,cursor);
+    if(idx===-1){notFound.push(card.name);continue;}
+    const price=parsePriceAfter(text,idx+nameLower.length);
+    if(price==null){notFound.push(card.name);continue;}
+    const c=collection[card.id]||{};const v=VARIANTS.find(v=>c[v.key]&&c[v.key].owned);
+    if(v){c[v.key].price=price;c[v.key].src='Liga (colado)';collection[card.id]=c;await saveToSheet(card.id,c);found++;}
+    cursor=idx+nameLower.length;
+  }
+  saveCol();renderGrid();
+  status.className='save-note'+(found?' synced':' error');
+  status.textContent=`✓ ${found} preço(s) atualizado(s).`+(notFound.length?` ${notFound.length} não encontrado(s) no texto colado: ${notFound.join(', ')}.`:'');
 }
 async function ligaLookup(card){
   const url=getScriptUrl();if(!url)return null;
