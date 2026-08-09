@@ -108,6 +108,8 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
 .coll-stat .l{font-size:11px;color:var(--ink2)}
 .coll-bar{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin:4px 0 10px}
 .coll-bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--yellow),var(--red))}
+.coll-bar>i.sp{background:linear-gradient(90deg,#b57fce,#8046a3)}
+.coll-barlbl{font-size:10px;color:var(--ink3);font-weight:600;margin-top:-2px}
 .spent-row{display:flex;align-items:center;gap:6px;border-top:1px dashed var(--line2);padding-top:9px}
 .spent-row label{font-size:11px;color:var(--ink2);font-weight:600}
 .spent-inp{width:90px;font-size:13px;padding:4px 8px;border:1px solid var(--line2);border-radius:7px;text-align:right;color:var(--ink);background:var(--panel2)}
@@ -236,8 +238,9 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
 <div class="home" id="homeView"></div>
 
 <div class="stats-bar" id="statsBar">
-  <div class="stat">Coletadas<span id="statOwned">0</span></div>
-  <div class="stat">Total<span id="statTotal">0</span></div>
+  <div class="stat">Base<span id="statBase">0/0</span></div>
+  <div class="stat">Especiais<span id="statSpecial">0/0</span></div>
+  <div class="stat">Total<span id="statTotal">0/0</span></div>
   <div class="stat">Progresso<span id="statPct">0%</span></div>
   <div class="stat-value" id="statValue">R$ 0,00</div>
 </div>
@@ -246,6 +249,8 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
   <button class="filter-btn active" onclick="setFilter('all',this)">Todas</button>
   <button class="filter-btn" onclick="setFilter('owned',this)">Tenho</button>
   <button class="filter-btn" onclick="setFilter('missing',this)">Faltando</button>
+  <button class="filter-btn" onclick="setFilter('base',this)">Base</button>
+  <button class="filter-btn" onclick="setFilter('special',this)">Especiais</button>
   <span class="set-title-lbl" id="setTitleLbl"></span>
   <div class="toolbar-right">
     <button class="tb-btn red" onclick="openLigaPaste()">📋 Colar da Liga</button>
@@ -345,7 +350,7 @@ const VARIANTS=[
 const PROMO_COMPANION={sv:'svp',swsh:'swshp',sm:'smp',xy:'xyp',bw:'bwp'};
 
 let allCards=[],allSets=[],currentFilter='all',openCardId=null,currentSetId='';
-let collection={},savedSets=[],setNames={},setSizes={},spent={},ownerName='';
+let collection={},savedSets=[],setNames={},setSizes={},setBases={},spent={},ownerName='';
 // customSets: coleções criadas por você a partir do texto/PDF da Liga (sets que a
 // pokemontcg.io ainda não tem). pending: cartas marcadas que ainda NÃO tiveram o
 // salvamento confirmado pela planilha — usado pra nunca perder uma marcação.
@@ -370,6 +375,7 @@ function loadStorage(){
   savedSets=jparse('pkm_favs',[]);
   setNames=jparse('pkm_setnames',{});
   setSizes=jparse('pkm_setsizes',{});
+  setBases=jparse('pkm_setbases',{});
   spent=jparse('pkm_spent',{});
   customSets=jparse('pkm_customsets',{});
   pending=jparse('pkm_pending',{});
@@ -378,7 +384,7 @@ function loadStorage(){
 }
 function saveCol(){localStorage.setItem('pkm_col',JSON.stringify(collection));}
 function saveFavs(){localStorage.setItem('pkm_favs',JSON.stringify(savedSets));}
-function saveMeta(){localStorage.setItem('pkm_setnames',JSON.stringify(setNames));localStorage.setItem('pkm_setsizes',JSON.stringify(setSizes));}
+function saveMeta(){localStorage.setItem('pkm_setnames',JSON.stringify(setNames));localStorage.setItem('pkm_setsizes',JSON.stringify(setSizes));localStorage.setItem('pkm_setbases',JSON.stringify(setBases));}
 function saveSpent(){localStorage.setItem('pkm_spent',JSON.stringify(spent));}
 function saveCustomSets(){localStorage.setItem('pkm_customsets',JSON.stringify(customSets));}
 function savePending(){localStorage.setItem('pkm_pending',JSON.stringify(pending));renderPending();}
@@ -439,10 +445,18 @@ async function refreshCollection(){
     try{const r=await fetch(url+'?action=get');const d=await r.json();
       if(!d.ok)throw new Error(d.error||'Erro');
       const remote={...d.collection};
-      // NUNCA deixa a planilha apagar uma marcação que ainda não confirmou o salvamento.
-      // (Era isso que fazia carta marcada "sumir" depois de recarregar a página.)
-      Object.keys(pending).forEach(id=>{if(collection[id]!==undefined)remote[id]=collection[id];});
-      collection=remote;saveCol();
+      /* Junta o que veio da planilha com o que ja esta neste aparelho, sem perder nada:
+         - carta que so existe aqui -> fica (mesmo que a planilha nao tenha recebido);
+         - carta nos dois lados     -> vence a editada por ultimo (campo `ts`);
+         - carta pendente de envio  -> a daqui sempre vence.
+         Era a falta disso que fazia carta marcada sumir depois de recarregar. */
+      const merged={...remote};
+      Object.keys(collection).forEach(id=>{
+        const loc=collection[id],rem=remote[id];
+        const lt=(loc&&loc.ts)||0,rt=(rem&&rem.ts)||0;
+        if(!rem||pending[id]||lt>rt)merged[id]=loc;
+      });
+      collection=merged;saveCol();
       extractCustomSets();   // coleções da Liga também viajam pela planilha
       flushPending();        // reenvia em segundo plano o que ficou pendente
       return true;
@@ -489,6 +503,25 @@ async function syncFromSheet(){
 }
 // Salva uma carta na planilha com até 3 tentativas e confirmação de resposta.
 // Enquanto não confirmar, o id fica em `pending` (e é reenviado depois).
+// Salva VARIAS cartas numa unica chamada (usado pelo "Colar da Liga").
+// Se a planilha ainda estiver com o Code.gs antigo (sem 'saveMany'), cai
+// automaticamente no modo de uma carta por vez — funciona nos dois casos.
+async function saveManyToSheet(items){
+  const url=getScriptUrl();if(!url||!items.length)return true;
+  items.forEach(it=>{pending[it.card_id]=true;});savePending();
+  for(let attempt=0;attempt<2;attempt++){
+    try{
+      const r=await fetch(url,{method:'POST',body:JSON.stringify({action:'saveMany',cards:items})});
+      const d=await r.json();
+      if(!d||!d.ok||d.saved!==items.length)throw new Error('lote nao aceito');
+      items.forEach(it=>{delete pending[it.card_id];});savePending();
+      return true;
+    }catch(e){if(attempt<1)await new Promise(res=>setTimeout(res,500));}
+  }
+  let ok=true;
+  for(const it of items){if(!await saveToSheet(it.card_id,it.variants,true))ok=false;}
+  return ok;
+}
 async function saveToSheet(card_id,variants,silent){
   const url=getScriptUrl();if(!url)return true;
   pending[card_id]=true;savePending();
@@ -536,14 +569,17 @@ function showSetView(){document.getElementById('homeView').style.display='none';
 function setIdOf(cardId){return String(cardId).split('-')[0];}
 function collectionSummary(){
   const g={};
+  const novo=sid=>({id:sid,count:0,value:0,base:0,spec:0});
   Object.keys(collection).forEach(cid=>{
+    if(cid.startsWith(SET_DEF_PREFIX))return;   // linha de definicao de colecao, nao e carta
     if(!isOwned(cid))return;
     const sid=setIdOf(cid);
-    if(!g[sid])g[sid]={id:sid,count:0,value:0};
-    g[sid].count++;
-    g[sid].value+=getVal(cid);
+    if(!g[sid])g[sid]=novo(sid);
+    g[sid].count++;g[sid].value+=getVal(cid);
+    const sufixo=/\d[a-z]$/i.test(String(cid).split('-').pop());
+    if(sufixo||isSpecialNum(sid,numFromCardId(cid)))g[sid].spec++;else g[sid].base++;
   });
-  savedSets.forEach(s=>{if(!g[s.id])g[s.id]={id:s.id,count:0,value:0};});
+  savedSets.forEach(s=>{if(!g[s.id])g[s.id]=novo(s.id);});
   return Object.values(g).sort((a,b)=>b.value-a.value);
 }
 function renderHome(){
@@ -564,16 +600,24 @@ function renderHome(){
     colls=`<div class="home-empty"><div class="t">Sua Pokédex está vazia</div>Carregue um set lá em cima e comece a marcar as cartas que você tem.</div>`;
   }else{
     colls='<div class="home-h">Minhas coleções</div><div class="coll-grid">'+sums.map(s=>{
-      const name=setNames[s.id]||s.id,size=setSizes[s.id]||0,pct=size?Math.min(100,Math.round(s.count/size*100)):0;
+      const name=setNames[s.id]||s.id;
+      const size=setSizes[s.id]||0;              // total geral da colecao
+      const bSize=baseSizeOf(s.id);              // quantas sao da colecao base
+      const sSize=Math.max(0,size-bSize);        // quantas sao especiais
+      const bPct=bSize?Math.min(100,Math.round(s.base/bSize*100)):0;
+      const sPct=sSize?Math.min(100,Math.round(s.spec/sSize*100)):0;
       const sp=spent[s.id]!=null?spent[s.id]:'',spNum=parseFloat(sp)||0,d=s.value-spNum;
       const dTxt=sp!==''?`<span class="spent-diff ${d>=0?'diff-pos':'diff-neg'}">${d>=0?'+':''}${fmtBRL(d)}</span>`:'';
+      const mini=(n)=>`<span style="font-size:12px;color:var(--ink3)">/${n}</span>`;
       return `<div class="coll">
         <div class="coll-top"><div class="coll-name" onclick="fetchSet('${s.id}')">${name}</div><span class="coll-id">${s.id}</span></div>
         <div class="coll-stats">
-          <div class="coll-stat"><div class="n">${s.count}${size?'<span style="font-size:12px;color:var(--ink3)">/'+size+'</span>':''}</div><div class="l">cartas</div></div>
+          <div class="coll-stat"><div class="n">${s.base}${bSize?mini(bSize):''}</div><div class="l">base</div></div>
+          <div class="coll-stat"><div class="n">${s.spec}${sSize?mini(sSize):''}</div><div class="l">especiais</div></div>
           <div class="coll-stat"><div class="n">${fmtBRL(s.value)}</div><div class="l">valor</div></div>
         </div>
-        ${size?`<div class="coll-bar"><i style="width:${pct}%"></i></div>`:''}
+        ${bSize?`<div class="coll-barlbl">Base ${bPct}%</div><div class="coll-bar"><i style="width:${bPct}%"></i></div>`:''}
+        ${sSize?`<div class="coll-barlbl">Especiais ${sPct}%</div><div class="coll-bar"><i class="sp" style="width:${sPct}%"></i></div>`:''}
         <div class="spent-row"><label>Gasto: R$</label><input class="spent-inp" type="number" step="0.01" min="0" value="${sp}" placeholder="0,00" onchange="setSpent('${s.id}',this.value)"/>${dTxt}</div>
       </div>`;
     }).join('')+'</div>';
@@ -606,7 +650,10 @@ function showCards(setId,cards,token){
   if(token!==setLoadToken)return; // outra coleção começou a carregar: ignora esta
   allCards=cards;currentSetId=setId;
   const setName=(cards[0]&&cards[0].set&&cards[0].set.name)||setNames[setId]||setId;
-  setNames[setId]=setName;setSizes[setId]=(cards[0]&&cards[0].set&&cards[0].set.total)||cards.length;saveMeta();
+  setNames[setId]=setName;
+  setSizes[setId]=(cards[0]&&cards[0].set&&cards[0].set.total)||cards.length;
+  setBases[setId]=(cards[0]&&cards[0].set&&cards[0].set.printedTotal)||setSizes[setId];
+  saveMeta();
   document.getElementById('setTitleLbl').textContent=setName;
   document.getElementById('setInput').value=setId;
   document.getElementById('statsBar').style.display='flex';
@@ -696,6 +743,23 @@ function deriveAvailability(card){
     if(a.normal||a.holofoil||a.reverseHolofoil)return a;}
   return rarityRule(card.rarity);
 }
+/* ---------- Base x Especiais ----------
+   Toda colecao tem a parte "base", numerada de 1 ate o printedTotal (ex.: 132),
+   e depois as cartas ESPECIAIS (ilustracao rara, ultra, hiper, secretas...),
+   numeradas de 133 em diante. Como sao dois "colecionaveis" diferentes, o
+   progresso e contado separado. */
+function numFromCardId(cid){
+  const parts=String(cid).split('-');
+  const v=parseInt(String(parts[parts.length-1]).replace(/\D/g,''),10);
+  return isNaN(v)?null:v;
+}
+function baseSizeOf(setId){return setBases[setId]||setSizes[setId]||0;}
+function isSpecialNum(setId,num){const b=baseSizeOf(setId);return !!(b&&num!=null&&num>b);}
+function isSpecialCard(c){
+  // numero com letra no fim (003b, 014b...) e sempre uma versao alternativa/especial
+  if(cardNumberSuffix(c.number))return true;
+  return isSpecialNum((c.set&&c.set.id)||currentSetId,cardNumberInt(c.number));
+}
 function isOwned(id){const e=normalizeEntry(collection[id]);return e.types.normal||e.types.holofoil||e.types.reverseHolofoil;}
 function getVal(id){if(!isOwned(id))return 0;return normalizeEntry(collection[id]).price;}
 function typeBadgesHtml(id){
@@ -708,7 +772,13 @@ function typeBadgesHtml(id){
 function fmtBRL(v){return'R$ '+(v||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
 function renderGrid(){
   const grid=document.getElementById('cardGrid');
-  const list=allCards.filter(c=>currentFilter==='owned'?isOwned(c.id):currentFilter==='missing'?!isOwned(c.id):true);
+  const list=allCards.filter(c=>{
+    if(currentFilter==='owned')return isOwned(c.id);
+    if(currentFilter==='missing')return !isOwned(c.id);
+    if(currentFilter==='base')return !isSpecialCard(c);
+    if(currentFilter==='special')return isSpecialCard(c);
+    return true;
+  });
   if(!list.length){grid.innerHTML='<div class="empty"><div class="empty-title">Nenhuma carta aqui</div><div class="empty-sub">Tente outro filtro</div></div>';}
   else{grid.innerHTML=list.map(c=>{const owned=isOwned(c.id),val=getVal(c.id);
     const face=(c.images&&c.images.small)
@@ -726,10 +796,15 @@ function renderGrid(){
   updateStats();
 }
 function updateStats(){
-  const total=allCards.length,owned=allCards.filter(c=>isOwned(c.id)).length,pct=total?Math.round(owned/total*100):0;
+  const base=allCards.filter(c=>!isSpecialCard(c)),spec=allCards.filter(c=>isSpecialCard(c));
+  const bOwn=base.filter(c=>isOwned(c.id)).length,sOwn=spec.filter(c=>isOwned(c.id)).length;
+  const total=allCards.length,owned=bOwn+sOwn,pct=total?Math.round(owned/total*100):0;
   const val=allCards.reduce((s,c)=>s+getVal(c.id),0);
-  document.getElementById('statOwned').textContent=owned;document.getElementById('statTotal').textContent=total;
-  document.getElementById('statPct').textContent=pct+'%';document.getElementById('statValue').textContent=fmtBRL(val);
+  document.getElementById('statBase').textContent=`${bOwn}/${base.length}`;
+  document.getElementById('statSpecial').textContent=`${sOwn}/${spec.length}`;
+  document.getElementById('statTotal').textContent=`${owned}/${total}`;
+  document.getElementById('statPct').textContent=pct+'%';
+  document.getElementById('statValue').textContent=fmtBRL(val);
   document.getElementById('progressFill').style.width=pct+'%';
 }
 function setFilter(f,btn){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderGrid();}
@@ -799,7 +874,7 @@ async function applyLigaPaste(){
   });
 
   status.className='save-note syncing';
-  let found=0;const notFound=[],changed=[];
+  let found=0;const notFound=[],changed=[],lote=[];
   const upd=(i)=>{status.textContent=`Aplicando... ${i}/${owned.length} carta(s) verificada(s), ${found} preço(s) atualizado(s)`;};
   upd(0);
   for(let i=0;i<owned.length;i++){
@@ -815,12 +890,16 @@ async function applyLigaPaste(){
     if(!hit||hit.price==null){notFound.push(`${card.number} ${card.name}`);upd(i+1);continue;}
     const e=normalizeEntry(collection[card.id]);
     if(e.price!==hit.price)changed.push(card.name);
-    e.price=hit.price;e.src='Liga (colado)';collection[card.id]=e;
-    saveCol();
-    await saveToSheet(card.id,e,true);
-    found++;renderGrid();upd(i+1);
+    e.price=hit.price;e.src='Liga (colado)';e.ts=Date.now();
+    collection[card.id]=e;lote.push({card_id:card.id,variants:e});
+    found++;
+    if(i%10===0)renderGrid();
+    upd(i+1);
   }
   saveCol();renderGrid();
+  // manda tudo numa tacada so (evita 137 chamadas em paralelo na planilha,
+  // que era onde algumas gravacoes se perdiam)
+  if(lote.length){status.textContent=`Salvando ${lote.length} carta(s) na planilha...`;await saveManyToSheet(lote);}
   status.className='save-note'+(found?' synced':' error');
   let msg=`✓ ${found} de ${owned.length} carta(s) com preço aplicado (li ${listings.length} anúncio(s) no texto).`;
   if(notFound.length)msg+=` ${notFound.length} não estava(m) no texto colado — provavelmente ficaram em outra página da Liga: ${notFound.slice(0,25).join(', ')}${notFound.length>25?'...':''}.`;
@@ -890,32 +969,105 @@ function loadPdfJs(){
     document.head.appendChild(s);
   });
 }
+// Multiplicacao de matrizes no padrao do PDF (usada pra saber ONDE cada
+// imagem foi desenhada na pagina).
+function matMul(a,b){return [
+  a[0]*b[0]+a[1]*b[2], a[0]*b[1]+a[1]*b[3],
+  a[2]*b[0]+a[3]*b[2], a[2]*b[1]+a[3]*b[3],
+  a[4]*b[0]+a[5]*b[2]+b[4], a[4]*b[1]+a[5]*b[3]+b[5]];}
+
+// Onde cada imagem de carta foi desenhada nesta pagina (em coordenadas do PDF).
+// Percorre a "lista de operacoes" de desenho acompanhando a matriz atual.
+function imagePlacements(ops,OPS){
+  let ctm=[1,0,0,1,0,0];const pilha=[],out=[];
+  for(let i=0;i<ops.fnArray.length;i++){
+    const fn=ops.fnArray[i],args=ops.argsArray[i];
+    if(fn===OPS.save)pilha.push(ctm.slice());
+    else if(fn===OPS.restore)ctm=pilha.pop()||[1,0,0,1,0,0];
+    else if(fn===OPS.transform)ctm=matMul(args,ctm);
+    else if(fn===OPS.paintImageXObject||fn===OPS.paintJpegXObject||fn===OPS.paintImageXObjectRepeat){
+      const w=Math.abs(ctm[0]),h=Math.abs(ctm[3]);
+      const prop=h?w/h:0;
+      // so nos interessam retangulos com cara de carta (nem logo, nem banner)
+      if(w>40&&h>60&&prop>0.55&&prop<0.9)out.push({x:ctm[4],y:ctm[5],w,h,ctm:ctm.slice()});
+    }
+  }
+  return out;
+}
+
+// Recorta um pedaco do canvas da pagina e devolve um JPEG pequeno (data URL).
+function cropToDataUrl(canvas,rect,larguraFinal){
+  const w=Math.max(1,Math.round(rect.x2-rect.x1)),h=Math.max(1,Math.round(rect.y2-rect.y1));
+  const lw=Math.min(larguraFinal,w),lh=Math.max(1,Math.round(h*(lw/w)));
+  const c=document.createElement('canvas');c.width=lw;c.height=lh;
+  c.getContext('2d').drawImage(canvas,Math.round(rect.x1),Math.round(rect.y1),w,h,0,0,lw,lh);
+  return c.toDataURL('image/jpeg',0.7);
+}
+
+let ligaPdfImages={}; // { "003": "data:image/jpeg;base64,..." } do ultimo PDF lido
+
 async function onLigaPdf(input){
   const file=input.files&&input.files[0];if(!file)return;
   const drop=document.getElementById('ligaSetDrop'),st=document.getElementById('ligaSetStatus');
   drop.textContent='📄 Lendo '+file.name+'...';st.className='save-note syncing';st.textContent='Abrindo o PDF...';
+  ligaPdfImages={};
   try{
     const pdfjsLib=await loadPdfJs();
+    const OPS=pdfjsLib.OPS;
     const buf=await file.arrayBuffer();
     const doc=await pdfjsLib.getDocument({data:buf}).promise;
-    let out='';
+    let out='',comImagem=0;
     for(let p=1;p<=doc.numPages;p++){
       st.textContent=`Lendo página ${p} de ${doc.numPages}...`;
       const page=await doc.getPage(p);
       const tc=await page.getTextContent();
-      // Reagrupa os pedaços de texto em LINHAS pela posição vertical (o leitor
-      // precisa das linhas inteiras pra achar o padrão "Nome (#001/...)").
+      // Reagrupa os pedacos de texto em LINHAS pela posicao vertical (o leitor
+      // precisa das linhas inteiras pra achar o padrao "Nome (#001/...)").
       const rows={};
       tc.items.forEach(it=>{
         const y=Math.round(it.transform[5]);
         (rows[y]=rows[y]||[]).push({x:it.transform[4],s:it.str});
       });
+      const ancoras=[]; // linhas que sao carta, com a altura (y) delas na pagina
       Object.keys(rows).map(Number).sort((a,b)=>b-a).forEach(y=>{
-        out+=rows[y].sort((a,b)=>a.x-b.x).map(o=>o.s).join('').trim()+'\n';
+        const linha=rows[y].sort((a,b)=>a.x-b.x).map(o=>o.s).join('').trim();
+        out+=linha+'\n';
+        const m=linha.match(/\(#\s*(\d{1,4})\s*([a-z]?)\s*\//i);
+        if(m)ancoras.push({num:String(parseInt(m[1],10)).padStart(3,'0')+(m[2]||'').toLowerCase(),y});
       });
+      // --- imagens desta pagina, ligadas a carta que estiver na mesma altura ---
+      try{
+        const ops=await page.getOperatorList();
+        const imgs=imagePlacements(ops,OPS);
+        if(imgs.length&&ancoras.length){
+          const escala=1.6;
+          const vp=page.getViewport({scale:escala});
+          const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
+          await page.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+          imgs.forEach(im=>{
+            // centro vertical da imagem, em coordenadas do PDF
+            const cy=im.ctm[5]+im.ctm[3]/2;
+            let melhor=null,dist=1e9;
+            ancoras.forEach(a=>{const d=Math.abs(a.y-cy);if(d<dist){dist=d;melhor=a;}});
+            if(!melhor||ligaPdfImages[melhor.num])return;
+            // canto a canto da imagem, convertido pro canvas
+            const cantos=[[0,0],[1,0],[0,1],[1,1]].map(([ux,uy])=>{
+              const px=im.ctm[0]*ux+im.ctm[2]*uy+im.ctm[4];
+              const py=im.ctm[1]*ux+im.ctm[3]*uy+im.ctm[5];
+              const t=vp.transform;
+              return [t[0]*px+t[2]*py+t[4], t[1]*px+t[3]*py+t[5]];
+            });
+            const xs=cantos.map(c=>c[0]),ys=cantos.map(c=>c[1]);
+            const rect={x1:Math.max(0,Math.min(...xs)),y1:Math.max(0,Math.min(...ys)),
+                        x2:Math.min(cv.width,Math.max(...xs)),y2:Math.min(cv.height,Math.max(...ys))};
+            if(rect.x2-rect.x1<20||rect.y2-rect.y1<28)return;
+            ligaPdfImages[melhor.num]=cropToDataUrl(cv,rect,150);comImagem++;
+          });
+        }
+      }catch(_){ /* sem imagem nessa pagina: segue o baile, o texto e o que importa */ }
     }
     document.getElementById('ligaSetArea').value=out;
-    drop.textContent='✓ '+file.name;
+    drop.textContent='✓ '+file.name+(comImagem?` (${comImagem} imagens)`:'');
     st.className='save-note';st.textContent='';
     previewLigaSet();
   }catch(e){
@@ -942,29 +1094,51 @@ function createLigaSet(){
     if(seen[n])return;seen[n]=1;
     cards.push({n,name:l.name,price:l.price||0});
   });
-  const def={id,name,code:rawCode.toUpperCase(),total:info.total||cards.length,cards};
+  // "base" = maior numero SEM sufixo de variacao; o resto conta como especial
+  let base=0;cards.forEach(c=>{if(!/[a-z]$/i.test(c.n))base=Math.max(base,parseInt(c.n,10)||0);});
+  const def={id,name,code:rawCode.toUpperCase(),total:info.total||cards.length,base:base||undefined,cards};
   customSets[id]=def;saveCustomSets();
-  setNames[id]=name;setSizes[id]=def.total;saveMeta();
+  setNames[id]=name;setSizes[id]=def.total;setBases[id]=base||def.total;saveMeta();
+  const nImgs=Object.keys(ligaPdfImages).length;
+  if(nImgs){const guardadas=saveLigaImages(id,ligaPdfImages);
+    if(guardadas<nImgs)showWarn(`Consegui guardar ${guardadas} das ${nImgs} imagens do PDF — o resto não coube na memória do navegador.`);}
   if(!savedSets.find(s=>s.id===id)){savedSets.push({id,name});saveFavs();renderSaved();}
   // guarda a definição na planilha também, pra coleção aparecer nos outros aparelhos
   collection[SET_DEF_PREFIX+id]=def;saveCol();
   saveToSheet(SET_DEF_PREFIX+id,def,true);
-  st.className='save-note synced';st.textContent=`✓ Coleção "${name}" criada com ${cards.length} carta(s).`;
+  st.className='save-note synced';st.textContent=`✓ Coleção "${name}" criada com ${cards.length} carta(s)${nImgs?` e ${nImgs} imagem(ns)`:''}.`;
   closeLigaSet();fetchSet(id);
 }
 
+function imgsKey(setId){return 'pkm_imgs_'+setId;}
+function loadLigaImages(setId){return jparse(imgsKey(setId),{})||{};}
+// Guarda as imagens tiradas do PDF. Se nao couber no aparelho, vai jogando as
+// ultimas fora ate caber (melhor ter parte das imagens do que nenhuma).
+function saveLigaImages(setId,imgs){
+  let lista=Object.keys(imgs);
+  while(lista.length){
+    try{const obj={};lista.forEach(k=>obj[k]=imgs[k]);
+      localStorage.setItem(imgsKey(setId),JSON.stringify(obj));return lista.length;}
+    catch(e){lista=lista.slice(0,Math.floor(lista.length*0.8));}
+  }
+  try{localStorage.removeItem(imgsKey(setId));}catch(_){}
+  return 0;
+}
 function customSetCards(def){
   const total=def.total||def.cards.length;
+  const imgs=loadLigaImages(def.id);
   return def.cards.map(c=>({
     id:def.id+'-'+c.n,name:c.name,number:c.n,rarity:'',
-    set:{id:def.id,name:def.name,printedTotal:total,total:total},
-    images:{},__liga:true,__ligaPrice:c.price||0
+    set:{id:def.id,name:def.name,printedTotal:def.base||total,total:total},
+    images:imgs[c.n]?{small:imgs[c.n],large:imgs[c.n]}:{},
+    __liga:true,__ligaPrice:c.price||0
   }));
 }
 function deleteCustomSet(){
   const id=currentSetId,def=customSets[id];if(!def)return;
   if(!confirm(`Excluir a coleção "${def.name}"? As cartas que você marcou continuam salvas, mas a lista some.`))return;
   delete customSets[id];saveCustomSets();
+  try{localStorage.removeItem(imgsKey(id));}catch(_){}
   savedSets=savedSets.filter(s=>s.id!==id);saveFavs();renderSaved();
   collection[SET_DEF_PREFIX+id]={id,deleted:true};saveCol();
   saveToSheet(SET_DEF_PREFIX+id,{id,deleted:true},true);
@@ -1035,7 +1209,7 @@ async function persistCard(srcOverride){
   const owning=types.normal||types.holofoil||types.reverseHolofoil;
   if(!price&&owning&&card&&card.__ligaPrice){price=card.__ligaPrice;src='Liga (importado)';
     const inp=document.getElementById('cmPrice');if(inp)inp.value=price.toFixed(2);}
-  const data={price,src,types};
+  const data={price,src,types,ts:Date.now()};
   collection[openCardId]=data;saveCol();renderGrid();
   document.getElementById('cmPriceSrc').innerHTML=data.src?`<span class="vbadge vbadge-src">${data.src}</span>`:'<span class="vbadge vbadge-src">sem preço ainda</span>';
   await saveToSheet(openCardId,data);
