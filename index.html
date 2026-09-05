@@ -446,6 +446,7 @@ let collection={},savedSets=[],setNames={},setSizes={},setBases={},spent={},owne
 // salvamento confirmado pela planilha — usado pra nunca perder uma marcação.
 let customSets={},pending={},setLoadToken=0;
 const SET_DEF_PREFIX='__set__'; // como as coleções da Liga ficam guardadas na planilha
+const SPENT_PREFIX='__gasto__'; // valor gasto por coleção, também guardado na planilha
 
 // Lê uma entrada da coleção e devolve sempre no formato atual — {price, src, types:{normal,holofoil,reverseHolofoil}} —
 // mesmo que tenha sido salva no formato antigo (preço por variação, de antes de 10/08/2026).
@@ -582,6 +583,8 @@ async function refreshCollection(){
       });
       collection=merged;saveCol();
       extractCustomSets();   // coleções da Liga também viajam pela planilha
+      extractSpent();        // valores gastos idem
+      migrarGastos();        // sobe pra planilha o que só existia neste aparelho
       flushPending();        // reenvia em segundo plano o que ficou pendente
       return true;
     }catch(e){if(attempt>=1)return false;await new Promise(res=>setTimeout(res,600));}
@@ -695,7 +698,7 @@ function collectionSummary(){
   const g={};
   const novo=sid=>({id:sid,count:0,value:0,base:0,spec:0,dup:0,dupValue:0});
   Object.keys(collection).forEach(cid=>{
-    if(cid.startsWith(SET_DEF_PREFIX))return;   // linha de definicao de colecao, nao e carta
+    if(cid.startsWith(SET_DEF_PREFIX)||cid.startsWith(SPENT_PREFIX))return;   // linha de controle, nao e carta
     const nd=dupCount(cid);
     if(!isOwned(cid)&&!nd)return;
     const sid=setIdOf(cid);
@@ -787,7 +790,7 @@ function liberarEspaco(){
    exemplo), você ainda consegue removê-lo sem precisar entrar nele. */
 async function excluirColecao(sid){
   const nome=setNames[sid]||sid;
-  const ids=Object.keys(collection).filter(cid=>!cid.startsWith(SET_DEF_PREFIX)&&setIdOf(cid)===sid&&isOwned(cid));
+  const ids=Object.keys(collection).filter(cid=>!cid.startsWith(SET_DEF_PREFIX)&&!cid.startsWith(SPENT_PREFIX)&&setIdOf(cid)===sid&&isOwned(cid));
   const ehLiga=!!customSets[sid];
   let aviso=`Excluir a coleção "${nome}" da sua Pokédex?`;
   if(ids.length)aviso+=`\n\nAtenção: isso apaga também as ${ids.length} carta(s) que você marcou nela (e o valor delas sai do total).`;
@@ -805,7 +808,7 @@ async function excluirColecao(sid){
   const lote=[];
   ids.forEach(cid=>{const vazio={price:0,types:{normal:false,holofoil:false,reverseHolofoil:false},ts:Date.now()};
     collection[cid]=vazio;lote.push({card_id:cid,variants:vazio});});
-  delete spent[sid];saveSpent();
+  setSpent(sid,'');   // apaga o gasto tambem na planilha
   delete setNames[sid];delete setSizes[sid];delete setBases[sid];saveMeta();
   saveCol();
   if(currentSetId===sid){allCards=[];currentSetId='';}
@@ -813,7 +816,42 @@ async function excluirColecao(sid){
   if(lote.length)await saveManyToSheet(lote);
   renderHome();
 }
-function setSpent(sid,val){const n=parseFloat(val);if(isNaN(n)||val===''){delete spent[sid];}else{spent[sid]=n;}saveSpent();renderHome();}
+/* ---------- Valor gasto por coleção ----------
+   Antes ficava só no localStorage, então o que você digitava no PC não aparecia
+   no celular. Agora cada valor vira uma linha na planilha com a chave
+   "__gasto__<set>", exatamente como as coleções da Liga já faziam com
+   "__set__<set>". Não muda nada no Code.gs — é só mais uma linha na aba.      */
+function setSpent(sid,val){
+  const n=parseFloat(val);
+  const vazio=(isNaN(n)||val==='');
+  if(vazio)delete spent[sid];else spent[sid]=n;
+  saveSpent();renderHome();
+  // v:null marca "apagado", pra propagar a remoção pros outros aparelhos
+  const linha={id:sid,v:vazio?null:n,ts:Date.now()};
+  collection[SPENT_PREFIX+sid]=linha;saveCol();
+  saveToSheet(SPENT_PREFIX+sid,linha,true);
+}
+// Lê as linhas "__gasto__" da coleção e aplica no objeto `spent` deste aparelho.
+// O merge por `ts` já aconteceu em refreshCollection, então aqui é só espelhar.
+function extractSpent(){
+  Object.keys(collection).forEach(k=>{
+    if(!k.startsWith(SPENT_PREFIX))return;
+    const linha=collection[k];if(!linha||!linha.id)return;
+    if(linha.v==null)delete spent[linha.id];
+    else spent[linha.id]=parseFloat(linha.v)||0;
+  });
+  saveSpent();
+}
+// Um aparelho que já tinha valores gastos salvos só no navegador: sobe pra planilha.
+function migrarGastos(){
+  Object.keys(spent).forEach(sid=>{
+    if(collection[SPENT_PREFIX+sid])return;   // já tem linha, nada a fazer
+    const linha={id:sid,v:parseFloat(spent[sid])||0,ts:Date.now()};
+    collection[SPENT_PREFIX+sid]=linha;
+    saveToSheet(SPENT_PREFIX+sid,linha,true);
+  });
+  saveCol();
+}
 
 function loadFromInput(){const v=normalizarSetId(document.getElementById('setInput').value);if(v)fetchSet(v);}
 function quickLoad(btn){document.querySelectorAll('.qs-chip').forEach(c=>c.classList.remove('active'));btn.classList.add('active');fetchSet(btn.dataset.id);}
@@ -1682,7 +1720,7 @@ function setsConhecidos(){
   const ids={};
   savedSets.forEach(s=>ids[s.id]=1);
   Object.keys(customSets).forEach(id=>ids[id]=1);
-  Object.keys(collection).forEach(cid=>{if(!cid.startsWith(SET_DEF_PREFIX))ids[setIdOf(cid)]=1;});
+  Object.keys(collection).forEach(cid=>{if(!cid.startsWith(SET_DEF_PREFIX)&&!cid.startsWith(SPENT_PREFIX))ids[setIdOf(cid)]=1;});
   for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);
     if(k&&k.startsWith('pkm_cards_'))ids[k.slice(10)]=1;}
   if(currentSetId)ids[currentSetId]=1;
