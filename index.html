@@ -1004,16 +1004,20 @@ const RARITY_RANK=[
   [/ilustra..o rara especial|special illustration/i,90],
   [/ultra/i,85],
   [/ilustra..o rara|illustration rare/i,80],
-  [/rara dupla|double rare/i,75],
-  [/ace spec|rara ace/i,72],
-  [/rainbow|shiny|brilhante|radiant/i,70],
+  [/ace spec|rara ace/i,76],
+  [/rainbow|shiny|brilhante|radiant/i,74],
+  [/rara dupla|double rare/i,72],
+  // ---- daqui pra baixo NAO entra no bloco "Raras" da exportacao ----
   [/rara holo|rare holo|holo rare/i,62],
   [/^\s*(rara|rare)\s*$/i,58],
   [/promo/i,52],
   [/incomum|uncommon/i,20],
   [/comum|common/i,10],
 ];
-const RARA_MIN=50; // daqui pra cima a carta vai no bloco "raras" da exportação
+// Corte do bloco "Raras": Rara Dupla pra cima (dupla, shiny, ACE SPEC,
+// ilustração rara, ultra, ilustração rara especial e hiper).
+// Rara e Rara Holo simples ficam junto das comuns, no bloco "Demais cartas".
+const RARA_MIN=70;
 function rarityLabel(card){
   if(card.set&&card.set.id==='me1'){const m=getCardMeta(card.number);if(m)return m.rarity;}
   return card.rarity||'';
@@ -1021,7 +1025,9 @@ function rarityLabel(card){
 function rarityRank(card){
   const r=rarityLabel(card);
   for(let i=0;i<RARITY_RANK.length;i++)if(RARITY_RANK[i][0].test(r))return RARITY_RANK[i][1];
-  return isSpecialCard(card)?65:15; // sem raridade: numeração decide
+  // Coleção da Liga não traz raridade: a numeração decide. Carta acima do total
+  // impresso é especial, então entra no bloco das raras.
+  return isSpecialCard(card)?71:15;
 }
 
 function typeBadgesHtml(id){
