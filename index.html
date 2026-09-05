@@ -234,7 +234,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
     <button class="home-btn" onclick="showHome()">🏠 Início</button>
   </div>
   <div class="search-row">
-    <input class="set-input" id="setInput" placeholder="Código do set (ex: me1, sv8, svp...)" />
+    <input class="set-input" id="setInput" placeholder="Código ou nome do set (ex: me3, ME03, Equilíbrio Perfeito)" />
     <button class="load-btn" onclick="loadFromInput()">Carregar</button>
     <button class="search-btn" onclick="openSearch()">🔍 Buscar</button>
     <button class="search-btn" onclick="openLigaSet()">➕ Nova coleção (Liga)</button>
@@ -410,6 +410,33 @@ const VARIANTS=[
 // Quando a API adicionar o set, é só achar o id certo (provavelmente algo como "mep") e
 // colocar aqui: me:'ID_DO_SET_QUANDO_EXISTIR'.
 const PROMO_COMPANION={sv:'svp',swsh:'swshp',sm:'smp',xy:'xyp',bw:'bwp'};
+
+/* ---------- Código da coleção ----------
+   A pokemontcg.io só conhece o código curto em minúsculas e SEM zero à
+   esquerda: "me3", nunca "ME03" nem o nome em português. Como as lojas e a
+   Copag usam ME01/ME03, e o nome que aparece na booster é em português,
+   isso normaliza tudo antes de bater na API.                                */
+const SET_ALIAS={
+  'equilibrio perfeito':'me3','megaevolucao equilibrio perfeito':'me3',
+  'mega evolucao equilibrio perfeito':'me3','perfect order':'me3',
+  'mega evolution perfect order':'me3',
+  'megaevolucao':'me1','mega evolucao':'me1','mega evolution':'me1',
+};
+function normalizarSetId(txt){
+  const bruto=String(txt||'').trim();
+  if(!bruto)return '';
+  if(customSets[bruto])return bruto;        // coleção da Liga: id exato, não mexer
+  // tira acento, deixa minúsculo e troca traços/travessões por espaço
+  const chave=bruto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[—–_-]/g,' ').replace(/\s+/g,' ').trim();
+  if(SET_ALIAS[chave])return SET_ALIAS[chave];
+  let id=chave.replace(/\s+/g,'');
+  if(customSets[id])return id;
+  // ME03 -> me3 · sv08 -> sv8 · sv8pt5 continua sv8pt5 · svp continua svp
+  const m=id.match(/^([a-z]+)0*(\d+)([a-z].*)?$/);
+  if(m)id=m[1]+m[2]+(m[3]||'');
+  return id;
+}
 
 let allCards=[],allSets=[],currentFilter='all',openCardId=null,currentSetId='';
 let collection={},savedSets=[],setNames={},setSizes={},setBases={},spent={},ownerName='';
@@ -787,7 +814,7 @@ async function excluirColecao(sid){
 }
 function setSpent(sid,val){const n=parseFloat(val);if(isNaN(n)||val===''){delete spent[sid];}else{spent[sid]=n;}saveSpent();renderHome();}
 
-function loadFromInput(){const v=document.getElementById('setInput').value.trim();if(v)fetchSet(v);}
+function loadFromInput(){const v=normalizarSetId(document.getElementById('setInput').value);if(v)fetchSet(v);}
 function quickLoad(btn){document.querySelectorAll('.qs-chip').forEach(c=>c.classList.remove('active'));btn.classList.add('active');fetchSet(btn.dataset.id);}
 document.getElementById('setInput').addEventListener('keydown',e=>{if(e.key==='Enter')loadFromInput();});
 
@@ -829,6 +856,7 @@ function showCards(setId,cards,token){
   renderGrid();
 }
 async function fetchSet(setId){
+  setId=normalizarSetId(setId)||setId;   // aceita "ME03", "Equilíbrio Perfeito", etc.
   const token=++setLoadToken;
   showSetView();
   const grid=document.getElementById('cardGrid');
@@ -1509,7 +1537,8 @@ function closeSearch(){document.getElementById('searchModal').classList.remove('
 function closeSearchBg(e){if(e.target===document.getElementById('searchModal'))closeSearch();}
 function filterSets(){
   const q=document.getElementById('searchQ').value.trim().toLowerCase();
-  const f=q?allSets.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.id||'').toLowerCase().includes(q)):allSets.slice(0,40);
+  const alvo=normalizarSetId(q);   // deixa achar por nome em portugues ou por ME03
+  const f=q?allSets.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.id||'').toLowerCase().includes(q)||(s.id||'')===alvo):allSets.slice(0,40);
   if(!f.length){document.getElementById('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--ink3)">Nenhum set.</div>';return;}
   document.getElementById('setResults').innerHTML=f.map(s=>`<div class="set-row" onclick="pickSet('${s.id}')">
     <div><div class="set-row-name">${s.name||s.id}</div><div class="set-row-meta">${s.releaseDate||''} · ${s.total||'?'} cartas</div></div>
