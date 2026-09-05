@@ -20,7 +20,7 @@
   --green:#2a9d5c;--radius:12px;--radius-lg:16px;
   --shadow:0 2px 10px rgba(20,30,50,.06);--shadow2:0 6px 24px rgba(20,30,50,.12);
 }
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden}
 header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);padding:14px 18px 16px;position:sticky;top:0;z-index:100;box-shadow:0 3px 14px rgba(180,30,20,.28)}
 .brand-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .lens{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#bfe3ff,#2a75bb 60%,#1a4c7d);border:3px solid #fff;box-shadow:0 0 0 3px rgba(0,0,0,.12),inset 0 0 6px rgba(255,255,255,.5);flex-shrink:0}
@@ -51,7 +51,8 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
 .saved-chip .rm{color:rgba(255,255,255,.7);font-size:14px;line-height:1}
 .saved-chip .rm:hover{color:#ffd}
 .no-fav{font-size:11px;color:rgba(255,255,255,.6)}
-.warn-banner{display:none;background:#fff4d6;border-bottom:2px solid var(--yellow);color:#7a5a00;padding:10px 18px;font-size:13px;font-weight:500;align-items:center;gap:8px}
+.warn-banner{display:none;background:#fff4d6;border-bottom:2px solid var(--yellow);color:#7a5a00;padding:10px 18px;font-size:13px;font-weight:500;align-items:center;gap:8px;flex-wrap:wrap;word-break:break-word}
+.warn-banner #warnText{min-width:0;flex:1}
 .warn-banner.show{display:flex}
 .warn-banner b{font-family:'Poppins'}
 .warn-banner .x{margin-left:auto;cursor:pointer;font-weight:700}
@@ -137,7 +138,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
 .tb-btn.blue{border-color:var(--blue);color:#fff;background:var(--blue)}
 .tb-btn.blue:hover{background:var(--blue-dark)}
 .tb-btn.red{border-color:var(--red);color:var(--red)}
-.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:12px;padding:18px;max-width:1200px;margin:0 auto}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:12px;padding:18px;max-width:1200px;margin:0 auto;direction:ltr;width:100%}
 .card-wrap{cursor:pointer}
 .card-img-box{border-radius:10px;overflow:hidden;border:2px solid transparent;aspect-ratio:63/88;background:#e9edf3;position:relative;transition:transform .15s,border-color .15s;box-shadow:var(--shadow)}
 .card-wrap:hover .card-img-box{transform:translateY(-3px)}
@@ -838,9 +839,25 @@ async function fetchAllCards(setId){
   }
   return cards;
 }
+/* A pokemontcg.io ordena por `number` como TEXTO, então "100" vem antes de "11"
+   e sets novos às vezes voltam em ordem embaralhada (foi o que aconteceu com o
+   me3). Em vez de confiar na API, o app reordena sempre: número de verdade,
+   sufixo de variação (003 antes de 003b) e promos do set companheiro no fim. */
+function ordenarCartas(cards){
+  return cards.slice().sort((a,b)=>{
+    if(!!a.__isPromo!==!!b.__isPromo)return a.__isPromo?1:-1;
+    const sa=(a.set&&a.set.id)||'',sb=(b.set&&b.set.id)||'';
+    if(sa!==sb)return sa<sb?-1:1;
+    const na=cardNumberInt(a.number),nb=cardNumberInt(b.number);
+    if(na!==nb)return (na==null?999999:na)-(nb==null?999999:nb);
+    const xa=cardNumberSuffix(a.number),xb=cardNumberSuffix(b.number);
+    return xa<xb?-1:xa>xb?1:0;
+  });
+}
 // Mostra a tela do set já com as cartas na mão (venham do cache ou da API).
 function showCards(setId,cards,token){
   if(token!==setLoadToken)return; // outra coleção começou a carregar: ignora esta
+  cards=ordenarCartas(cards);
   allCards=cards;currentSetId=setId;
   const setName=(cards[0]&&cards[0].set&&cards[0].set.name)||setNames[setId]||setId;
   setNames[setId]=setName;
@@ -910,7 +927,7 @@ async function loadCompanionPromos(compOverride){
   try{
     const promo=await fetchAllCards(comp);const ex=new Set(allCards.map(c=>c.id));
     const add=promo.filter(c=>!ex.has(c.id)).map(c=>{c.__isPromo=true;return c;});
-    allCards=allCards.concat(add);renderGrid();
+    allCards=ordenarCartas(allCards.concat(add));renderGrid();
     if(add.length){btn.textContent=`✓ +${add.length} promos`;setTimeout(()=>btn.style.display='none',2000);}
     else{btn.style.display='none';}
   }catch(e){
