@@ -1758,7 +1758,7 @@ async function runExport(){
   const titulo=expMode==='faltando'?'Cartas que faltam':'Cartas repetidas';
   const sub=expMode==='faltando'
     ?`${escopo} · ${rotuloWhat} · ${itens.length} carta(s) · ${quando}`
-    :`${escopo} · ${itens.length} carta(s) repetida(s), ${itens.reduce((s,x)=>s+x.qtd,0)} cópia(s) · valeriam ${fmtBRL(itens.reduce((s,x)=>s+x.valor,0))} · ${quando}`;
+    :`${escopo} · ${itens.length} carta(s) repetida(s), ${itens.reduce((s,x)=>s+x.qtd,0)} cópia(s) · ${quando}`;
   const nomeArq=(expMode==='faltando'?'faltando_':'repetidas_')+
     (alvo==='__all__'?'todas':alvo)+'_'+new Date().toISOString().slice(0,10);
 
