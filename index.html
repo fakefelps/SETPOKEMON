@@ -1673,6 +1673,22 @@ function setExpMode(m){
   document.getElementById('expActions').style.display='none';
 }
 
+/* Quantas cópias repetidas existem, separadas por bloco:
+   - RARAS  : total de cópias (raridade acima do corte)
+   - COMUNS : quantas são Normal e quantas são Holo/Foil (holo + reverse juntos,
+              que é como a Liga e as lojas tratam na hora da troca).           */
+function resumoRepetidas(itens){
+  let rar=0,nrm=0,foil=0;
+  itens.forEach(it=>{
+    const d=it.dups||{normal:0,holofoil:0,reverseHolofoil:0};
+    if(it.rank>=RARA_MIN)rar+=(d.normal||0)+(d.holofoil||0)+(d.reverseHolofoil||0);
+    else{nrm+=(d.normal||0);foil+=(d.holofoil||0)+(d.reverseHolofoil||0);}
+  });
+  return {rar,nrm,foil,
+    txtComuns:`${nrm} normal + ${foil} holo/foil`,
+    txtRaras:`${rar} cópia(s)`};
+}
+
 /* Ordem da exportação de REPETIDAS:
    1) as RARAS vêm todas na frente;
    2) dentro de cada bloco, agrupa por coleção;
@@ -1735,7 +1751,8 @@ async function runExport(){
         }
       }else{
         const n=dupCount(c.id);
-        if(n)itens.push({...base,qtd:n,qtdTxt:dupTxt(c.id),valor:n*base.preco});
+        if(n)itens.push({...base,qtd:n,qtdTxt:dupTxt(c.id),valor:n*base.preco,
+          dups:normalizeEntry(collection[c.id]).dups});
       }
     });
   }
@@ -1756,9 +1773,10 @@ async function runExport(){
   const escopo=alvo==='__all__'?'Todas as coleções':(setNames[alvo]||alvo);
   const rotuloWhat=what==='base'?'só coleção base':what==='special'?'só especiais':'base + especiais';
   const titulo=expMode==='faltando'?'Cartas que faltam':'Cartas repetidas';
+  const res=expMode==='repetidas'?resumoRepetidas(itens):null;
   const sub=expMode==='faltando'
     ?`${escopo} · ${rotuloWhat} · ${itens.length} carta(s) · ${quando}`
-    :`${escopo} · ${itens.length} carta(s) repetida(s), ${itens.reduce((s,x)=>s+x.qtd,0)} cópia(s) · ${quando}`;
+    :`${escopo} · ${itens.length} carta(s) repetida(s), ${itens.reduce((s,x)=>s+x.qtd,0)} cópia(s) · Raras: ${res.rar} · Comuns: ${res.txtComuns} · ${quando}`;
   const nomeArq=(expMode==='faltando'?'faltando_':'repetidas_')+
     (alvo==='__all__'?'todas':alvo)+'_'+new Date().toISOString().slice(0,10);
 
@@ -1789,8 +1807,8 @@ async function runExport(){
     itens.forEach(it=>{
       if(expMode==='repetidas'){
         const raro=it.rank>=RARA_MIN;
-        if(blocoRaras&&!raro){txt+=secRaras?'\n\n--- DEMAIS ---':'';blocoRaras=false;setAtual='';}
-        else if(blocoRaras&&!secRaras){txt+='\n\n--- RARAS ---';secRaras=true;}
+        if(blocoRaras&&!raro){txt+=secRaras?`\n\n--- DEMAIS (${res.txtComuns}) ---`:'';blocoRaras=false;setAtual='';}
+        else if(blocoRaras&&!secRaras){txt+=`\n\n--- RARAS (${res.txtRaras}) ---`;secRaras=true;}
       }
       if(it.setName!==setAtual){setAtual=it.setName;txt+=`\n\n[${setAtual}]`;}
       txt+=`\n#${it.card.number} ${it.card.name}`
@@ -1808,14 +1826,15 @@ async function runExport(){
    salvo/enviado. As imagens das coleções da Liga já vão embutidas. */
 function buildExportHtml(titulo,sub,itens){
   const modoDup=expMode==='repetidas';
+  const res=modoDup?resumoRepetidas(itens):null;
   let html='';let setAtual='',blocoRaras=modoDup,abriu=false,secRaras=false;
   itens.forEach(it=>{
     if(modoDup){
       const raro=it.rank>=RARA_MIN;
       if(blocoRaras&&!raro){ // acabaram as raras: abre o bloco das demais
-        html+=(abriu?'</div>':'')+(secRaras?'<h2 class="sec">Demais cartas</h2>':'');
+        html+=(abriu?'</div>':'')+(secRaras?`<h2 class="sec">Demais cartas <span class="qt">${escHtml(res.txtComuns)}</span></h2>`:'');
         blocoRaras=false;setAtual='';abriu=false;
-      }else if(blocoRaras&&!secRaras){html+='<h2 class="sec">⭐ Raras</h2>';secRaras=true;}
+      }else if(blocoRaras&&!secRaras){html+=`<h2 class="sec">⭐ Raras <span class="qt">${escHtml(res.txtRaras)}</span></h2>`;secRaras=true;}
     }
     if(it.setName!==setAtual){
       setAtual=it.setName;
@@ -1847,6 +1866,7 @@ h1{font-size:19px;font-weight:800}
 .sb{font-size:12px;opacity:.85;margin-top:3px}
 .pb{margin-left:auto;background:#F4C430;color:#7a5a00;border:none;border-radius:20px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer}
 .sec{font-size:15px;margin:18px 0 8px;padding-bottom:6px;border-bottom:2px solid #1B3F91;color:#10285E}
+.sec .qt{font-size:11px;font-weight:600;color:#0d5c4a;background:#e5f7f0;border-radius:5px;padding:2px 7px;margin-left:6px;vertical-align:middle}
 .col{font-size:13px;margin:14px 0 8px;color:#5a6577;font-weight:700}
 .g{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
 .ct{background:#fff;border:1px solid #e6eaf1;border-radius:10px;padding:8px;text-align:center;break-inside:avoid;page-break-inside:avoid}
