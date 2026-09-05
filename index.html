@@ -85,7 +85,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
 .type-chip.holo{background:var(--yellow);color:var(--red-deep)}
 .type-chip.rev{background:#8046a3;color:#fff}
 .home{max-width:900px;margin:0 auto;padding:20px 16px 60px}
-.hero{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px}
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:8px}
 .hero-card{background:var(--panel);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
 .hero-card.big{grid-column:1/-1;background:linear-gradient(135deg,var(--blue) 0%,var(--blue-navy) 100%);color:#fff}
 .hero-lbl{font-size:12px;font-weight:600;opacity:.85;letter-spacing:.4px;text-transform:uppercase}
@@ -200,6 +200,25 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
 .vbadge-rev{border-color:#b57fce;color:#8046a3;background:#f6ecfb}
 .vbadge-src{border-color:var(--line);color:var(--ink3)}
 .var-disabled{opacity:.45}
+/* ---------- Cartas repetidas ---------- */
+.type-chip.dup{background:#0d5c4a;color:#9ff0d8}
+.dup-wrap{display:flex;align-items:center;gap:4px;margin-left:auto}
+.dup-lbl{font-size:10px;color:var(--ink3);font-weight:600;margin-right:2px}
+.qty-b{width:24px;height:24px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink2);border-radius:6px;cursor:pointer;font-size:14px;line-height:1;font-weight:700;padding:0}
+.qty-b:hover{border-color:var(--blue);color:var(--blue)}
+.qty-inp{width:46px;font-size:13px;padding:4px 6px;border:1px solid var(--line2);border-radius:7px;background:var(--panel2);color:var(--ink);text-align:center}
+.qty-inp:focus{outline:none;border-color:var(--blue)}
+.dup-note{font-size:11px;color:var(--ink2);background:#eefaf5;border:1px solid #cdeee2;border-radius:8px;padding:7px 10px;margin-top:4px}
+.dup-note b{color:#0d5c4a}
+/* ---------- Modal de exportação ---------- */
+.exp-tabs{display:flex;gap:6px;margin-bottom:14px}
+.exp-tab{flex:1;font-family:'Poppins';font-weight:700;font-size:12px;padding:9px;border:1px solid var(--line2);border-radius:9px;background:var(--panel2);color:var(--ink2);cursor:pointer}
+.exp-tab.active{background:var(--red);border-color:var(--red);color:#fff}
+.exp-sel{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink)}
+.exp-sel:focus{outline:none;border-color:var(--blue)}
+.exp-chk{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--ink2);margin-bottom:10px;line-height:1.45}
+.exp-chk input{width:16px;height:16px;accent-color:var(--red);margin-top:1px;flex-shrink:0}
+.exp-out{width:100%;min-height:150px;font-size:11px;padding:8px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink);font-family:ui-monospace,monospace;margin-top:10px;display:none}
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--line2);border-radius:3px}
 </style>
 </head>
@@ -245,6 +264,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
   <div class="stat">Especiais<span id="statSpecial">0/0</span></div>
   <div class="stat">Total<span id="statTotal">0/0</span></div>
   <div class="stat">Progresso<span id="statPct">0%</span></div>
+  <div class="stat" title="Cartas repetidas neste set — não entram no valor total">Repetidas<span id="statDup">0</span></div>
   <div class="stat-value" id="statValue">R$ 0,00</div>
 </div>
 <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
@@ -254,9 +274,11 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
   <button class="filter-btn" onclick="setFilter('missing',this)">Faltando</button>
   <button class="filter-btn" onclick="setFilter('base',this)">Base</button>
   <button class="filter-btn" onclick="setFilter('special',this)">Especiais</button>
+  <button class="filter-btn" onclick="setFilter('dup',this)">Repetidas</button>
   <button class="filter-btn" onclick="setFilter('noprice',this)">Sem preço</button>
   <span class="set-title-lbl" id="setTitleLbl"></span>
   <div class="toolbar-right">
+    <button class="tb-btn blue" onclick="openExp()">📤 Exportar</button>
     <button class="tb-btn red" onclick="openLigaPaste()">📋 Colar da Liga</button>
     <button class="tb-btn" id="loadPromosBtn" onclick="loadCompanionPromos()" style="display:none">+ Promos</button>
     <button class="tb-btn" onclick="saveAsFav()">★ Favorito</button>
@@ -306,6 +328,42 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
     <div class="fld"><label>Código curto (vira o "id" da coleção)</label><input id="ligaSetCode" placeholder="Ex: MEP"/></div>
     <button class="save-btn" onclick="createLigaSet()">Criar coleção</button>
     <div class="save-note" id="ligaSetStatus" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="expModal" onclick="closeExpBg(event)">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Exportar cartas</span><button class="modal-close" onclick="closeExp()">×</button></div>
+    <div class="exp-tabs">
+      <button class="exp-tab active" id="expTabFalta" onclick="setExpMode('faltando')">🔍 Faltando</button>
+      <button class="exp-tab" id="expTabDup" onclick="setExpMode('repetidas')">🔁 Repetidas</button>
+    </div>
+    <div class="fld"><label>Coleção</label><select id="expSet" class="exp-sel"></select></div>
+    <div class="fld" id="expWhatWrap"><label>O que incluir</label>
+      <select id="expWhat" class="exp-sel">
+        <option value="all">Base + especiais (a coleção inteira)</option>
+        <option value="base">Só a coleção base (numeração até o total impresso)</option>
+        <option value="special">Só as especiais (acima do total impresso)</option>
+      </select>
+    </div>
+    <div class="exp-chk" id="expVarWrap">
+      <input type="checkbox" id="expVar"/>
+      <label for="expVar">Incluir também as <b>variações</b> que faltam de cartas que eu já tenho (ex.: tenho a Normal, falta a Reverse Holo).</label>
+    </div>
+    <div class="fld"><label>Formato</label>
+      <select id="expFmt" class="exp-sel">
+        <option value="img">Página com as imagens — abre pronta pra imprimir / salvar em PDF</option>
+        <option value="txt">Lista de texto — pra copiar e mandar no WhatsApp</option>
+        <option value="csv">Planilha CSV — abre no Excel</option>
+      </select>
+    </div>
+    <button class="save-btn" onclick="runExport()">Gerar</button>
+    <div class="save-note" id="expStatus" style="margin-top:8px;white-space:pre-line"></div>
+    <textarea class="exp-out" id="expOut" readonly></textarea>
+    <div id="expActions" style="display:none;margin-top:8px;gap:6px;flex-wrap:wrap">
+      <button class="tb-btn" onclick="copiarExport()">📋 Copiar</button>
+      <button class="tb-btn" onclick="baixarExportTxt()">💾 Baixar arquivo</button>
+    </div>
   </div>
 </div>
 
@@ -364,13 +422,20 @@ const SET_DEF_PREFIX='__set__'; // como as coleções da Liga ficam guardadas na
 // Lê uma entrada da coleção e devolve sempre no formato atual — {price, src, types:{normal,holofoil,reverseHolofoil}} —
 // mesmo que tenha sido salva no formato antigo (preço por variação, de antes de 10/08/2026).
 // Assim nenhum dado antigo já salvo na planilha ou no aparelho se perde.
+// `dups` = quantas cópias REPETIDAS existem de cada tipo (além da que você guarda).
+// Fica dentro do mesmo JSON da carta, então viaja pra planilha sem mexer no Code.gs.
+// Cartas salvas antes desta versão simplesmente voltam com dups zerado.
+function lerDups(d){
+  const n=x=>{const v=parseInt(x,10);return (isNaN(v)||v<0)?0:v;};
+  return {normal:n(d&&d.normal),holofoil:n(d&&d.holofoil),reverseHolofoil:n(d&&d.reverseHolofoil)};
+}
 function normalizeEntry(raw){
-  const empty={price:0,src:undefined,types:{normal:false,holofoil:false,reverseHolofoil:false}};
+  const empty={price:0,src:undefined,types:{normal:false,holofoil:false,reverseHolofoil:false},dups:lerDups(null)};
   if(!raw)return empty;
-  if(raw.types)return {price:parseFloat(raw.price)||0,src:raw.src,types:{normal:!!raw.types.normal,holofoil:!!raw.types.holofoil,reverseHolofoil:!!raw.types.reverseHolofoil}};
+  if(raw.types)return {price:parseFloat(raw.price)||0,src:raw.src,types:{normal:!!raw.types.normal,holofoil:!!raw.types.holofoil,reverseHolofoil:!!raw.types.reverseHolofoil},dups:lerDups(raw.dups)};
   const types={normal:false,holofoil:false,reverseHolofoil:false};let price=0,src;
   VARIANTS.forEach(v=>{const sub=raw[v.key];if(sub&&sub.owned){types[v.key]=true;if(!price&&sub.price){price=parseFloat(sub.price)||0;src=sub.src;}}});
-  return {price,src,types};
+  return {price,src,types,dups:lerDups(raw.dups)};
 }
 
 function jparse(k,d){try{return JSON.parse(localStorage.getItem(k))||d;}catch(e){return d;}}
@@ -600,12 +665,16 @@ function showSetView(){document.getElementById('homeView').style.display='none';
 function setIdOf(cardId){return String(cardId).split('-')[0];}
 function collectionSummary(){
   const g={};
-  const novo=sid=>({id:sid,count:0,value:0,base:0,spec:0});
+  const novo=sid=>({id:sid,count:0,value:0,base:0,spec:0,dup:0,dupValue:0});
   Object.keys(collection).forEach(cid=>{
     if(cid.startsWith(SET_DEF_PREFIX))return;   // linha de definicao de colecao, nao e carta
-    if(!isOwned(cid))return;
+    const nd=dupCount(cid);
+    if(!isOwned(cid)&&!nd)return;
     const sid=setIdOf(cid);
     if(!g[sid])g[sid]=novo(sid);
+    // repetidas contam à parte: entram no bloco "repetidas", nunca no valor
+    g[sid].dup+=nd;g[sid].dupValue+=dupVal(cid);
+    if(!isOwned(cid))return;
     g[sid].count++;g[sid].value+=getVal(cid);
     const sufixo=/\d[a-z]$/i.test(String(cid).split('-').pop());
     if(sufixo||isSpecialNum(sid,numFromCardId(cid)))g[sid].spec++;else g[sid].base++;
@@ -619,12 +688,15 @@ function renderHome(){
   const totalCards=sums.reduce((s,x)=>s+x.count,0);
   const totalValue=sums.reduce((s,x)=>s+x.value,0);
   const totalSpent=Object.keys(spent).reduce((s,k)=>s+(parseFloat(spent[k])||0),0);
+  const totalDup=sums.reduce((s,x)=>s+x.dup,0);
+  const totalDupVal=sums.reduce((s,x)=>s+x.dupValue,0);
   const diff=totalValue-totalSpent,diffCls=diff>=0?'diff-pos':'diff-neg';
   const who=ownerName?('Pokédex de '+ownerName):'Sua Pokédex';
   let hero=`<div class="hero">
       <div class="hero-card big"><div class="hero-lbl">${who} · valor atual</div><div class="hero-val">${fmtBRL(totalValue)}</div><div class="hero-sub">${totalCards} cartas em ${sums.filter(s=>s.count>0).length} coleções</div></div>
       <div class="hero-card"><div class="mini-lbl">Total investido</div><div class="mini-val">${fmtBRL(totalSpent)}</div></div>
       <div class="hero-card"><div class="mini-lbl">Diferença</div><div class="mini-val ${diffCls}">${diff>=0?'+':''}${fmtBRL(diff)}</div></div>
+      <div class="hero-card"><div class="mini-lbl">Repetidas (fora do total)</div><div class="mini-val">${totalDup}</div><div class="hero-sub" style="color:var(--ink2)">valeriam ${fmtBRL(totalDupVal)}</div></div>
     </div>`;
   let colls;
   if(!sums.length){
@@ -648,6 +720,7 @@ function renderHome(){
           <div class="coll-stat"><div class="n">${s.base}${bSize?mini(bSize):''}</div><div class="l">base</div></div>
           <div class="coll-stat"><div class="n">${s.spec}${sSize?mini(sSize):''}</div><div class="l">especiais</div></div>
           <div class="coll-stat"><div class="n">${fmtBRL(s.value)}</div><div class="l">valor</div></div>
+          ${s.dup?`<div class="coll-stat" title="Repetidas — valeriam ${fmtBRL(s.dupValue)}, mas não entram no valor acima"><div class="n" style="color:#0d5c4a">+${s.dup}</div><div class="l">repetidas</div></div>`:''}
         </div>
         ${bSize?`<div class="coll-barlbl">Base ${bPct}%</div><div class="coll-bar"><i style="width:${bPct}%"></i></div>`:''}
         ${sSize?`<div class="coll-barlbl">Especiais ${sPct}%</div><div class="coll-bar"><i class="sp" style="width:${sPct}%"></i></div>`:''}
@@ -656,6 +729,7 @@ function renderHome(){
     }).join('')+'</div>';
   }
   const ferramentas=`<div class="tools-row">
+    <button class="tb-btn blue" onclick="openExp()">📤 Exportar faltando / repetidas</button>
     <button class="tb-btn" onclick="liberarEspaco()">🧹 Liberar espaço</button>
     <span style="font-size:11px;color:var(--ink3);align-self:center">${espacoUsado()}</span>
   </div>`;
@@ -850,15 +924,68 @@ function isSpecialNum(setId,num){const b=baseSizeOf(setId);return !!(b&&num!=nul
 function isSpecialCard(c){
   // numero com letra no fim (003b, 014b...) e sempre uma versao alternativa/especial
   if(cardNumberSuffix(c.number))return true;
-  return isSpecialNum((c.set&&c.set.id)||currentSetId,cardNumberInt(c.number));
+  const sid=(c.set&&c.set.id)||currentSetId;
+  // Se o set nunca foi aberto neste aparelho, `setBases` esta vazio — nesse caso
+  // usa o total impresso que a propria carta carrega. Sem isso, exportar "so a
+  // colecao base" de um set fechado trazia as especiais junto.
+  const b=baseSizeOf(sid)||(c.set&&c.set.printedTotal)||0;
+  const n=cardNumberInt(c.number);
+  return !!(b&&n!=null&&n>b);
 }
 function isOwned(id){const e=normalizeEntry(collection[id]);return e.types.normal||e.types.holofoil||e.types.reverseHolofoil;}
 function getVal(id){if(!isOwned(id))return 0;return normalizeEntry(collection[id]).price;}
+
+/* ---------- Cartas repetidas ----------
+   dupCount = total de cópias extras da carta (somando os 3 tipos).
+   dupVal   = quanto essas extras valeriam. NUNCA entra no valor da coleção:
+              `getVal` continua devolvendo o preço de UMA carta só, então o
+              total do set e o total da Pokédex seguem contando 1x cada carta. */
+function dupCount(id){const d=normalizeEntry(collection[id]).dups;return d.normal+d.holofoil+d.reverseHolofoil;}
+function dupVal(id){const e=normalizeEntry(collection[id]);return dupCount(id)*(e.price||0);}
+function dupTxt(id){
+  const d=normalizeEntry(collection[id]).dups,p=[];
+  if(d.normal)p.push(d.normal+'x Normal');
+  if(d.holofoil)p.push(d.holofoil+'x Holo');
+  if(d.reverseHolofoil)p.push(d.reverseHolofoil+'x Reverse');
+  return p.join(' + ');
+}
+
+/* ---------- Raridade ----------
+   Usada só na hora de exportar as repetidas ("raras na frente"). Quanto maior
+   o número, mais rara. Coleções da Liga não trazem raridade nenhuma — nesse
+   caso a numeração decide: carta acima do total impresso é especial/rara. */
+const RARITY_RANK=[
+  [/hiper|hyper|secret|secreta/i,95],
+  [/ilustra..o rara especial|special illustration/i,90],
+  [/ultra/i,85],
+  [/ilustra..o rara|illustration rare/i,80],
+  [/rara dupla|double rare/i,75],
+  [/ace spec|rara ace/i,72],
+  [/rainbow|shiny|brilhante|radiant/i,70],
+  [/rara holo|rare holo|holo rare/i,62],
+  [/^\s*(rara|rare)\s*$/i,58],
+  [/promo/i,52],
+  [/incomum|uncommon/i,20],
+  [/comum|common/i,10],
+];
+const RARA_MIN=50; // daqui pra cima a carta vai no bloco "raras" da exportação
+function rarityLabel(card){
+  if(card.set&&card.set.id==='me1'){const m=getCardMeta(card.number);if(m)return m.rarity;}
+  return card.rarity||'';
+}
+function rarityRank(card){
+  const r=rarityLabel(card);
+  for(let i=0;i<RARITY_RANK.length;i++)if(RARITY_RANK[i][0].test(r))return RARITY_RANK[i][1];
+  return isSpecialCard(card)?65:15; // sem raridade: numeração decide
+}
+
 function typeBadgesHtml(id){
-  const t=normalizeEntry(collection[id]).types,b=[];
+  const e=normalizeEntry(collection[id]),t=e.types,b=[];
   if(t.normal)b.push('<span class="type-chip">N</span>');
   if(t.holofoil)b.push('<span class="type-chip holo">H</span>');
   if(t.reverseHolofoil)b.push('<span class="type-chip rev">R</span>');
+  const nd=dupCount(id);
+  if(nd)b.push(`<span class="type-chip dup" title="${dupTxt(id)}">+${nd}</span>`);
   return b.length?`<div class="type-badges">${b.join('')}</div>`:'';
 }
 function fmtBRL(v){return'R$ '+(v||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
@@ -869,6 +996,7 @@ function renderGrid(){
     if(currentFilter==='missing')return !isOwned(c.id);
     if(currentFilter==='base')return !isSpecialCard(c);
     if(currentFilter==='special')return isSpecialCard(c);
+    if(currentFilter==='dup')return dupCount(c.id)>0;
     if(currentFilter==='noprice')return isOwned(c.id)&&!getVal(c.id);
     return true;
   });
@@ -883,7 +1011,7 @@ function renderGrid(){
       ${c.__isPromo?'<div class="promo-tag">PROMO</div>':''}
       ${owned?'<div class="owned-badge"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>':''}
       ${owned&&val>0?`<div class="price-tag">${fmtBRL(val)}</div>`:''}
-      ${owned?typeBadgesHtml(c.id):''}
+      ${typeBadgesHtml(c.id)}
     </div><div class="card-num">${c.number}/${c.set?.printedTotal||'?'}</div><div class="card-name">${c.name}</div></div>`;
   }).join('');}
   updateStats();
@@ -893,6 +1021,10 @@ function updateStats(){
   const bOwn=base.filter(c=>isOwned(c.id)).length,sOwn=spec.filter(c=>isOwned(c.id)).length;
   const total=allCards.length,owned=bOwn+sOwn,pct=total?Math.round(owned/total*100):0;
   const val=allCards.reduce((s,c)=>s+getVal(c.id),0);
+  // Repetidas do set: contagem e valor. O valor fica SÓ aqui — não soma no total.
+  const nDup=allCards.reduce((s,c)=>s+dupCount(c.id),0);
+  const vDup=allCards.reduce((s,c)=>s+dupVal(c.id),0);
+  document.getElementById('statDup').textContent=nDup?`${nDup} · ${fmtBRL(vDup)}`:'0';
   document.getElementById('statBase').textContent=`${bOwn}/${base.length}`;
   document.getElementById('statSpecial').textContent=`${sOwn}/${spec.length}`;
   document.getElementById('statTotal').textContent=`${owned}/${total}`;
@@ -1401,10 +1533,20 @@ function openCard(cardId){
   }
   const e=normalizeEntry(collection[cardId]),av=deriveAvailability(card);
   document.getElementById('cmVariants').innerHTML=VARIANTS.map(v=>{
-    const exists=av[v.key]!==false,owned=e.types[v.key];
+    const exists=av[v.key]!==false,owned=e.types[v.key],q=e.dups[v.key]||0;
     if(!exists)return `<div class="var-row var-disabled"><input type="checkbox" class="var-check" id="v_${v.key}" disabled/><label class="var-label" style="color:var(--ink3);text-decoration:line-through">${v.label}</label><span style="font-size:11px;color:var(--ink3);margin-left:auto">não existe</span></div>`;
-    return `<div class="var-row"><input type="checkbox" class="var-check" id="v_${v.key}" ${owned?'checked':''} onchange="persistCard()"/><label class="var-label">${v.label}</label></div>`;
-  }).join('');
+    // caixinha de repetidas: quantas cópias EXTRAS dessa variação você tem
+    return `<div class="var-row">
+      <input type="checkbox" class="var-check" id="v_${v.key}" ${owned?'checked':''} onchange="persistCard()"/>
+      <label class="var-label" for="v_${v.key}">${v.label}</label>
+      <span class="dup-wrap">
+        <span class="dup-lbl">repetidas</span>
+        <button class="qty-b" type="button" onclick="stepDup('${v.key}',-1)">−</button>
+        <input type="number" class="qty-inp" id="d_${v.key}" min="0" step="1" value="${q||''}" placeholder="0" onchange="persistCard()"/>
+        <button class="qty-b" type="button" onclick="stepDup('${v.key}',1)">+</button>
+      </span></div>`;
+  }).join('')+`<div class="dup-note" id="cmDupNote"></div>`;
+  renderDupNote();
   document.getElementById('cmPrice').value=e.price?e.price.toFixed(2):'';
   let srcHtml=e.src?`<span class="vbadge vbadge-src">${e.src}</span>`:'<span class="vbadge vbadge-src">sem preço ainda</span>';
   if(card.__ligaPrice&&Math.abs((e.price||0)-card.__ligaPrice)>0.001)
@@ -1422,11 +1564,28 @@ function useLigaPrice(p){
   const inp=document.getElementById('cmPrice');if(!inp)return;
   inp.value=p.toFixed(2);persistCard('Liga (importado)');
 }
+// Botões − / + da caixinha de repetidas.
+function stepDup(key,delta){
+  const inp=document.getElementById('d_'+key);if(!inp)return;
+  const atual=parseInt(inp.value,10)||0;
+  inp.value=Math.max(0,atual+delta)||'';
+  persistCard();
+}
+// Linha explicativa embaixo das variações: quanto as repetidas valeriam.
+function renderDupNote(){
+  const el=document.getElementById('cmDupNote');if(!el||!openCardId)return;
+  const n=dupCount(openCardId);
+  if(!n){el.innerHTML='Tem carta sobrando? Coloque a quantidade em <b>repetidas</b> — elas ficam separadas e <b>não entram no valor total</b> da coleção.';return;}
+  el.innerHTML=`<b>${n} repetida(s)</b>: ${dupTxt(openCardId)} · valeriam ${fmtBRL(dupVal(openCardId))} (fora do total da coleção).`;
+}
 async function persistCard(srcOverride){
   if(!openCardId)return;
   const card=allCards.find(c=>c.id===openCardId);
   const prev=normalizeEntry(collection[openCardId]);
   const types={};VARIANTS.forEach(v=>{const chk=document.getElementById('v_'+v.key);types[v.key]=chk?chk.checked:false;});
+  // quantidade de repetidas por variação (0 quando o campo está vazio)
+  const dups={};VARIANTS.forEach(v=>{const q=document.getElementById('d_'+v.key);
+    const n=q?parseInt(q.value,10):0;dups[v.key]=(isNaN(n)||n<0)?0:n;});
   let price=parseFloat(document.getElementById('cmPrice')?.value||0)||0;
   let src=srcOverride||prev.src;
   // Coleção da Liga: se você acabou de marcar que tem a carta e ainda não há preço,
@@ -1434,13 +1593,301 @@ async function persistCard(srcOverride){
   const owning=types.normal||types.holofoil||types.reverseHolofoil;
   if(!price&&owning&&card&&card.__ligaPrice){price=card.__ligaPrice;src='Liga (importado)';
     const inp=document.getElementById('cmPrice');if(inp)inp.value=price.toFixed(2);}
-  const data={price,src,types,ts:Date.now()};
-  collection[openCardId]=data;saveCol();renderGrid();
+  const data={price,src,types,dups,ts:Date.now()};
+  collection[openCardId]=data;saveCol();renderGrid();renderDupNote();
   document.getElementById('cmPriceSrc').innerHTML=data.src?`<span class="vbadge vbadge-src">${data.src}</span>`:'<span class="vbadge vbadge-src">sem preço ainda</span>';
   await saveToSheet(openCardId,data);
 }
 function closeCard(){document.getElementById('cardModal').classList.remove('open');openCardId=null;}
 function closeCardBg(e){if(e.target===document.getElementById('cardModal'))closeCard();}
+
+/* ============================================================
+   EXPORTAÇÃO — CARTAS FALTANDO E CARTAS REPETIDAS
+
+   Duas saídas possíveis, para uma coleção só ou para todas:
+
+   1) FALTANDO  — cartas que você ainda não marcou como "tenho".
+                  Dá pra pedir só a coleção base, só as especiais ou tudo,
+                  e opcionalmente incluir variações que faltam de cartas
+                  que você já tem (tem a Normal, falta a Reverse).
+                  Ordem: coleção, depois número.
+
+   2) REPETIDAS — cartas com quantidade extra marcada.
+                  Ordem: RARAS primeiro (da mais rara pra menos), e depois
+                  as comuns, sempre agrupadas por coleção e número.
+
+   Três formatos: página com as imagens (pra imprimir ou salvar em PDF),
+   lista de texto (pra mandar no WhatsApp) e CSV (pra abrir no Excel).
+   ============================================================ */
+let expMode='faltando',expUltimoTexto='',expUltimoNome='lista.txt';
+
+function escHtml(s){return String(s==null?'':s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// Todas as coleções que este aparelho conhece: favoritas, criadas pela Liga,
+// com cache de cartas ou com pelo menos uma carta marcada.
+function setsConhecidos(){
+  const ids={};
+  savedSets.forEach(s=>ids[s.id]=1);
+  Object.keys(customSets).forEach(id=>ids[id]=1);
+  Object.keys(collection).forEach(cid=>{if(!cid.startsWith(SET_DEF_PREFIX))ids[setIdOf(cid)]=1;});
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);
+    if(k&&k.startsWith('pkm_cards_'))ids[k.slice(10)]=1;}
+  if(currentSetId)ids[currentSetId]=1;
+  return Object.keys(ids).sort((a,b)=>(setNames[a]||a).localeCompare(setNames[b]||b));
+}
+
+/* Lista de cartas de um set, na melhor fonte disponível:
+   1) o set aberto na tela (já inclui as promos carregadas)
+   2) coleção criada pela Liga (texto/PDF)
+   3) cache local (set já aberto uma vez neste aparelho)
+   4) API da pokemontcg.io — só como último recurso                       */
+async function cardsOfSet(sid){
+  if(sid===currentSetId&&allCards.length)return allCards;
+  if(customSets[sid])return customSetCards(customSets[sid]);
+  const cache=loadCardsCache(sid);
+  if(cache)return cache;
+  try{const cards=await fetchAllCards(sid);if(cards.length){saveCardsCache(sid,cards);return cards;}}catch(_){}
+  return null;
+}
+
+function openExp(){
+  const sel=document.getElementById('expSet');
+  const ids=setsConhecidos();
+  sel.innerHTML='<option value="__all__">Todas as coleções</option>'+
+    ids.map(id=>`<option value="${escHtml(id)}">${escHtml(setNames[id]||id)} (${escHtml(id)})</option>`).join('');
+  sel.value=(currentSetId&&ids.indexOf(currentSetId)>=0)?currentSetId:'__all__';
+  setExpMode(expMode);   // deixa as opções coerentes com a aba escolhida
+  document.getElementById('expModal').classList.add('open');
+}
+function closeExp(){document.getElementById('expModal').classList.remove('open');}
+function closeExpBg(e){if(e.target===document.getElementById('expModal'))closeExp();}
+function setExpMode(m){
+  expMode=m;
+  document.getElementById('expTabFalta').classList.toggle('active',m==='faltando');
+  document.getElementById('expTabDup').classList.toggle('active',m==='repetidas');
+  // "variações que faltam" só faz sentido no modo Faltando
+  document.getElementById('expVarWrap').style.display=(m==='faltando')?'flex':'none';
+  document.getElementById('expStatus').textContent='';
+  document.getElementById('expOut').style.display='none';
+  document.getElementById('expActions').style.display='none';
+}
+
+/* Ordem da exportação de REPETIDAS:
+   1) as RARAS vêm todas na frente;
+   2) dentro de cada bloco, agrupa por coleção;
+   3) entre as raras da mesma coleção, da mais rara para a menos rara;
+   4) as demais, por número.
+   Assim a lista sai com as cartas de valor no topo e sem misturar coleções. */
+function cmpExportDup(a,b){
+  const ra=a.rank>=RARA_MIN,rb=b.rank>=RARA_MIN;
+  if(ra!==rb)return ra?-1:1;                  // rara sempre antes de não-rara
+  const sa=(a.card.set&&a.card.set.id)||'',sb=(b.card.set&&b.card.set.id)||'';
+  if(sa!==sb)return sa<sb?-1:1;               // agrupa por coleção
+  if(ra&&a.rank!==b.rank)return b.rank-a.rank;// só entre raras: mais rara primeiro
+  return cmpSetNum(a,b);                      // empate: número
+}
+// Ordenação base: coleção, depois número (003 antes de 003b, 9 antes de 10).
+function cmpSetNum(a,b){
+  const sa=(a.card.set&&a.card.set.id)||'',sb=(b.card.set&&b.card.set.id)||'';
+  if(sa!==sb)return sa<sb?-1:1;
+  const na=cardNumberInt(a.card.number),nb=cardNumberInt(b.card.number);
+  if(na!==nb)return (na==null?99999:na)-(nb==null?99999:nb);
+  const xa=cardNumberSuffix(a.card.number),xb=cardNumberSuffix(b.card.number);
+  return xa<xb?-1:xa>xb?1:0;
+}
+
+async function runExport(){
+  const st=document.getElementById('expStatus');
+  const out=document.getElementById('expOut'),acts=document.getElementById('expActions');
+  out.style.display='none';acts.style.display='none';
+  const alvo=document.getElementById('expSet').value;
+  const what=document.getElementById('expWhat').value;
+  const fmt=document.getElementById('expFmt').value;
+  const incluirVar=document.getElementById('expVar').checked;
+  const sids=alvo==='__all__'?setsConhecidos():[alvo];
+  if(!sids.length){st.className='save-note error';st.textContent='Nenhuma coleção pra exportar ainda.';return;}
+
+  st.className='save-note syncing';
+  const itens=[],semLista=[];
+  for(let i=0;i<sids.length;i++){
+    const sid=sids[i];
+    st.textContent=`Lendo "${setNames[sid]||sid}" (${i+1}/${sids.length})...`;
+    const cards=await cardsOfSet(sid);
+    if(!cards){semLista.push(setNames[sid]||sid);continue;}
+    cards.forEach(c=>{
+      // filtro base / especiais
+      const esp=isSpecialCard(c);
+      if(what==='base'&&esp)return;
+      if(what==='special'&&!esp)return;
+      const nome=setNames[(c.set&&c.set.id)||sid]||(c.set&&c.set.name)||sid;
+      const base={card:c,setId:(c.set&&c.set.id)||sid,setName:nome,
+        rank:rarityRank(c),rar:rarityLabel(c),esp:esp,preco:normalizeEntry(collection[c.id]).price||0};
+      if(expMode==='faltando'){
+        const av=deriveAvailability(c);
+        if(!isOwned(c.id)){
+          itens.push({...base,tipo:'carta',faltaTxt:'carta inteira'});
+        }else if(incluirVar){
+          // tenho a carta, mas alguma variação que existe ainda não foi marcada
+          const t=normalizeEntry(collection[c.id]).types;
+          const falta=VARIANTS.filter(v=>av[v.key]!==false&&!t[v.key]).map(v=>v.label);
+          if(falta.length)itens.push({...base,tipo:'variacao',faltaTxt:'falta '+falta.join(' + ')});
+        }
+      }else{
+        const n=dupCount(c.id);
+        if(n)itens.push({...base,qtd:n,qtdTxt:dupTxt(c.id),valor:n*base.preco});
+      }
+    });
+  }
+
+  if(!itens.length){
+    st.className='save-note error';
+    st.textContent=expMode==='faltando'
+      ?'Não achei carta faltando com esses filtros. 🎉'
+      :'Você ainda não marcou nenhuma carta como repetida. Abra a carta e preencha o campo "repetidas".';
+    return;
+  }
+
+  // Ordenação
+  if(expMode==='faltando')itens.sort(cmpSetNum);
+  else itens.sort(cmpExportDup);
+
+  const quando=new Date().toLocaleDateString('pt-BR');
+  const escopo=alvo==='__all__'?'Todas as coleções':(setNames[alvo]||alvo);
+  const rotuloWhat=what==='base'?'só coleção base':what==='special'?'só especiais':'base + especiais';
+  const titulo=expMode==='faltando'?'Cartas que faltam':'Cartas repetidas';
+  const sub=expMode==='faltando'
+    ?`${escopo} · ${rotuloWhat} · ${itens.length} carta(s) · ${quando}`
+    :`${escopo} · ${itens.length} carta(s) repetida(s), ${itens.reduce((s,x)=>s+x.qtd,0)} cópia(s) · valeriam ${fmtBRL(itens.reduce((s,x)=>s+x.valor,0))} · ${quando}`;
+  const nomeArq=(expMode==='faltando'?'faltando_':'repetidas_')+
+    (alvo==='__all__'?'todas':alvo)+'_'+new Date().toISOString().slice(0,10);
+
+  let aviso=semLista.length?`\n⚠ Não consegui a lista de cartas de: ${semLista.join(', ')} (abra essa coleção uma vez e tente de novo).`:'';
+
+  if(fmt==='img'){
+    const html=buildExportHtml(titulo,sub,itens);
+    abrirOuBaixar(html,nomeArq+'.html');
+    st.className='save-note synced';
+    st.textContent=`✓ ${itens.length} carta(s). Abri numa aba nova — use o botão "Imprimir / salvar PDF" lá em cima.`+aviso;
+  }else if(fmt==='csv'){
+    const linhas=[expMode==='faltando'
+      ?'colecao;numero;nome;raridade;tipo;o_que_falta;preco'
+      :'colecao;numero;nome;raridade;qtd_repetidas;detalhe;preco_unit;valor_total'];
+    itens.forEach(it=>{
+      const p=n=>String((n||0).toFixed(2)).replace('.',',');
+      const cel=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
+      linhas.push(expMode==='faltando'
+        ?[cel(it.setName),cel(it.card.number),cel(it.card.name),cel(it.rar),cel(it.esp?'especial':'base'),cel(it.faltaTxt),p(it.preco)].join(';')
+        :[cel(it.setName),cel(it.card.number),cel(it.card.name),cel(it.rar),it.qtd,cel(it.qtdTxt),p(it.preco),p(it.valor)].join(';'));
+    });
+    // \ufeff = BOM, faz o Excel em português abrir os acentos certos
+    baixarArquivo(nomeArq+'.csv','\ufeff'+linhas.join('\r\n'),'text/csv');
+    st.className='save-note synced';st.textContent=`✓ CSV com ${itens.length} linha(s) baixado.`+aviso;
+  }else{
+    let txt=titulo.toUpperCase()+'\n'+sub+'\n';
+    let setAtual='',blocoRaras=expMode==='repetidas',secRaras=false;
+    itens.forEach(it=>{
+      if(expMode==='repetidas'){
+        const raro=it.rank>=RARA_MIN;
+        if(blocoRaras&&!raro){txt+=secRaras?'\n\n--- DEMAIS ---':'';blocoRaras=false;setAtual='';}
+        else if(blocoRaras&&!secRaras){txt+='\n\n--- RARAS ---';secRaras=true;}
+      }
+      if(it.setName!==setAtual){setAtual=it.setName;txt+=`\n\n[${setAtual}]`;}
+      txt+=`\n#${it.card.number} ${it.card.name}`
+        +(it.rar?` (${it.rar})`:'')
+        +(expMode==='repetidas'?` — ${it.qtdTxt}`:(it.tipo==='variacao'?` — ${it.faltaTxt}`:''));
+    });
+    expUltimoTexto=txt;expUltimoNome=nomeArq+'.txt';
+    out.value=txt;out.style.display='block';acts.style.display='flex';
+    st.className='save-note synced';st.textContent=`✓ ${itens.length} carta(s) na lista abaixo.`+aviso;
+  }
+}
+
+/* Página pronta pra imprimir, com a imagem de cada carta.
+   Sai como arquivo .html independente: abre em aba nova e também pode ser
+   salvo/enviado. As imagens das coleções da Liga já vão embutidas. */
+function buildExportHtml(titulo,sub,itens){
+  const modoDup=expMode==='repetidas';
+  let html='';let setAtual='',blocoRaras=modoDup,abriu=false,secRaras=false;
+  itens.forEach(it=>{
+    if(modoDup){
+      const raro=it.rank>=RARA_MIN;
+      if(blocoRaras&&!raro){ // acabaram as raras: abre o bloco das demais
+        html+=(abriu?'</div>':'')+(secRaras?'<h2 class="sec">Demais cartas</h2>':'');
+        blocoRaras=false;setAtual='';abriu=false;
+      }else if(blocoRaras&&!secRaras){html+='<h2 class="sec">⭐ Raras</h2>';secRaras=true;}
+    }
+    if(it.setName!==setAtual){
+      setAtual=it.setName;
+      html+=(abriu?'</div>':'')+`<h3 class="col">${escHtml(setAtual)}</h3><div class="g">`;abriu=true;
+    }
+    const c=it.card;
+    const img=(c.images&&(c.images.large||c.images.small))||'';
+    const face=img
+      ?`<img src="${escHtml(img)}" alt="${escHtml(c.name)}" loading="eager"/>`
+      :`<div class="ph"><b>${escHtml(c.number)}</b><span>${escHtml(c.name)}</span></div>`;
+    const extra=modoDup
+      ?`<div class="q">${escHtml(it.qtdTxt)}</div>`
+      :(it.tipo==='variacao'?`<div class="q var">${escHtml(it.faltaTxt)}</div>`:'');
+    html+=`<div class="ct">${face}
+      <div class="nm">#${escHtml(c.number)} ${escHtml(c.name)}</div>
+      ${it.rar?`<div class="rr">${escHtml(it.rar)}</div>`:''}
+      ${extra}</div>`;
+  });
+  if(abriu)html+='</div>';
+
+  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>${escHtml(titulo)}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#f3f5f8;color:#1c2430;padding:18px}
+header{background:linear-gradient(160deg,#1B3F91,#10285E);color:#fff;border-radius:14px;padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font-size:19px;font-weight:800}
+.sb{font-size:12px;opacity:.85;margin-top:3px}
+.pb{margin-left:auto;background:#F4C430;color:#7a5a00;border:none;border-radius:20px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer}
+.sec{font-size:15px;margin:18px 0 8px;padding-bottom:6px;border-bottom:2px solid #1B3F91;color:#10285E}
+.col{font-size:13px;margin:14px 0 8px;color:#5a6577;font-weight:700}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+.ct{background:#fff;border:1px solid #e6eaf1;border-radius:10px;padding:8px;text-align:center;break-inside:avoid;page-break-inside:avoid}
+.ct img{width:100%;border-radius:7px;display:block;aspect-ratio:63/88;object-fit:cover;background:#e9edf3}
+.ph{width:100%;aspect-ratio:63/88;border-radius:7px;background:linear-gradient(160deg,#1B3F91,#081638);color:#FFE18C;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px}
+.ph b{font-size:18px;color:#F4C430}.ph span{font-size:9px;line-height:1.2}
+.nm{font-size:10px;font-weight:600;margin-top:5px;line-height:1.25}
+.rr{font-size:9px;color:#8a94a6;margin-top:2px}
+.q{font-size:10px;font-weight:700;color:#0d5c4a;background:#e5f7f0;border-radius:5px;padding:2px 5px;margin-top:4px}
+.q.var{color:#8046a3;background:#f6ecfb}
+@media print{body{background:#fff;padding:0}header{border-radius:0}.pb{display:none}.g{grid-template-columns:repeat(6,1fr);gap:7px}.ct{border-color:#ccc}}
+</style></head><body>
+<header><div><h1>${escHtml(titulo)}</h1><div class="sb">${escHtml(sub)}</div></div>
+<button class="pb" onclick="window.print()">🖨 Imprimir / salvar PDF</button></header>
+${html}
+</body></html>`;
+}
+
+function baixarArquivo(nome,conteudo,tipo){
+  const blob=new Blob([conteudo],{type:tipo+';charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=nome;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},2000);
+}
+// Tenta abrir em aba nova; se o navegador bloquear o pop-up, baixa o arquivo.
+function abrirOuBaixar(html,nome){
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const w=window.open(url,'_blank');
+  if(!w){URL.revokeObjectURL(url);baixarArquivo(nome,html,'text/html');
+    showWarn('O navegador bloqueou a aba nova, então baixei o arquivo. Abra-o pra imprimir ou salvar em PDF.');}
+  else setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+function copiarExport(){
+  const out=document.getElementById('expOut');out.select();
+  try{document.execCommand('copy');}catch(_){}
+  if(navigator.clipboard)navigator.clipboard.writeText(expUltimoTexto).catch(()=>{});
+  const st=document.getElementById('expStatus');st.className='save-note synced';st.textContent='✓ Copiado.';
+}
+function baixarExportTxt(){baixarArquivo(expUltimoNome,expUltimoTexto,'text/plain');}
 
 showHome();
 </script>
