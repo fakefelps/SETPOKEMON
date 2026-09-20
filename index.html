@@ -364,6 +364,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
     <button class="tb-btn blue" onclick="atualizarPrecosSet(currentSetId)">🔄 Atualizar preços (Liga)</button>
     <button class="tb-btn" onclick="abrirVinculo(currentSetId)">🔗 Página na Liga</button>
     <button class="tb-btn red" onclick="abrirColar()">📋 Colar da Liga</button>
+    <button class="tb-btn" onclick="diagnosticoEdicao()" title="Baixa a leitura bruta da página da Liga, pra ajustar o leitor">🧪 Diagnóstico</button>
     <button class="tb-btn" onclick="openExp()">📤 Exportar</button>
     <button class="tb-btn" id="favBtn" onclick="alternarFavorito()">★ Favorito</button>
     <button class="tb-btn" onclick="excluirColecao(currentSetId)">🗑 Excluir</button>
@@ -1019,12 +1020,17 @@ function openCard(cardId){
   const src=imgUrl(c,'high'),img=$('cmImg'),ph=$('cmPh');
   if(src){img.style.display='block';img.referrerPolicy='no-referrer';img.src=src;ph.style.display='none';}
   else{img.style.display='none';ph.style.display='flex';ph.querySelector('.n').textContent='#'+c.localId;ph.querySelector('.t').textContent=c.name;}
-  $('cmAdd').innerHTML=EXTRAS.map(([k,l])=>`<button class="tb-btn" onclick="addLinha(${J(k)})">＋ ${escHtml(l)}</button>`).join('');
   setNote('');renderCardModal();
   $('cardModal').classList.add('open');
   carregarRaridade(c);
 }
 const raridadeCache={};
+// Variações que REALMENTE existem pra carta (vem do catálogo). Sem informação -> mostra todas.
+function extrasDaCarta(cardId){
+  const d=raridadeCache[cardId],v=d&&d.variants;if(!v)return EXTRAS;
+  const tem=EXTRAS.filter(([k])=>(k==='Normal'&&v.normal)||(k==='Holo'&&v.holo)||(k==='Reverse'&&v.reverse));
+  return tem.length?tem:EXTRAS;
+}
 async function carregarRaridade(c){
   if(customSets[setIdOf(c.id)])return;
   try{
@@ -1033,16 +1039,20 @@ async function carregarRaridade(c){
     if(openCardId!==c.id||!d)return;
     const v=d.variants||{},tem=[];if(v.normal)tem.push('Normal');if(v.holo)tem.push('Holo');if(v.reverse)tem.push('Reverse');
     $('cmMeta').textContent='#'+c.localId+' · '+(currentSet?currentSet.name:'')+(d.rarity?' · '+d.rarity:'')+(tem.length?' · existe em: '+tem.join(', '):'');
+    renderCardModal();
   }catch(e){}
 }
 function setNote(m,c){const el=$('saveNote');el.textContent=m||'';el.className='save-note'+(c?' '+c:'');}
 function renderCardModal(){
   const c=cartaAtual();if(!c)return;
-  const rs=rowsOf(c.id);
+  const rs=rowsOf(c.id),exs=extrasDaCarta(c.id);
+  $('cmAdd').innerHTML=exs.map(([k,l])=>`<button class="tb-btn" onclick="addLinha(${J(k)})">＋ ${escHtml(l)}</button>`).join('');
+  // no seletor: só as que existem + a que já está gravada (pra não sumir um exemplar antigo)
+  const exsDe=r=>exs.some(([k])=>k===r.extra)?exs:exs.concat(EXTRAS.filter(([k])=>k===r.extra));
   $('cmLinhas').innerHTML=rs.length?rs.map(r=>{
     const p=precoLinha(r),rot={manual:'manual',exato:'Liga · exato',geral:'Liga · menor geral',sem:'sem preço'}[p.fonte];
     return `<div class="ex-row">
-      <select onchange="mudarLinha(${r.id},'extra',this.value)">${opts(EXTRAS,r.extra)}</select>
+      <select onchange="mudarLinha(${r.id},'extra',this.value)">${opts(exsDe(r),r.extra)}</select>
       <select onchange="mudarLinha(${r.id},'idioma',this.value)">${opts(IDIOMAS,r.idioma)}</select>
       <select onchange="mudarLinha(${r.id},'qualidade',this.value)">${opts(QUALS,r.qualidade)}</select>
       <div class="ex-line">
@@ -1210,30 +1220,65 @@ async function atualizarPrecosSet(setId,emLote){
   if(!extVersao){if(!emLote){showWarn('Extensão não detectada neste navegador. Instale a extensão (pasta "extensao") ou use "📋 Colar da Liga".');abrirColar();}return null;}
   setSync('Lendo a Liga ('+setId+')… pode abrir uma aba por alguns segundos.','loading');
   try{
-    const dados=await extChamar('LER_EDICAO',url);
-    if(dados.bloqueio)throw new Error('A Liga pediu verificação anti-robô. Abra o site da Liga numa aba, resolva a verificação e tente de novo.');
-    const r=await aplicarLeitura(setId,dados.texto,dados.links);
+    const esperado=(currentSet&&currentSet.id===setId&&currentSet.total)||(setsUser[setId]&&setsUser[setId].total)||0;
+    const r=await lerEdicaoCompleta(setId,url,esperado);
     if(!emLote){
-      setSync(`✓ ${r.gravadas} preço(s) atualizados (${r.lidas} cartas lidas)`,'ok');
-      if(r.semPar.length)showWarn(`${r.semPar.length} carta(s) da Liga não casaram com o catálogo: ${r.semPar.slice(0,6).join(', ')}${r.semPar.length>6?'…':''}`);
+      const parcial=esperado&&r.lidas<esperado*0.8;
+      setSync(`${parcial?'⚠':'✓'} ${r.gravadas} preço(s) atualizados — ${r.lidas} de ${esperado||'?'} cartas lidas`,parcial?'err':'ok');
+      const avisos=[];
+      if(parcial)avisos.push(`A Liga só entregou ${r.lidas} das ${esperado} cartas deste set. Clique em "🧪 Diagnóstico" e me mande o arquivo para eu ajustar o leitor.`);
+      if(r.semPar.length)avisos.push(`${r.semPar.length} carta(s) da Liga não casaram com o catálogo: ${r.semPar.slice(0,6).join(', ')}${r.semPar.length>6?'…':''}`);
+      if(avisos.length)showWarn(avisos.join(' · '));
       if(currentSetId===setId){if(customSets[setId]){const d=await carregarCartasSet(setId);currentCards=d.cards;currentSet=d.set;}renderGrid();updateStats();if(openCardId)renderCardModal();}
       fotografarValor();
     }
     return r;
   }catch(e){if(!emLote){setSync('','');showWarn(erroMsg(e));}else throw e;return null;}
 }
+// Lê a edição e, se a Liga paginar por link, segue as outras páginas (com pausa).
+async function lerEdicaoCompleta(setId,url,esperado){
+  const soma={lidas:0,gravadas:0,semPar:[]},feitas={},vistas={};
+  const fila=[url];
+  while(fila.length&&Object.keys(feitas).length<25){
+    const u=fila.shift();if(feitas[u])continue;feitas[u]=1;
+    const dados=await extChamar('LER_EDICAO',u,{esperado});
+    if(dados.bloqueio)throw new Error('A Liga pediu verificação anti-robô. Abra o site da Liga numa aba, resolva a verificação e tente de novo.');
+    let r;try{r=await aplicarLeitura(setId,dados.texto,dados.links);}catch(e){if(soma.lidas)break;throw e;}
+    const novas=parseLiga(dados.texto).filter(l=>!vistas[l.key]);
+    novas.forEach(l=>vistas[l.key]=1);
+    soma.lidas=Object.keys(vistas).length;soma.gravadas+=r.gravadas;
+    r.semPar.forEach(x=>{if(soma.semPar.indexOf(x)<0)soma.semPar.push(x);});
+    if(!novas.length&&u!==url)break;                                   // página repetida: acabou
+    if(esperado&&soma.lidas>=esperado)break;
+    (dados.paginas||[]).forEach(p=>{if(urlLigaValida(p)&&!feitas[p]&&fila.indexOf(p)<0)fila.push(p);});
+    if(fila.length){setSync(`Lendo a Liga (${setId}) — ${soma.lidas} cartas até agora…`,'loading');await new Promise(z=>setTimeout(z,2000));}
+  }
+  return soma;
+}
+async function diagnosticoEdicao(){
+  const url=urlDoSet(currentSetId);
+  if(!url)return abrirVinculo(currentSetId);
+  if(!extVersao)return showWarn('Extensão não detectada neste navegador.');
+  setSync('Gerando diagnóstico da edição…','loading');
+  try{const d=await extChamar('LER_EDICAO',url,{bruto:true,esperado:(currentSet&&currentSet.total)||0});
+    d.extensao=extVersao;d.esperado=(currentSet&&currentSet.total)||0;d.cartasLidas=parseLiga(d.texto||'').length;
+    baixarArquivo('diagnostico_liga_'+currentSetId+'.json',JSON.stringify(d),'application/json');
+    setSync(`✓ Diagnóstico baixado (${d.cartasLidas} cartas lidas)`,'ok');}
+  catch(e){setSync('','');showWarn(erroMsg(e));}
+}
 async function atualizarTodos(){
   if(!extVersao){showWarn('Extensão não detectada neste navegador. A atualização em lote precisa dela (Chrome/Edge no computador).');return;}
   const ids=meusSetIds(),com=ids.filter(urlDoSet),sem=ids.filter(i=>!urlDoSet(i));
   if(!com.length){showWarn('Nenhuma das suas coleções tem a página da Liga vinculada ainda. Abra o set e clique em "🔗 Página na Liga".');return;}
-  let ok=0,precos=0;const falhas=[];
+  let ok=0,precos=0;const falhas=[],parciais=[];
   for(let i=0;i<com.length;i++){
     setSync(`Lendo a Liga: ${com[i]} (${i+1}/${com.length})…`,'loading');
-    try{const r=await atualizarPrecosSet(com[i],true);if(r){ok++;precos+=r.gravadas;}}catch(e){falhas.push(com[i]+': '+erroMsg(e));}
+    try{const r=await atualizarPrecosSet(com[i],true);if(r){ok++;precos+=r.gravadas;const t=(setsUser[com[i]]&&setsUser[com[i]].total)||0;if(t&&r.lidas<t*0.8)parciais.push(`${com[i]} (${r.lidas}/${t})`);}}catch(e){falhas.push(com[i]+': '+erroMsg(e));}
     if(i<com.length-1)await new Promise(r=>setTimeout(r,2500));          // pausa: não martelar a Liga
   }
   setSync(`✓ ${ok}/${com.length} coleções · ${precos} preços atualizados`,'ok');
   const avisos=[];if(falhas.length)avisos.push('Falharam — '+falhas.join(' | '));
+  if(parciais.length)avisos.push('Leitura parcial: '+parciais.join(', '));
   if(sem.length)avisos.push('Sem página da Liga vinculada: '+sem.join(', '));
   if(avisos.length)showWarn(avisos.join(' · '));
   renderHome();fotografarValor();
