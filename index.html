@@ -265,6 +265,10 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
 .ext-pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;background:#ffe9e9;color:#a02b2b}
 .ext-pill.on{background:#e3f6ec;color:#176b3c}
 @media(max-width:520px){.ex-row{grid-template-columns:1fr 1fr}.set-input{width:100%}}
+/* cabeçalho + barras fixos ao rolar (só em tela grande: no celular comeria a tela toda) */
+.topo{position:sticky;top:0;z-index:100;box-shadow:0 3px 14px rgba(20,30,50,.18)}
+.topo header{position:static;box-shadow:none}
+@media(max-width:760px),(max-height:620px){.topo{display:contents}.topo header{position:sticky;top:0;box-shadow:0 3px 14px rgba(20,30,50,.18)}}
 </style>
 </head>
 <body>
@@ -286,6 +290,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
   </div>
 </div>
 
+<div class="topo" id="topo">
 <header>
   <div class="brand-row">
     <div class="lens"></div>
@@ -324,29 +329,12 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
   <span class="sync-status" id="syncStatus"></span>
 </div>
 
-<div class="home" id="homeView"></div>
-
-<!-- ======================= COMUNIDADE ======================= -->
-<div class="com" id="comView">
-  <div class="home-h" style="margin-top:4px">Comunidade</div>
-  <div id="comAviso"></div>
-  <div class="com-tabs">
-    <button class="filter-btn active" id="comTab_matches" onclick="comAba('matches')">🎯 Tem o que eu procuro</button>
-    <button class="filter-btn" id="comTab_repetidas" onclick="comAba('repetidas')">🔁 Repetidas da galera</button>
-    <button class="filter-btn" id="comTab_desejos" onclick="comAba('desejos')">🔎 Procurados</button>
-    <button class="tb-btn blue" style="margin-left:auto" onclick="abrirDivulgar()">📣 O que eu divulgo</button>
-  </div>
-  <input class="search-modal-input" id="comBusca" placeholder="Filtrar por carta, set ou pessoa..." oninput="renderComunidade()"/>
-  <div class="com-list" id="comLista"></div>
-</div>
-
 <div class="stats-bar" id="statsBar">
   <div class="stat">Base<span id="statBase">0/0</span></div>
   <div class="stat">Especiais<span id="statSpecial">0/0</span></div>
   <div class="stat">Total<span id="statTotal">0/0</span></div>
   <div class="stat">Progresso<span id="statPct">0%</span></div>
   <div class="stat" title="Cartas repetidas neste set — não entram no valor total">Repetidas<span id="statDup">0</span></div>
-  <div class="stat" title="Quanto custaria comprar as que faltam, pelo menor preço da Liga">Falta<span id="statFalta">—</span></div>
   <div class="stat-value" id="statValue">R$ 0,00</div>
 </div>
 <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
@@ -364,12 +352,31 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
     <button class="tb-btn blue" onclick="atualizarPrecosSet(currentSetId)">🔄 Atualizar preços (Liga)</button>
     <button class="tb-btn" onclick="abrirVinculo(currentSetId)">🔗 Página na Liga</button>
     <button class="tb-btn red" onclick="abrirColar()">📋 Colar da Liga</button>
+    <button class="tb-btn" onclick="atualizarVariacoesSet()" title="Abre a página de cada carta que você TEM e grava o preço por variação (Normal / Foil / Reverse)">💎 Preço por variação</button>
     <button class="tb-btn" onclick="diagnosticoEdicao()" title="Baixa a leitura bruta da página da Liga, pra ajustar o leitor">🧪 Diagnóstico</button>
     <button class="tb-btn" onclick="openExp()">📤 Exportar</button>
     <button class="tb-btn" id="favBtn" onclick="alternarFavorito()">★ Favorito</button>
     <button class="tb-btn" onclick="excluirColecao(currentSetId)">🗑 Excluir</button>
   </div>
 </div>
+</div><!-- /topo -->
+
+<div class="home" id="homeView"></div>
+
+<!-- ======================= COMUNIDADE ======================= -->
+<div class="com" id="comView">
+  <div class="home-h" style="margin-top:4px">Comunidade</div>
+  <div id="comAviso"></div>
+  <div class="com-tabs">
+    <button class="filter-btn active" id="comTab_matches" onclick="comAba('matches')">🎯 Tem o que eu procuro</button>
+    <button class="filter-btn" id="comTab_repetidas" onclick="comAba('repetidas')">🔁 Repetidas da galera</button>
+    <button class="filter-btn" id="comTab_desejos" onclick="comAba('desejos')">🔎 Procurados</button>
+    <button class="tb-btn blue" style="margin-left:auto" onclick="abrirDivulgar()">📣 O que eu divulgo</button>
+  </div>
+  <input class="search-modal-input" id="comBusca" placeholder="Filtrar por carta, set ou pessoa..." oninput="renderComunidade()"/>
+  <div class="com-list" id="comLista"></div>
+</div>
+
 <div class="card-grid" id="cardGrid" style="display:none"></div>
 
 <!-- ======================= MODAIS ======================= -->
@@ -388,7 +395,11 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
       Abra a <b>edição</b> no site da Liga Pokémon (a lista com todas as cartas do set), copie o endereço da barra do navegador e cole aqui.<br>
       Isso é feito <b>uma vez por set</b> e vale para todos os usuários.
     </div>
-    <div class="fld"><label>Endereço (URL) da edição na Liga</label><input id="vincUrl" placeholder="https://www.ligapokemon.com.br/?view=cards/search&card=ed=..."/></div>
+    <div class="fld"><label>Escolher a edição na lista da Liga</label>
+      <input id="vincBusca" placeholder="Digite o nome ou código (ex: Mega, MEP, 151)..." oninput="renderEdicoesLiga('vinc')"/>
+      <div class="pick-list" id="vincLista" style="max-height:190px"></div>
+      <div style="margin-top:6px"><button class="mini-btn" onclick="atualizarEdicoesLiga('vinc')">↻ Atualizar lista de edições (extensão)</button> <span class="sync-status" id="vincEdStatus"></span></div></div>
+    <div class="fld"><label>…ou cole o endereço (URL) da edição</label><input id="vincUrl" placeholder="https://www.ligapokemon.com.br/?view=cards/search&card=ed=..."/></div>
     <button class="save-btn" onclick="salvarVinculo()">Salvar</button>
     <div class="save-note" id="vincStatus"></div>
   </div>
@@ -414,7 +425,11 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
     <div class="hint-box" style="margin:0 0 12px">
       Para promos/produtos que o catálogo ainda não tem. Informe a página da edição na Liga: com a <b>extensão</b> eu leio as cartas (e as imagens) sozinho. Sem extensão, cole o texto da página (Ctrl+A, Ctrl+C).
     </div>
-    <div class="fld"><label>Endereço (URL) da edição na Liga</label><input id="nlUrl" placeholder="https://www.ligapokemon.com.br/?view=cards/search&card=ed=MEP"/></div>
+    <div class="fld"><label>Escolher a edição na lista da Liga</label>
+      <input id="nlBusca" placeholder="Digite o nome ou código (ex: Mega, MEP, 151)..." oninput="renderEdicoesLiga('nl')"/>
+      <div class="pick-list" id="nlLista" style="max-height:190px"></div>
+      <div style="margin-top:6px"><button class="mini-btn" onclick="atualizarEdicoesLiga('nl')">↻ Atualizar lista de edições (extensão)</button> <span class="sync-status" id="nlEdStatus"></span></div></div>
+    <div class="fld"><label>…ou cole o endereço (URL) da edição</label><input id="nlUrl" placeholder="https://www.ligapokemon.com.br/?view=cards/search&card=ed=MEP"/></div>
     <div class="fld"><label>Nome da coleção</label><input id="nlNome" placeholder="Ex: Mega Evolution Promos"/></div>
     <div class="fld"><label>Código curto</label><input id="nlCod" placeholder="Ex: MEP"/></div>
     <div class="fld"><label>Texto colado (só se não tiver a extensão)</label><textarea id="nlTexto" style="min-height:80px"></textarea></div>
@@ -438,6 +453,9 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
       <div class="fld"><label>Idioma</label><select id="pfIdioma"></select></div>
       <div class="fld"><label>Qualidade</label><select id="pfQual"></select></div>
     </div>
+    <div class="fld"><label>Valor usado nas cartas</label><select id="pfBase">
+      <option value="menor">Menor preço da Liga (pode ser de carta danificada)</option>
+      <option value="medio">Preço médio da Liga (mais próximo de uma NM)</option></select></div>
     <button class="save-btn" onclick="salvarPerfil()">Salvar</button>
     <div class="save-note" id="pfStatus"></div>
     <div class="cm-section">Ferramentas</div>
@@ -534,7 +552,7 @@ const QUALS=[['M','M · Mint'],['NM','NM · Near Mint'],['SP','SP · Slightly Pl
 
 let sb=null,user=null,perfil=null;
 let linhas=[],porCarta={},desejos={},setsUser={},customSets={},vinculos={};
-let precoG={},precoX={},valorHist=[];
+let precoG={},precoX={},precoE={},valorHist=[],ligaEdicoes=[];
 let catalogo=[],currentSetId=null,currentSet=null,currentCards=[],currentFilter='all',openCardId=null;
 let extVersao=null;
 
@@ -663,7 +681,9 @@ async function carregarTudo(){
     customSets={};cs.forEach(s=>customSets[s.id]=s);
     vinculos={};vl.forEach(v=>vinculos[v.set_id]=v);
     valorHist=(vh.data||[]).slice().reverse();
+    Object.keys(precosCarregados).forEach(k=>delete precosCarregados[k]);
     await carregarPrecos(meusSetIds());
+    sb.from('liga_edicoes').select('codigo,nome,url').order('nome').limit(3000).then(r=>{if(!r.error)ligaEdicoes=r.data||[];});
     renderOwner();renderSaved();
     if(currentSetId)renderGrid(),updateStats();else showHome();
     setSync('✓ Atualizado','ok');
@@ -677,21 +697,41 @@ function meusSetIds(){
 async function carregarPrecos(setIds){
   for(const sid of setIds){
     const pad=likeEsc(sid)+'-%';
-    const [g,x]=await Promise.all([
-      selTudo(()=>sb.from('precos_gerais').select('carta_id,preco_min,preco_max,atualizado_em').like('carta_id',pad)),
-      selTudo(()=>sb.from('precos').select('carta_id,idioma,qualidade,extra,preco_min,atualizado_em').like('carta_id',pad))
+    const [g,x,e]=await Promise.all([
+      selTudo(()=>sb.from('precos_gerais').select('*').like('carta_id',pad)),
+      selTudo(()=>sb.from('precos').select('carta_id,idioma,qualidade,extra,preco_min,atualizado_em').like('carta_id',pad)),
+      selTudo(()=>sb.from('precos_extras').select('*').like('carta_id',pad)).catch(()=>[])      // tabela da migração v3
     ]);
     g.forEach(p=>{if(setIdOf(p.carta_id)===sid)precoG[p.carta_id]=p;});
     x.forEach(p=>{if(setIdOf(p.carta_id)===sid)precoX[chaveX(p)]=p;});
+    e.forEach(p=>{if(setIdOf(p.carta_id)===sid)precoE[p.carta_id+'|'+p.extra]=p;});
+    precosCarregados[sid]=1;
   }
 }
+const precosCarregados={};
+async function garantirPrecos(setId){if(!precosCarregados[setId])await carregarPrecos([setId]);}
 function chaveX(r){return [r.carta_id,r.extra,r.idioma,r.qualidade].join('|');}
 
-/* ---------- valoração: manual > Liga exato > Liga menor geral ---------- */
+/* ---------- valoração ----------
+   manual  >  Liga por variação (Normal / Foil / Reverse Foil)  >  Liga geral
+   Em cada nível usa o MENOR ou o MÉDIO, conforme a escolha no perfil.
+   (Preço por idioma+qualidade não existe: a Liga embaralha de propósito o preço
+   de cada oferta individual, e isso a gente não quebra.)                        */
+const EXTRA_LIGA={Normal:['N'],Holo:['F','N'],Reverse:['RF']};
+function escolher(p){
+  if(!p)return null;
+  const med=perfil&&perfil.base_preco==='medio';
+  const v=med?(p.preco_med!=null?p.preco_med:p.preco_min):p.preco_min;
+  return v!=null&&Number(v)>0?Number(v):null;
+}
 function precoLinha(r){
   if(r.preco_manual!=null)return {v:Number(r.preco_manual),fonte:'manual'};
-  const x=precoX[chaveX(r)];if(x&&x.preco_min!=null)return {v:Number(x.preco_min),fonte:'exato',ts:x.atualizado_em};
-  const g=precoG[r.carta_id];if(g&&g.preco_min!=null)return {v:Number(g.preco_min),fonte:'geral',ts:g.atualizado_em};
+  for(const ac of (EXTRA_LIGA[r.extra]||[])){
+    const e=precoE[r.carta_id+'|'+ac],v=escolher(e);
+    if(v!=null)return {v,fonte:'variacao',ts:e.atualizado_em,ac};
+  }
+  const g=precoG[r.carta_id],v=escolher(g);
+  if(v!=null)return {v,fonte:'geral',ts:g.atualizado_em};
   return {v:0,fonte:'sem'};
 }
 const rowsOf=id=>porCarta[id]||[];
@@ -761,14 +801,23 @@ function imgUrl(c,q){
   if(/^data:|\.(png|jpe?g|webp|gif)(\?|$)/i.test(u))return u;
   return u+'/'+(q||'low')+'.webp';
 }
+// Catálogo + o que a Liga sabe: imagem quando o TCGdex não tem, nome em PT quando só veio em inglês.
 async function carregarCartasSet(setId,forcar){
+  const d=await carregarCartasSetBruto(setId,forcar);
+  if(customSets[setId]||!sb||!user)return d;
+  try{await garantirPrecos(d.set.id);}catch(e){return d;}
+  return {set:d.set,cards:d.cards.map(c=>{const g=precoG[c.id];if(!g)return c;
+    const nome=(!c.pt&&g.nome_liga)?g.nome_liga:c.name,img=c.img||g.imagem_liga||'';
+    return (nome===c.name&&img===c.img)?c:Object.assign({},c,{name:nome,img});})};
+}
+async function carregarCartasSetBruto(setId,forcar){
   if(customSets[setId]){
     const d=customSets[setId];
     const cards=(d.cartas||[]).map(c=>({id:setId+'-'+c.n,localId:c.n,name:c.name,img:c.img||''}));
     let base=0;cards.forEach(c=>{if(/^\d+$/.test(c.localId))base=Math.max(base,parseInt(c.localId,10));});
     return {set:{id:setId,name:d.nome,total:d.total||cards.length,base:base||cards.length,liga:true},cards:ordenarCartas(cards)};
   }
-  const ck='pkd_set_'+setId,cache=jget(ck,null);
+  const ck='pkd_set2_'+setId,cache=jget(ck,null);
   if(!forcar&&cache&&Date.now()-cache.ts<7*86400000)return cache.d;
   await carregarCatalogo();
   const [en,pt]=await Promise.allSettled([tcg('sets/'+encodeURIComponent(setId),'en'),
@@ -779,15 +828,15 @@ async function carregarCartasSet(setId,forcar){
   if(P)(P.cards||[]).forEach(c=>ptPor[c.localId]=c);
   const vistos={},cards=[];
   (base.cards||[]).forEach(c=>{const p=ptPor[c.localId];vistos[c.localId]=1;
-    cards.push({id:c.id,localId:c.localId,name:(p&&p.name)||c.name,img:(p&&p.image)||c.image||''});});
-  if(P&&E)(P.cards||[]).forEach(c=>{if(!vistos[c.localId])cards.push({id:c.id,localId:c.localId,name:c.name,img:c.image||''});});
+    cards.push({id:c.id,localId:c.localId,name:(p&&p.name)||c.name,img:(p&&p.image)||c.image||'',pt:!!(p&&p.name)});});
+  if(P&&E)(P.cards||[]).forEach(c=>{if(!vistos[c.localId])cards.push({id:c.id,localId:c.localId,name:c.name,img:c.image||'',pt:true});});
   const cc=base.cardCount||{};
   const d={set:{id:base.id,name:(P&&P.name)||base.name,total:cc.total||cards.length,base:cc.official||cc.total||cards.length},cards:ordenarCartas(cards)};
   jset(ck,{ts:Date.now(),d});
   return d;
 }
 function limparCache(){
-  Object.keys(localStorage).forEach(k=>{if(k.startsWith('pkd_set_')||k==='pkd_catalogo')localStorage.removeItem(k);});
+  Object.keys(localStorage).forEach(k=>{if(k.startsWith('pkd_set')||k==='pkd_catalogo')localStorage.removeItem(k);});
   catalogo=[];$('impStatus').textContent='Cache limpo.';
 }
 function isSpecial(card,set){
@@ -946,7 +995,6 @@ async function fetchSet(setId){
     const d=await carregarCartasSet(setId);
     if(token!==fetchToken)return;
     currentSetId=d.set.id;currentSet=d.set;currentCards=d.cards;
-    if(!Object.keys(precoG).some(k=>setIdOf(k)===currentSetId))await carregarPrecos([currentSetId]);
     if(token!==fetchToken)return;
     // mantém nome/tamanho do set atualizados pra quem já acompanha
     const su=setsUser[currentSetId];
@@ -981,7 +1029,7 @@ function renderGrid(){
   const lista=currentCards.filter(passaFiltro);
   if(!lista.length){grid.innerHTML='<div class="empty"><div class="empty-title">Nenhuma carta neste filtro</div></div>';return;}
   grid.innerHTML=lista.map(c=>{
-    const own=isOwned(c.id),g=precoG[c.id],v=own?valorCarta(c.id):(g&&g.preco_min?Number(g.preco_min):0),src=imgUrl(c,'low');
+    const own=isOwned(c.id),v=own?valorCarta(c.id):(escolher(precoG[c.id])||0),src=imgUrl(c,'low');
     const inner=src?`<img loading="lazy" referrerpolicy="no-referrer" src="${escHtml(src)}" alt="" onerror="this.style.display='none'"/>`
       :`<div class="card-ph"><div class="n">#${escHtml(c.localId)}</div><div class="t">${escHtml(c.name)}</div></div>`;
     return `<div class="card-wrap" onclick="openCard(${J(c.id)})">
@@ -996,17 +1044,15 @@ function renderGrid(){
 }
 function updateStats(){
   if(!currentSet)return;
-  let b=0,s=0,bT=0,sT=0,val=0,dup=0,falta=0,faltaSem=0;
+  let b=0,s=0,bT=0,sT=0,val=0,dup=0;
   currentCards.forEach(c=>{
     const sp=isSpecial(c,currentSet),own=isOwned(c.id);
     if(sp){sT++;if(own)s++;}else{bT++;if(own)b++;}
     if(own){val+=valorCarta(c.id);dup+=dupCount(c.id);}
-    else{const g=precoG[c.id];if(g&&g.preco_min)falta+=Number(g.preco_min);else faltaSem++;}
   });
   const tot=bT+sT,tenho=b+s,pct=tot?Math.round(tenho/tot*100):0;
   $('statBase').textContent=b+'/'+bT;$('statSpecial').textContent=s+'/'+sT;$('statTotal').textContent=tenho+'/'+tot;
   $('statPct').textContent=pct+'%';$('statDup').textContent=dup;$('statValue').textContent=fmtBRL(val);
-  $('statFalta').textContent=falta?fmtBRL(falta)+(faltaSem?' +'+faltaSem+' s/ preço':''):'—';
   $('progressFill').style.width=pct+'%';
 }
 
@@ -1050,7 +1096,7 @@ function renderCardModal(){
   // no seletor: só as que existem + a que já está gravada (pra não sumir um exemplar antigo)
   const exsDe=r=>exs.some(([k])=>k===r.extra)?exs:exs.concat(EXTRAS.filter(([k])=>k===r.extra));
   $('cmLinhas').innerHTML=rs.length?rs.map(r=>{
-    const p=precoLinha(r),rot={manual:'manual',exato:'Liga · exato',geral:'Liga · menor geral',sem:'sem preço'}[p.fonte];
+    const p=precoLinha(r),base=(perfil&&perfil.base_preco==='medio')?'médio':'menor',rot={manual:'manual',variacao:'Liga · '+({N:'Normal',F:'Foil',RF:'Reverse Foil'}[p.ac]||'variação')+' · '+base,geral:'Liga · geral · '+base,sem:'sem preço'}[p.fonte];
     return `<div class="ex-row">
       <select onchange="mudarLinha(${r.id},'extra',this.value)">${opts(exsDe(r),r.extra)}</select>
       <select onchange="mudarLinha(${r.id},'idioma',this.value)">${opts(IDIOMAS,r.idioma)}</select>
@@ -1059,7 +1105,7 @@ function renderCardModal(){
         <span>Qtd</span><button class="qty-b" onclick="mudarLinha(${r.id},'quantidade',${r.quantidade-1})">−</button>
         <b style="min-width:18px;text-align:center;color:var(--ink)">${r.quantidade}</b>
         <button class="qty-b" onclick="mudarLinha(${r.id},'quantidade',${r.quantidade+1})">+</button>
-        <span class="sp ex-price">${fmtBRL(p.v)}</span><span class="ex-src ${p.fonte==='manual'?'manual':p.fonte==='exato'?'exato':''}">${rot}</span>
+        <span class="sp ex-price">${fmtBRL(p.v)}</span><span class="ex-src ${p.fonte==='manual'?'manual':p.fonte==='variacao'?'exato':''}">${rot}</span>
         <button class="ex-del" title="Remover este exemplar" onclick="delLinha(${r.id})">🗑</button>
       </div>
       <div class="ex-line">
@@ -1069,14 +1115,19 @@ function renderCardModal(){
       </div></div>`;}).join('')
     :'<div class="hint-box" style="margin:0 0 8px">Você ainda não tem esta carta. Toque na variação abaixo para marcar.</div>';
   $('cmDesejo').checked=!!desejos[c.id];
-  const g=precoG[c.id],links=jget('pkd_links_'+currentSetId,{}),lk=links[chaveNum(c.localId)];
-  const edUrl=(customSets[currentSetId]&&customSets[currentSetId].liga_url)||(vinculos[currentSetId]&&vinculos[currentSetId].liga_url);
-  let h=g&&g.preco_min!=null?`Menor: <b>${fmtBRL(g.preco_min)}</b>${g.preco_max?` · Maior: ${fmtBRL(g.preco_max)}`:''} <span style="color:var(--ink3)">(${haQuanto(g.atualizado_em)})</span>`
+  const g=precoG[c.id],lk=urlDaCarta(c);
+  const edUrl=urlDoSet(currentSetId);
+  const linha=(rot,p)=>`<tr><td style="padding:2px 10px 2px 0">${rot}</td><td><b>${p.preco_min!=null?fmtBRL(p.preco_min):'—'}</b></td><td style="padding:0 10px">${p.preco_med!=null?fmtBRL(p.preco_med):'—'}</td><td>${p.preco_max!=null?fmtBRL(p.preco_max):'—'}</td></tr>`;
+  let tab='';
+  [['N','Normal'],['F','Foil'],['RF','Reverse Foil']].forEach(([ac,rot])=>{const e=precoE[c.id+'|'+ac];if(e)tab+=linha(rot,e);});
+  if(g&&g.preco_min!=null)tab+=linha(tab?'Geral':'Geral',g);
+  let h=tab?`<table style="border-collapse:collapse;font-size:12px"><tr style="color:var(--ink3)"><td></td><td>menor</td><td style="padding:0 10px">médio</td><td>maior</td></tr>${tab}</table>
+      <span style="color:var(--ink3)">geral ${haQuanto(g&&g.atualizado_em)}${precoE[c.id+'|N']||precoE[c.id+'|F']||precoE[c.id+'|RF']?' · variação '+haQuanto((precoE[c.id+'|F']||precoE[c.id+'|N']||precoE[c.id+'|RF']).atualizado_em):''}</span>`
     :'Ainda sem preço da Liga para esta carta.';
-  h+='<br>A ordem usada é: <b>manual</b> → <b>Liga exato</b> (idioma + qualidade + variação) → <b>menor geral</b>.';
-  if(lk)h+=`<div style="margin-top:6px"><a href="${escHtml(lk)}" target="_blank" rel="noopener">🔗 Ver esta carta na Liga</a></div>`;
+  h+=`<br>Ordem usada: <b>manual</b> → <b>variação</b> (Normal/Foil/Reverse) → <b>geral</b>, pelo <b>${(perfil&&perfil.base_preco==='medio')?'médio':'menor'}</b> (muda no Perfil).`;
+  if(lk&&extVersao)h+=`<div style="margin-top:6px"><button class="mini-btn liga" onclick="atualizarPrecoCarta()">🔄 Buscar preço por variação desta carta</button></div>`;
+  if(lk)h+=`<div style="margin-top:6px"><a href="${escHtml(lk)}" target="_blank" rel="noopener">🔗 Ver esta carta na Liga</a> <span style="color:var(--ink3)">— pra conferir idioma/qualidade e digitar o preço manual, se quiser</span></div>`;
   else if(edUrl)h+=`<div style="margin-top:6px"><a href="${escHtml(edUrl)}" target="_blank" rel="noopener">🔗 Abrir a edição na Liga</a></div>`;
-  if(lk&&extVersao)h+=`<div style="margin-top:6px"><button class="mini-btn" onclick="leituraBrutaCarta()">🧪 Baixar leitura bruta desta carta</button> <span style="color:var(--ink3)">(usada pra evoluir o preço por idioma/qualidade)</span></div>`;
   $('cmPreco').innerHTML=h;
 }
 function aposMudar(){renderCardModal();renderGrid();updateStats();fotografarValor();}
@@ -1155,7 +1206,7 @@ function extChamar(tipo,url,opcoes,limite){
   });
 }
 function urlLigaValida(u){try{const x=new URL(u);return x.protocol==='https:'&&x.hostname==='www.ligapokemon.com.br';}catch(e){return false;}}
-function codigoDaUrl(u){try{const m=decodeURIComponent(u).match(/[?&=]ed=([^&]+)/i);return m?m[1].toUpperCase():null;}catch(e){return null;}}
+function codigoDaUrl(u){try{const m=decodeURIComponent(u).replace(/\+/g,' ').match(/(?:^|[?&=\s])ed=([^&\s]+)/i);return m?m[1].toUpperCase():null;}catch(e){return null;}}
 
 /* Toda página de edição da Liga imprime cada carta assim:
        Meganium (#001/∞)      <- âncora: nome + número
@@ -1201,10 +1252,10 @@ function listagemDeCardsJson(arr){
     const num=String(c.sN||'').trim();if(!num)return;
     const key=chaveNum(num);if(vistos[key])return;vistos[key]=1;
     const en=String(c.nEN||''),nomeEn=en.replace(/\s*\(#?[^)]*\)\s*$/,'').trim();
-    const mn=parseFloat(c.precoMenor),mx=parseFloat(c.precoMaior);
+    const mn=parseFloat(c.precoMenor),mx=parseFloat(c.precoMaior),md=parseFloat(c.p1b);
     const sp=String(c.sP||'').replace(/^\/+/,'');
     const href=c.sSigla&&en?('https://www.ligapokemon.com.br/?view=cards/card&card='+encodeURIComponent(en.replace('(#','('))+'&ed='+encodeURIComponent(c.sSigla)+'&num='+encodeURIComponent(num)):'';
-    out.push({num,key,name:semEntidades(String(c.nPT||nomeEn||'').trim()),min:mn>0?mn:null,max:mx>0?mx:null,
+    out.push({num,key,name:semEntidades(String(c.nPT||nomeEn||'').trim()),min:mn>0?mn:null,med:md>0?md:null,max:mx>0?mx:null,
       img:sp?('https://repositorio.sbrauble.com//'+sp):'',href});
   });
   return out;
@@ -1221,6 +1272,10 @@ function numCustom(num){const m=String(num).match(/^([A-Za-z]*)(\d+)([A-Za-z]?)$
 function mapaLinks(links){
   const out={};(links||[]).forEach(l=>{try{const u=new URL(l.href),n=u.searchParams.get('num');if(n){const k=chaveNum(n);if(!out[k])out[k]={href:l.href,img:l.img||''};}}catch(e){}});
   return out;
+}
+function erroMigracao(e){
+  const m=erroMsg(e);
+  return /does not exist|schema cache|could not find/i.test(m)?new Error('O banco ainda está na versão anterior: rode o arquivo sql/migracao_v3.sql no SQL Editor do Supabase e tente de novo. ('+m+')'):e;
 }
 async function upsertLotes(tabela,rows,conflito){
   for(let i=0;i<rows.length;i+=500){const {error}=await sb.from(tabela).upsert(rows.slice(i,i+500),{onConflict:conflito});if(error)throw error;}
@@ -1242,13 +1297,20 @@ async function aplicarLeitura(setId,lidas){
   }
   const d=await carregarCartasSet(setId),porChave={};
   d.cards.forEach(c=>{porChave[chaveNum(c.localId)]=c;});
-  const agora=new Date().toISOString(),rows=[],semPar=[];
+  const agora=new Date().toISOString(),rows=[],semPar=[];let comPreco=0;
   lidas.forEach(l=>{const c=porChave[l.key];
     if(!c){semPar.push('#'+l.num+' '+l.name);return;}
-    if(l.min!=null)rows.push({carta_id:c.id,preco_min:l.min,preco_max:l.max,atualizado_em:agora,atualizado_por:user.id});});
-  await upsertLotes('precos_gerais',rows,'carta_id');
+    const a=precoG[c.id]||{};
+    if(l.min!=null)comPreco++;
+    rows.push({carta_id:c.id,
+      preco_min:l.min!=null?l.min:(a.preco_min!=null?a.preco_min:null),
+      preco_med:l.med!=null?l.med:(l.min!=null?null:(a.preco_med!=null?a.preco_med:null)),
+      preco_max:l.max!=null?l.max:(l.min!=null?null:(a.preco_max!=null?a.preco_max:null)),
+      nome_liga:l.name||a.nome_liga||null,imagem_liga:l.img||a.imagem_liga||null,url_liga:l.href||a.url_liga||null,
+      atualizado_em:l.min!=null?agora:(a.atualizado_em||agora),atualizado_por:user.id});});
+  try{await upsertLotes('precos_gerais',rows,'carta_id');}catch(e){throw erroMigracao(e);}
   rows.forEach(r=>precoG[r.carta_id]=r);
-  return {lidas:lidas.length,gravadas:rows.length,semPar};
+  return {lidas:lidas.length,gravadas:comPreco,semPar};
 }
 function urlDoSet(setId){return (customSets[setId]&&customSets[setId].liga_url)||(vinculos[setId]&&vinculos[setId].liga_url)||null;}
 async function atualizarPrecosSet(setId,emLote){
@@ -1323,13 +1385,106 @@ async function atualizarTodos(){
   if(avisos.length)showWarn(avisos.join(' · '));
   renderHome();fotografarValor();
 }
-async function leituraBrutaCarta(){
+function urlDaCarta(c){
+  const g=precoG[c.id];if(g&&g.url_liga)return g.url_liga;
+  return jget('pkd_links_'+setIdOf(c.id),{})[chaveNum(c.localId)]||null;
+}
+/* A página da carta publica, em texto limpo, menor/médio/maior POR VARIAÇÃO:
+       cards_editions[i].price = { "0":{p,m,g}, "2":{p,m,g}, "3":{p,m,g} }   (0=Normal 2=Foil 3=Reverse Foil)
+   Já o preço de cada oferta individual (idioma/qualidade) vem embaralhado em classes
+   CSS de propósito — esse a gente não decifra.                                    */
+const ACRON_EXTRA={0:'N',2:'F',3:'RF'};
+function variacoesDaLeitura(dados,c,codLiga){
+  const eds=(dados.vars&&dados.vars.cards_editions)||[];if(!Array.isArray(eds)||!eds.length)return [];
+  const k=chaveNum(c.localId);
+  const ed=eds.find(e=>chaveNum(e.num)===k&&(!codLiga||String(e.code).toUpperCase()===codLiga))||eds.find(e=>chaveNum(e.num)===k)||(eds.length===1?eds[0]:null);
+  if(!ed||!ed.price)return [];
+  const n=x=>{const v=parseFloat(x);return v>0?v:null;};
+  return Object.keys(ed.price).map(id=>{const p=ed.price[id]||{};
+    return {extra:ACRON_EXTRA[id]||('X'+id),preco_min:n(p.p),preco_med:n(p.m),preco_max:n(p.g)};}).filter(v=>v.preco_min!=null);
+}
+async function lerVariacoesCarta(c,setId){
+  const url=urlDaCarta(c);if(!url)throw new Error('Sem link desta carta na Liga — atualize os preços do set primeiro.');
+  const dados=await extChamar('LER_CARTA',url,{});
+  if(dados.bloqueio)throw new Error('A Liga pediu verificação anti-robô. Abra o site dela numa aba, resolva e tente de novo.');
+  const cod=((customSets[setId]&&customSets[setId].liga_codigo)||(vinculos[setId]&&vinculos[setId].liga_codigo)||'').toUpperCase();
+  const vs=variacoesDaLeitura(dados,c,cod);if(!vs.length)return 0;
+  const agora=new Date().toISOString();
+  const rows=vs.map(v=>Object.assign({carta_id:c.id,atualizado_em:agora,atualizado_por:user.id},v));
+  try{await upsertLotes('precos_extras',rows,'carta_id,extra');}catch(e){throw erroMigracao(e);}
+  rows.forEach(r=>precoE[r.carta_id+'|'+r.extra]=r);
+  return rows.length;
+}
+async function atualizarPrecoCarta(){
   const c=cartaAtual();if(!c)return;
-  const lk=jget('pkd_links_'+currentSetId,{})[chaveNum(c.localId)];if(!lk)return;
   setNote('Lendo a página da carta na Liga...','syncing');
-  try{const d=await extChamar('LER_CARTA',lk,{bruto:true});
-    baixarArquivo('leitura_liga_'+c.id+'.json',JSON.stringify(d,null,1),'application/json');setNote('✓ Arquivo baixado','synced');}
+  try{const n=await lerVariacoesCarta(c,currentSetId);
+    setNote(n?`✓ ${n} variação(ões) atualizadas`:'A Liga não tem preço por variação para esta carta.',n?'synced':'');aposMudar();}
   catch(e){setNote(erroMsg(e),'error');}
+}
+let loteVariacoes=false;
+async function atualizarVariacoesSet(){
+  if(loteVariacoes){loteVariacoes=false;return;}
+  if(!extVersao)return showWarn('Extensão não detectada neste navegador.');
+  const alvo=currentCards.filter(c=>isOwned(c.id)&&urlDaCarta(c));
+  if(!alvo.length)return showWarn('Nada para ler: marque as cartas que você tem e rode "Atualizar preços (Liga)" antes (é ele que descobre o link de cada carta).');
+  if(!confirm(`Vou abrir a página de ${alvo.length} carta(s) que você tem neste set, uma por vez, com pausa entre elas (~${Math.ceil(alvo.length*6/60)} min).\nAs abas abrem e fecham sozinhas em segundo plano. Clique de novo no botão para interromper.\n\nContinuar?`))return;
+  loteVariacoes=true;let ok=0,falhas=0;
+  for(let i=0;i<alvo.length&&loteVariacoes;i++){
+    setSync(`💎 Preço por variação: ${i+1}/${alvo.length} — ${alvo[i].name} (clique no botão de novo para parar)`,'loading');
+    try{if(await lerVariacoesCarta(alvo[i],currentSetId))ok++;}catch(e){falhas++;if(/anti-robô|migracao_v3/.test(erroMsg(e))){showWarn(erroMsg(e));break;}}
+    if(i<alvo.length-1)await new Promise(z=>setTimeout(z,2500));
+  }
+  loteVariacoes=false;
+  setSync(`✓ Preço por variação: ${ok} carta(s) atualizadas${falhas?` · ${falhas} falharam`:''}`,falhas?'err':'ok');
+  renderGrid();updateStats();fotografarValor();
+}
+
+/* ---------- lista de edições da Liga (vale pra todos; qualquer um com a extensão atualiza) ---------- */
+const URL_EDICOES='https://www.ligapokemon.com.br/?view=cards/edicoes';
+function parseEdicoesLiga(html){
+  const doc=new DOMParser().parseFromString(html||'','text/html'),vistos={},out=[];
+  doc.querySelectorAll('a[href]').forEach(a=>{
+    const h=a.getAttribute('href')||'';
+    if(!/cards(\/|%2F)search/i.test(h)||!/ed(id)?(=|%3D)/i.test(h))return;
+    let url;try{url=new URL(h,'https://www.ligapokemon.com.br/').href;}catch(e){return;}
+    const cod=codigoDaUrl(url);if(!cod||vistos[cod])return;
+    let nome=(a.textContent||'').replace(/\s+/g,' ').trim();
+    if(nome.toUpperCase().endsWith(' '+cod))nome=nome.slice(0,-cod.length).trim();
+    if(!nome||nome.length>120)return;
+    vistos[cod]=1;out.push({codigo:cod,nome,url});
+  });
+  return out;
+}
+async function atualizarEdicoesLiga(pre){
+  const st=$(pre+'EdStatus');
+  if(!extVersao){st.textContent='Precisa da extensão (Chrome/Edge no computador).';return;}
+  st.textContent='Lendo a lista de edições na Liga...';
+  try{
+    const d=await extChamar('LER_CARTA',URL_EDICOES,{bruto:true});
+    const eds=parseEdicoesLiga(d.html);
+    if(!eds.length){baixarArquivo('diagnostico_edicoes_liga.json',JSON.stringify(d),'application/json');st.textContent='Não reconheci a lista — baixei um diagnóstico, me mande o arquivo.';return;}
+    const agora=new Date().toISOString();
+    try{await upsertLotes('liga_edicoes',eds.map(e=>Object.assign({atualizado_em:agora,atualizado_por:user.id},e)),'codigo');}catch(e){throw erroMigracao(e);}
+    ligaEdicoes=eds.slice().sort((a,b)=>a.nome.localeCompare(b.nome));
+    st.textContent='✓ '+eds.length+' edições';renderEdicoesLiga(pre);
+  }catch(e){st.textContent=erroMsg(e);}
+}
+function renderEdicoesLiga(pre){
+  const el=$(pre+'Lista'),q=normName($(pre+'Busca').value);
+  if(!ligaEdicoes.length){el.innerHTML='<div class="pick">Lista vazia — clique em "↻ Atualizar lista de edições".</div>';return;}
+  // sem busca, sugere pelo nome do set aberto
+  const dica=(pre==='vinc'&&currentSet)?normName(currentSet.name):'';
+  const nota=e=>{const n=normName(e.nome),c=e.codigo.toLowerCase();
+    if(q)return (c===q?0:n===q?1:c.startsWith(q)?2:n.includes(q)||c.includes(q)?3:9);
+    return dica&&(n===dica||n.includes(dica)||dica.includes(n))?0:5;};
+  const lista=ligaEdicoes.map(e=>[nota(e),e]).filter(x=>x[0]<9).sort((a,b)=>a[0]-b[0]||a[1].nome.localeCompare(b[1].nome)).slice(0,60);
+  el.innerHTML=lista.map(([,e])=>`<div class="pick" style="cursor:pointer" onclick="escolherEdicaoLiga(${J(pre)},${J(e.codigo)})"><span>${escHtml(e.nome)}</span><small>${escHtml(e.codigo)}</small></div>`).join('')||'<div class="pick">Nada encontrado.</div>';
+}
+function escolherEdicaoLiga(pre,cod){
+  const e=ligaEdicoes.find(x=>x.codigo===cod);if(!e)return;
+  if(pre==='vinc'){$('vincUrl').value=e.url;salvarVinculo();}
+  else{$('nlUrl').value=e.url;$('nlNome').value=e.nome;$('nlCod').value=e.codigo;}
 }
 
 /* ---------- vincular set -> página da Liga ---------- */
@@ -1337,7 +1492,8 @@ let vincSetId=null;
 function abrirVinculo(setId){
   if(!setId)return;vincSetId=setId;
   $('vincUrl').value=urlDoSet(setId)||'';$('vincStatus').textContent='';
-  $('vincModal').classList.add('open');setTimeout(()=>$('vincUrl').focus(),50);
+  $('vincBusca').value='';$('vincEdStatus').textContent='';renderEdicoesLiga('vinc');
+  $('vincModal').classList.add('open');
 }
 async function salvarVinculo(){
   const url=$('vincUrl').value.trim(),st=$('vincStatus');
@@ -1368,7 +1524,7 @@ async function aplicarColado(){
   }catch(e){st.className='save-note error';st.textContent=erroMsg(e);}
 }
 /* ---------- coleção que só existe na Liga ---------- */
-function abrirNovoLiga(){['nlUrl','nlNome','nlCod','nlTexto'].forEach(i=>$(i).value='');$('nlStatus').textContent='';$('novoLigaModal').classList.add('open');}
+function abrirNovoLiga(){['nlUrl','nlNome','nlCod','nlTexto','nlBusca'].forEach(i=>$(i).value='');$('nlStatus').textContent='';$('nlEdStatus').textContent='';renderEdicoesLiga('nl');$('novoLigaModal').classList.add('open');}
 async function criarSetLiga(){
   const st=$('nlStatus'),url=$('nlUrl').value.trim(),nome=$('nlNome').value.trim();
   const cod=($('nlCod').value.trim()||codigoDaUrl(url)||'').toUpperCase(),limpo=cod.toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -1406,18 +1562,18 @@ function abrirPerfil(){
   $('pfNome').value=perfil.nome||'';$('pfCidade').value=perfil.cidade||'';$('pfTel').value=perfil.telefone||'';$('pfEmail').value=perfil.email_contato||'';
   $('pfCom').checked=!!perfil.na_comunidade;$('pfMT').checked=!!perfil.mostrar_telefone;$('pfME').checked=!!perfil.mostrar_email;
   $('pfIdioma').innerHTML=opts(IDIOMAS,perfil.idioma_padrao||'PT');$('pfQual').innerHTML=opts(QUALS,perfil.qualidade_padrao||'NM');
-  $('pfStatus').textContent='';$('impStatus').textContent='';$('perfilModal').classList.add('open');
+  $('pfBase').value=perfil.base_preco||'menor';$('pfStatus').textContent='';$('impStatus').textContent='';$('perfilModal').classList.add('open');
 }
 async function salvarPerfil(){
   const st=$('pfStatus');
   const p={nome:$('pfNome').value.trim()||null,cidade:$('pfCidade').value.trim()||null,telefone:$('pfTel').value.trim()||null,
     email_contato:$('pfEmail').value.trim()||null,na_comunidade:$('pfCom').checked,mostrar_telefone:$('pfMT').checked,
-    mostrar_email:$('pfME').checked,idioma_padrao:$('pfIdioma').value,qualidade_padrao:$('pfQual').value};
+    mostrar_email:$('pfME').checked,idioma_padrao:$('pfIdioma').value,qualidade_padrao:$('pfQual').value,base_preco:$('pfBase').value};
   if(p.na_comunidade&&!((p.mostrar_telefone&&p.telefone)||(p.mostrar_email&&p.email_contato))){
     st.className='save-note error';st.textContent='Para participar da comunidade, libere pelo menos um contato (WhatsApp ou e-mail) — senão ninguém consegue te chamar.';return;}
   const {data,error}=await sb.from('perfis').update(p).eq('id',user.id).select().single();
-  if(error){st.className='save-note error';st.textContent=erroMsg(error);return;}
-  perfil=data;comCache={};renderOwner();st.className='save-note synced';st.textContent='✓ Salvo';
+  if(error){st.className='save-note error';st.textContent=erroMsg(erroMigracao(error));return;}
+  perfil=data;if(currentSetId){renderGrid();updateStats();}comCache={};renderOwner();st.className='save-note synced';st.textContent='✓ Salvo';
   if($('homeView').style.display!=='none')renderHome();
 }
 
@@ -1546,7 +1702,7 @@ async function runExport(){
         const sp=isSpecial(c,d.set);if((oque==='base'&&sp)||(oque==='special'&&!sp))return;
         if(expMode==='faltando'){
           if(isOwned(c.id)||(so&&!desejos[c.id]))return;
-          const g=precoG[c.id];itens.push({c,qtd:1,det:'',preco:g&&g.preco_min?Number(g.preco_min):0});
+          itens.push({c,qtd:1,det:'',preco:escolher(precoG[c.id])||0});
         }else rowsOf(c.id).forEach(r=>{if(r.quantidade<2||(so&&!r.divulgar))return;
           itens.push({c,qtd:r.quantidade-1,det:[r.extra,r.idioma,r.qualidade].join(' · '),preco:precoLinha(r).v});});
       });
