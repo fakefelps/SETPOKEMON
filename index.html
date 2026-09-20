@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Minha Pokédex</title>
+<title>Pokédex do Colecionador</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -221,24 +221,90 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
 .exp-chk input{width:16px;height:16px;accent-color:var(--red);margin-top:1px;flex-shrink:0}
 .exp-out{width:100%;min-height:150px;font-size:11px;padding:8px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink);font-family:ui-monospace,monospace;margin-top:10px;display:none}
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--line2);border-radius:3px}
+/* ---------- acréscimos da v2 (login, exemplares, comunidade) ---------- */
+.user-chip{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.user-chip .home-btn{margin-left:0}
+.ghost-btn{font-size:12px;font-weight:600;padding:7px 12px;border:1px solid rgba(255,255,255,.55);border-radius:20px;background:transparent;color:#fff;cursor:pointer}
+.ghost-btn:hover{background:rgba(255,255,255,.14)}
+.login-bg{position:fixed;inset:0;z-index:500;background:linear-gradient(160deg,var(--red) 0%,var(--red-deep) 100%);display:none;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.login-bg.open{display:flex}
+.login-box{background:var(--panel);border-radius:var(--radius-lg);padding:26px;width:380px;max-width:100%;box-shadow:var(--shadow2)}
+.login-box h1{font-family:'Poppins';font-weight:800;font-size:22px;color:var(--ink);margin-bottom:4px}
+.login-box p{font-size:13px;color:var(--ink2);margin-bottom:16px;line-height:1.5}
+.link-btn{background:none;border:none;color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;padding:6px 0}
+.ex-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:8px}
+.ex-row select,.ex-row input[type=number]{width:100%;font-size:12px;padding:6px;border:1px solid var(--line2);border-radius:7px;background:var(--panel);color:var(--ink)}
+.ex-line{grid-column:1/-1;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;color:var(--ink2)}
+.ex-line .sp{margin-left:auto}
+.ex-price{font-family:'Poppins';font-weight:700;color:var(--ink);font-size:13px}
+.ex-src{font-size:10px;padding:1px 6px;border-radius:6px;background:#eaf2fb;color:var(--blue-dark);font-weight:700}
+.ex-src.manual{background:#fff4d6;color:#7a5a00}.ex-src.exato{background:#e3f6ec;color:#176b3c}
+.ex-del{border:none;background:none;color:var(--ink3);cursor:pointer;font-size:15px}
+.ex-del:hover{color:#c0392b}
+.add-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.chk-line{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2);margin:8px 0;line-height:1.4}
+.chk-line input{width:16px;height:16px;accent-color:var(--red);flex-shrink:0}
+.wish-tag{position:absolute;left:5px;top:5px;font-size:11px;background:rgba(255,255,255,.92);border-radius:6px;padding:0 4px}
+.price-tag.ref{background:rgba(255,255,255,.88);color:var(--ink2)}
+.com{max-width:1000px;margin:0 auto;padding:18px 16px 60px;display:none}
+.com-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.com-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.com-item{display:flex;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:10px;box-shadow:var(--shadow)}
+.com-item img,.com-item .noimg{width:58px;height:81px;border-radius:6px;object-fit:cover;background:#e9edf3;flex-shrink:0}
+.com-item .t{font-family:'Poppins';font-weight:700;font-size:13px;color:var(--ink)}
+.com-item .m{font-size:11px;color:var(--ink2);margin-top:2px;line-height:1.5}
+.com-item .who{font-size:11px;color:var(--ink);margin-top:5px;font-weight:600}
+.com-item a{font-size:11px;font-weight:700;color:var(--blue);text-decoration:none;margin-right:10px}
+.pick-list{max-height:48vh;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+.pick{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--line);font-size:12px;color:var(--ink)}
+.pick:last-child{border-bottom:none}
+.pick input{width:16px;height:16px;accent-color:var(--red);flex-shrink:0}
+.pick small{color:var(--ink3);margin-left:auto;white-space:nowrap}
+.fld select,.fld textarea{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink);font-family:inherit}
+.spark{width:100%;height:46px;margin-top:8px;display:block}
+.ext-pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;background:#ffe9e9;color:#a02b2b}
+.ext-pill.on{background:#e3f6ec;color:#176b3c}
+@media(max-width:520px){.ex-row{grid-template-columns:1fr 1fr}.set-input{width:100%}}
 </style>
 </head>
 <body>
+
+<!-- ======================= LOGIN ======================= -->
+<div class="login-bg" id="loginView">
+  <div class="login-box">
+    <h1>Pokédex do Colecionador</h1>
+    <p>Entre para ver a sua coleção. Cada pessoa enxerga só as próprias cartas; a comunidade mostra apenas o que cada um escolhe divulgar.</p>
+    <div class="fld" id="lgNomeWrap" style="display:none"><label>Seu nome</label><input id="lgNome" autocomplete="name"/></div>
+    <div class="fld"><label>E-mail</label><input id="lgEmail" type="email" autocomplete="email"/></div>
+    <div class="fld"><label>Senha</label><input id="lgSenha" type="password" autocomplete="current-password"/></div>
+    <button class="save-btn" id="lgBtn" onclick="loginEnviar()">Entrar</button>
+    <div style="display:flex;justify-content:space-between;margin-top:8px">
+      <button class="link-btn" id="lgTroca" onclick="loginTrocarModo()">Criar conta</button>
+      <button class="link-btn" onclick="loginEsqueci()">Esqueci a senha</button>
+    </div>
+    <div class="save-note" id="lgStatus" style="white-space:pre-line"></div>
+  </div>
+</div>
 
 <header>
   <div class="brand-row">
     <div class="lens"></div>
     <div class="brand-txt">
       <div class="brand-title">Minha Pokédex</div>
-      <div class="brand-owner" id="ownerLbl" onclick="editOwner()">Toque para colocar seu nome</div>
+      <div class="brand-owner" id="ownerLbl" onclick="abrirPerfil()"></div>
     </div>
-    <button class="home-btn" onclick="showHome()">🏠 Início</button>
+    <div class="user-chip">
+      <button class="home-btn" onclick="showHome()">🏠 Início</button>
+      <button class="ghost-btn" onclick="abrirComunidade()">👥 Comunidade</button>
+      <button class="ghost-btn" onclick="abrirPerfil()">⚙ Perfil</button>
+      <button class="ghost-btn" onclick="sair()">Sair</button>
+    </div>
   </div>
   <div class="search-row">
-    <input class="set-input" id="setInput" placeholder="Código ou nome do set (ex: me3, ME03, Equilíbrio Perfeito)" />
+    <input class="set-input" id="setInput" placeholder="Código ou nome do set (ex: me01, Equilíbrio Perfeito)" onkeydown="if(event.key==='Enter')loadFromInput()"/>
     <button class="load-btn" onclick="loadFromInput()">Carregar</button>
     <button class="search-btn" onclick="openSearch()">🔍 Buscar</button>
-    <button class="search-btn" onclick="openLigaSet()">➕ Nova coleção (Liga)</button>
+    <button class="search-btn" onclick="abrirNovoLiga()">➕ Coleção só da Liga</button>
   </div>
   <div class="saved-bar">
     <span class="saved-label">Favoritos:</span>
@@ -253,12 +319,26 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
 </div>
 
 <div class="sync-bar">
-  <button class="sync-btn" onclick="syncFromSheet()">↺ Sincronizar</button>
+  <button class="sync-btn" onclick="carregarTudo()">↺ Recarregar</button>
+  <span class="ext-pill" id="extPill">extensão: não detectada</span>
   <span class="sync-status" id="syncStatus"></span>
-  <span class="sync-status" id="pendStatus" style="margin-left:auto"></span>
 </div>
 
 <div class="home" id="homeView"></div>
+
+<!-- ======================= COMUNIDADE ======================= -->
+<div class="com" id="comView">
+  <div class="home-h" style="margin-top:4px">Comunidade</div>
+  <div id="comAviso"></div>
+  <div class="com-tabs">
+    <button class="filter-btn active" id="comTab_matches" onclick="comAba('matches')">🎯 Tem o que eu procuro</button>
+    <button class="filter-btn" id="comTab_repetidas" onclick="comAba('repetidas')">🔁 Repetidas da galera</button>
+    <button class="filter-btn" id="comTab_desejos" onclick="comAba('desejos')">🔎 Procurados</button>
+    <button class="tb-btn blue" style="margin-left:auto" onclick="abrirDivulgar()">📣 O que eu divulgo</button>
+  </div>
+  <input class="search-modal-input" id="comBusca" placeholder="Filtrar por carta, set ou pessoa..." oninput="renderComunidade()"/>
+  <div class="com-list" id="comLista"></div>
+</div>
 
 <div class="stats-bar" id="statsBar">
   <div class="stat">Base<span id="statBase">0/0</span></div>
@@ -266,6 +346,7 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
   <div class="stat">Total<span id="statTotal">0/0</span></div>
   <div class="stat">Progresso<span id="statPct">0%</span></div>
   <div class="stat" title="Cartas repetidas neste set — não entram no valor total">Repetidas<span id="statDup">0</span></div>
+  <div class="stat" title="Quanto custaria comprar as que faltam, pelo menor preço da Liga">Falta<span id="statFalta">—</span></div>
   <div class="stat-value" id="statValue">R$ 0,00</div>
 </div>
 <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
@@ -276,65 +357,118 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
   <button class="filter-btn" onclick="setFilter('base',this)">Base</button>
   <button class="filter-btn" onclick="setFilter('special',this)">Especiais</button>
   <button class="filter-btn" onclick="setFilter('dup',this)">Repetidas</button>
+  <button class="filter-btn" onclick="setFilter('wish',this)">Procuro</button>
   <button class="filter-btn" onclick="setFilter('noprice',this)">Sem preço</button>
   <span class="set-title-lbl" id="setTitleLbl"></span>
   <div class="toolbar-right">
-    <button class="tb-btn blue" onclick="openExp()">📤 Exportar</button>
-    <button class="tb-btn red" onclick="openLigaPaste()">📋 Colar da Liga</button>
-    <button class="tb-btn" id="loadPromosBtn" onclick="loadCompanionPromos()" style="display:none">+ Promos</button>
-    <button class="tb-btn" onclick="saveAsFav()">★ Favorito</button>
-    <button class="tb-btn" id="delSetBtn" onclick="excluirColecao(currentSetId)" style="display:none">🗑 Excluir coleção</button>
+    <button class="tb-btn blue" onclick="atualizarPrecosSet(currentSetId)">🔄 Atualizar preços (Liga)</button>
+    <button class="tb-btn" onclick="abrirVinculo(currentSetId)">🔗 Página na Liga</button>
+    <button class="tb-btn red" onclick="abrirColar()">📋 Colar da Liga</button>
+    <button class="tb-btn" onclick="openExp()">📤 Exportar</button>
+    <button class="tb-btn" id="favBtn" onclick="alternarFavorito()">★ Favorito</button>
+    <button class="tb-btn" onclick="excluirColecao(currentSetId)">🗑 Excluir</button>
   </div>
 </div>
-<div class="card-grid" id="cardGrid"></div>
+<div class="card-grid" id="cardGrid" style="display:none"></div>
 
-<div class="modal-bg" id="searchModal" onclick="closeSearchBg(event)">
+<!-- ======================= MODAIS ======================= -->
+<div class="modal-bg" id="searchModal" onclick="fecharSeFundo(event,'searchModal')">
   <div class="modal">
-    <div class="modal-header"><span class="modal-title">Buscar Coleção</span><button class="modal-close" onclick="closeSearch()">×</button></div>
-    <input class="search-modal-input" id="searchQ" placeholder="Nome do set (ex: Mega, Surging, svp, promo...)" oninput="filterSets()" />
-    <div id="setResults"><div style="padding:12px;font-size:13px;color:var(--ink3)">Carregando lista de sets...</div></div>
+    <div class="modal-header"><span class="modal-title">Buscar Coleção</span><button class="modal-close" onclick="fechar('searchModal')">×</button></div>
+    <input class="search-modal-input" id="searchQ" placeholder="Nome ou código (ex: Mega, 151, svp, promo...)" oninput="filterSets()"/>
+    <div id="setResults"></div>
   </div>
 </div>
 
-<div class="modal-bg" id="ligaPasteModal" onclick="closeLigaPasteBg(event)">
+<div class="modal-bg" id="vincModal" onclick="fecharSeFundo(event,'vincModal')">
   <div class="modal">
-    <div class="modal-header"><span class="modal-title">Colar preços da Liga</span><button class="modal-close" onclick="closeLigaPaste()">×</button></div>
-    <div class="hint-box" style="margin-bottom:12px">
-      1) Abra a página desse set no site da Liga Pokémon, no seu navegador normal.<br>
-      2) Clique em qualquer lugar da página, aperte <b>Ctrl+A</b> (selecionar tudo) e depois <b>Ctrl+C</b> (copiar).<br>
-      3) Cole aqui embaixo e clique em <b>Aplicar preços</b>. Só atualiza cartas que você já marcou como "tenho" — o resto continua pra preencher na mão.<br>
-      4) O casamento é feito pelo <b>número</b> da carta (#001, #003b...), não pelo nome — então variações "[Staff]"/reimpressão que têm o mesmo nome nunca trocam de preço entre si.
+    <div class="modal-header"><span class="modal-title">Página deste set na Liga</span><button class="modal-close" onclick="fechar('vincModal')">×</button></div>
+    <div class="hint-box" style="margin:0 0 12px">
+      Abra a <b>edição</b> no site da Liga Pokémon (a lista com todas as cartas do set), copie o endereço da barra do navegador e cole aqui.<br>
+      Isso é feito <b>uma vez por set</b> e vale para todos os usuários.
     </div>
-    <textarea id="ligaPasteArea" style="width:100%;min-height:160px;font-size:12px;padding:8px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink);font-family:inherit" placeholder="Cole aqui o texto copiado da página da Liga..."></textarea>
-    <button class="save-btn" style="margin-top:10px" onclick="applyLigaPaste()">Aplicar preços</button>
-    <div class="save-note" id="ligaPasteStatus" style="margin-top:8px"></div>
+    <div class="fld"><label>Endereço (URL) da edição na Liga</label><input id="vincUrl" placeholder="https://www.ligapokemon.com.br/?view=cards/search&card=ed=..."/></div>
+    <button class="save-btn" onclick="salvarVinculo()">Salvar</button>
+    <div class="save-note" id="vincStatus"></div>
   </div>
 </div>
 
-<div class="modal-bg" id="ligaSetModal" onclick="closeLigaSetBg(event)">
+<div class="modal-bg" id="colarModal" onclick="fecharSeFundo(event,'colarModal')">
   <div class="modal">
-    <div class="modal-header"><span class="modal-title">Criar coleção pela Liga</span><button class="modal-close" onclick="closeLigaSet()">×</button></div>
-    <div class="hint-box" style="margin-bottom:12px">
-      Pra sets que a pokemontcg.io ainda não tem (promos, produtos novos). Duas formas:<br>
-      <b>a)</b> Abra a edição no site da Liga, aperte <b>Ctrl+A</b> e <b>Ctrl+C</b>, e cole no campo abaixo.<br>
-      <b>b)</b> Salve a página como PDF (<b>Ctrl+P</b> → "Salvar como PDF") e escolha o arquivo aqui.<br>
-      <b>Importante:</b> role a página inteira até o fim antes de copiar/imprimir — carta que não apareceu na página não entra na coleção.
+    <div class="modal-header"><span class="modal-title">Colar preços da Liga</span><button class="modal-close" onclick="fechar('colarModal')">×</button></div>
+    <div class="hint-box" style="margin:0 0 12px">
+      Plano B para quando não dá pra usar a extensão (celular, por exemplo).<br>
+      1) Abra a edição na Liga e role até o fim. 2) <b>Ctrl+A</b> e <b>Ctrl+C</b>. 3) Cole aqui e aplique.<br>
+      O casamento é pelo <b>número</b> da carta. O preço vale para todos os usuários.
     </div>
-    <div class="file-drop" onclick="document.getElementById('ligaSetPdf').click()" id="ligaSetDrop">📄 Escolher o PDF da Liga</div>
-    <input type="file" id="ligaSetPdf" accept="application/pdf,.pdf" style="display:none" onchange="onLigaPdf(this)"/>
-    <div style="text-align:center;font-size:11px;color:var(--ink3);margin:8px 0">— ou cole o texto —</div>
-    <textarea id="ligaSetArea" style="width:100%;min-height:110px;font-size:12px;padding:8px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink);font-family:inherit" placeholder="Cole aqui o texto copiado da página da edição na Liga..." oninput="previewLigaSet()"></textarea>
-    <div class="save-note" id="ligaSetPreview" style="margin:8px 0"></div>
-    <div class="fld"><label>Nome da coleção</label><input id="ligaSetName" placeholder="Ex: Mega Evolution Promos"/></div>
-    <div class="fld"><label>Código curto (vira o "id" da coleção)</label><input id="ligaSetCode" placeholder="Ex: MEP"/></div>
-    <button class="save-btn" onclick="createLigaSet()">Criar coleção</button>
-    <div class="save-note" id="ligaSetStatus" style="margin-top:8px"></div>
+    <textarea id="colarArea" style="width:100%;min-height:160px;font-size:12px;padding:8px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink);font-family:inherit" placeholder="Cole aqui o texto copiado da página da Liga..."></textarea>
+    <button class="save-btn" style="margin-top:10px" onclick="aplicarColado()">Aplicar preços</button>
+    <div class="save-note" id="colarStatus" style="white-space:pre-line"></div>
   </div>
 </div>
 
-<div class="modal-bg" id="expModal" onclick="closeExpBg(event)">
+<div class="modal-bg" id="novoLigaModal" onclick="fecharSeFundo(event,'novoLigaModal')">
   <div class="modal">
-    <div class="modal-header"><span class="modal-title">Exportar cartas</span><button class="modal-close" onclick="closeExp()">×</button></div>
+    <div class="modal-header"><span class="modal-title">Coleção que só existe na Liga</span><button class="modal-close" onclick="fechar('novoLigaModal')">×</button></div>
+    <div class="hint-box" style="margin:0 0 12px">
+      Para promos/produtos que o catálogo ainda não tem. Informe a página da edição na Liga: com a <b>extensão</b> eu leio as cartas (e as imagens) sozinho. Sem extensão, cole o texto da página (Ctrl+A, Ctrl+C).
+    </div>
+    <div class="fld"><label>Endereço (URL) da edição na Liga</label><input id="nlUrl" placeholder="https://www.ligapokemon.com.br/?view=cards/search&card=ed=MEP"/></div>
+    <div class="fld"><label>Nome da coleção</label><input id="nlNome" placeholder="Ex: Mega Evolution Promos"/></div>
+    <div class="fld"><label>Código curto</label><input id="nlCod" placeholder="Ex: MEP"/></div>
+    <div class="fld"><label>Texto colado (só se não tiver a extensão)</label><textarea id="nlTexto" style="min-height:80px"></textarea></div>
+    <button class="save-btn" onclick="criarSetLiga()">Criar coleção</button>
+    <div class="save-note" id="nlStatus" style="white-space:pre-line"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="perfilModal" onclick="fecharSeFundo(event,'perfilModal')">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Meu perfil</span><button class="modal-close" onclick="fechar('perfilModal')">×</button></div>
+    <div class="fld"><label>Nome (aparece na comunidade)</label><input id="pfNome"/></div>
+    <div class="fld"><label>Cidade / UF</label><input id="pfCidade" placeholder="Ex: Goiânia - GO"/></div>
+    <div class="fld"><label>WhatsApp (com DDD)</label><input id="pfTel" inputmode="tel" placeholder="(62) 9 9999-9999"/></div>
+    <div class="fld"><label>E-mail de contato</label><input id="pfEmail" type="email"/></div>
+    <label class="chk-line"><input type="checkbox" id="pfCom"/> Participar da comunidade (divulgar o que eu marcar e ver o dos outros)</label>
+    <label class="chk-line"><input type="checkbox" id="pfMT"/> Mostrar meu WhatsApp para a comunidade</label>
+    <label class="chk-line"><input type="checkbox" id="pfME"/> Mostrar meu e-mail para a comunidade</label>
+    <div class="cm-section">Padrão ao marcar uma carta</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="fld"><label>Idioma</label><select id="pfIdioma"></select></div>
+      <div class="fld"><label>Qualidade</label><select id="pfQual"></select></div>
+    </div>
+    <button class="save-btn" onclick="salvarPerfil()">Salvar</button>
+    <div class="save-note" id="pfStatus"></div>
+    <div class="cm-section">Ferramentas</div>
+    <div class="add-row">
+      <button class="tb-btn" onclick="importarAntigo()">⬇ Importar da planilha antiga</button>
+      <button class="tb-btn" onclick="limparCache()">🧹 Limpar cache de cartas</button>
+    </div>
+    <div class="save-note" id="impStatus" style="white-space:pre-line;text-align:left"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="divModal" onclick="fecharSeFundo(event,'divModal')">
+  <div class="modal" style="width:560px">
+    <div class="modal-header"><span class="modal-title">O que eu divulgo na comunidade</span><button class="modal-close" onclick="fechar('divModal')">×</button></div>
+    <div class="exp-tabs">
+      <button class="exp-tab active" id="divTab_rep" onclick="divAba('rep')">🔁 Minhas repetidas</button>
+      <button class="exp-tab" id="divTab_falta" onclick="divAba('falta')">🔎 Cartas que procuro</button>
+    </div>
+    <div class="fld" id="divSetWrap" style="display:none"><label>Coleção</label><select id="divSet" class="exp-sel" onchange="renderDivulgar()"></select></div>
+    <div class="add-row">
+      <button class="tb-btn" onclick="divTodas(true)">Marcar todas</button>
+      <button class="tb-btn" onclick="divTodas(false)">Desmarcar todas</button>
+      <span class="sync-status" id="divStatus" style="align-self:center"></span>
+    </div>
+    <div class="pick-list" id="divLista"></div>
+    <div class="hint-box">Marcar/desmarcar salva na hora. Só aparece para os outros se <b>Participar da comunidade</b> estiver ligado no seu perfil.</div>
+  </div>
+</div>
+
+<div class="modal-bg" id="expModal" onclick="fecharSeFundo(event,'expModal')">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Exportar cartas</span><button class="modal-close" onclick="fechar('expModal')">×</button></div>
     <div class="exp-tabs">
       <button class="exp-tab active" id="expTabFalta" onclick="setExpMode('faltando')">🔍 Faltando</button>
       <button class="exp-tab" id="expTabDup" onclick="setExpMode('repetidas')">🔁 Repetidas</button>
@@ -342,24 +476,21 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
     <div class="fld"><label>Coleção</label><select id="expSet" class="exp-sel"></select></div>
     <div class="fld" id="expWhatWrap"><label>O que incluir</label>
       <select id="expWhat" class="exp-sel">
-        <option value="all">Base + especiais (a coleção inteira)</option>
-        <option value="base">Só a coleção base (numeração até o total impresso)</option>
-        <option value="special">Só as especiais (acima do total impresso)</option>
+        <option value="all">Base + especiais</option>
+        <option value="base">Só a coleção base</option>
+        <option value="special">Só as especiais</option>
       </select>
     </div>
-    <div class="exp-chk" id="expVarWrap">
-      <input type="checkbox" id="expVar"/>
-      <label for="expVar">Incluir também as <b>variações</b> que faltam de cartas que eu já tenho (ex.: tenho a Normal, falta a Reverse Holo).</label>
-    </div>
+    <label class="chk-line"><input type="checkbox" id="expSoMarcadas"/> <span id="expSoMarcadasLbl">Só as que marquei para divulgar</span></label>
     <div class="fld"><label>Formato</label>
       <select id="expFmt" class="exp-sel">
-        <option value="img">Página com as imagens — abre pronta pra imprimir / salvar em PDF</option>
-        <option value="txt">Lista de texto — pra copiar e mandar no WhatsApp</option>
+        <option value="img">Página com imagens — pronta pra imprimir / salvar em PDF</option>
+        <option value="txt">Lista de texto — pra mandar no WhatsApp</option>
         <option value="csv">Planilha CSV — abre no Excel</option>
       </select>
     </div>
     <button class="save-btn" onclick="runExport()">Gerar</button>
-    <div class="save-note" id="expStatus" style="margin-top:8px;white-space:pre-line"></div>
+    <div class="save-note" id="expStatus" style="white-space:pre-line"></div>
     <textarea class="exp-out" id="expOut" readonly></textarea>
     <div id="expActions" style="display:none;margin-top:8px;gap:6px;flex-wrap:wrap">
       <button class="tb-btn" onclick="copiarExport()">📋 Copiar</button>
@@ -368,1638 +499,1081 @@ header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);pad
   </div>
 </div>
 
-<div class="card-modal-bg" id="cardModal" onclick="closeCardBg(event)">
-  <div class="card-modal">
+<div class="card-modal-bg" id="cardModal" onclick="fecharSeFundo(event,'cardModal')">
+  <div class="card-modal" style="width:400px">
     <div class="cm-header">
       <div><div class="cm-name" id="cmName"></div><div class="cm-meta" id="cmMeta"></div></div>
-      <button class="modal-close" onclick="closeCard()">×</button>
+      <button class="modal-close" onclick="fechar('cardModal')">×</button>
     </div>
-    <img class="cm-img" id="cmImg" src="" alt="" />
+    <img class="cm-img" id="cmImg" src="" alt=""/>
     <div class="card-ph big" id="cmPh" style="display:none"><div class="n"></div><div class="t"></div></div>
-    <div id="cmVersionBadges" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"></div>
-    <div class="cm-section">Variações que possuo</div>
-    <div id="cmVariants"></div>
-    <div class="cm-section">Preço (Liga Pokémon)</div>
-    <div class="var-row">
-      <div class="price-wrap"><span class="price-pfx">R$</span><input type="number" class="price-inp" id="cmPrice" step="0.01" min="0" onchange="persistCard('Manual')"/></div>
-      <div class="price-src" id="cmPriceSrc"></div>
-    </div>
-    <div class="hint-box" id="cmHint">
-      É um preço só por carta (a Liga não separa por Normal/Holo/Reverse). Use "📋 Colar da Liga" na tela do set pra preencher em massa, ou digite aqui na mão. Marcar/desmarcar e editar já salva automático.
-    </div>
+    <div class="cm-section">Meus exemplares</div>
+    <div id="cmLinhas"></div>
+    <div class="add-row" id="cmAdd"></div>
+    <label class="chk-line"><input type="checkbox" id="cmDesejo" onchange="alternarDesejo(this.checked)"/> 🔎 Procuro esta carta (aparece para a comunidade)</label>
+    <div class="cm-section">Preço na Liga</div>
+    <div class="hint-box" id="cmPreco" style="margin-top:0"></div>
     <div class="save-note" id="saveNote"></div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script>
-const CFG = (typeof window!=='undefined' && window.POKEDEX_CONFIG) ? window.POKEDEX_CONFIG : {};
-const ME01_DATA = {"001":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"002":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"003":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"004":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"005":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"006":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"007":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"008":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"009":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"010":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"011":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"012":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"013":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"014":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"015":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"016":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"017":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"018":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"019":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"020":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"021":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"022":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"023":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"024":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"025":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"026":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"027":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"028":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"029":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"030":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"031":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"032":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"033":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"034":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"035":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"036":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"037":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"038":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"039":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"040":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"041":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"042":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"043":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"044":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"045":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"046":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"047":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"048":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"049":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"050":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"051":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"052":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"053":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"054":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"055":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"056":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"057":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"058":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"059":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"060":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"061":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"062":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"063":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"064":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"065":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"066":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"067":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"068":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"069":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"070":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"071":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"072":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"073":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"074":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"075":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"076":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"077":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"078":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"079":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"080":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"081":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"082":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"083":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"084":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"085":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"086":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"087":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"088":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"089":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"090":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"091":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"092":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"093":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"094":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"095":{"rarity":"Rara","normal":false,"holo":true,"reverse":true},"096":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"097":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"098":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"099":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"100":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"101":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"102":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"103":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"104":{"rarity":"Rara Dupla","normal":false,"holo":true,"reverse":false},"105":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"106":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"107":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"108":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"109":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"110":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"111":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"112":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"113":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"114":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"115":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"116":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"117":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"118":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"119":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"120":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"121":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"122":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"123":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"124":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"125":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"126":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"127":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"128":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"129":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"130":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"131":{"rarity":"Comum","normal":true,"holo":false,"reverse":true},"132":{"rarity":"Incomum","normal":true,"holo":false,"reverse":true},"133":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"134":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"135":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"136":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"137":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"138":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"139":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"140":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"141":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"142":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"143":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"144":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"145":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"146":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"147":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"148":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"149":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"150":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"151":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"152":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"153":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"154":{"rarity":"Ilustração Rara","normal":false,"holo":true,"reverse":false},"155":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"156":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"157":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"158":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"159":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"160":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"161":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"162":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"163":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"164":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"165":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"166":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"167":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"168":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"169":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"170":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"171":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"172":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"173":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"174":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"175":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"176":{"rarity":"Ultra Rara","normal":false,"holo":true,"reverse":false},"177":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"178":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"179":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"180":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"181":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"182":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"183":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"184":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"185":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"186":{"rarity":"Ilustração Rara Especial","normal":false,"holo":true,"reverse":false},"187":{"rarity":"Mega Hiper Raro","normal":false,"holo":true,"reverse":false},"188":{"rarity":"Mega Hiper Raro","normal":false,"holo":true,"reverse":false}};
+/* =====================================================================
+   POKÉDEX DO COLECIONADOR — v2
+   Catálogo: TCGdex (online) · Dados: Supabase (login + RLS) ·
+   Preços: Liga Pokémon lida pela extensão no navegador do usuário
+   ===================================================================== */
+const CFG=(typeof window!=='undefined'&&window.POKEDEX_CONFIG)||{};
+const TCG='https://api.tcgdex.net/v2';
+const EXTRAS=[['Normal','Normal'],['Holo','Holo'],['Reverse','Reverse Holo']];
+const IDIOMAS=[['PT','Português'],['EN','Inglês'],['JP','Japonês'],['ES','Espanhol'],['IT','Italiano'],['FR','Francês'],['DE','Alemão'],['KO','Coreano'],['ZH','Chinês']];
+const QUALS=[['M','M · Mint'],['NM','NM · Near Mint'],['SP','SP · Slightly Played'],['MP','MP · Moderately Played'],['HP','HP · Heavily Played'],['D','D · Damaged']];
 
-const API='https://api.pokemontcg.io/v2';
-const API_KEY=CFG.apiKey||'';
-const apiHeaders=API_KEY?{'X-Api-Key':API_KEY}:{};
+let sb=null,user=null,perfil=null;
+let linhas=[],porCarta={},desejos={},setsUser={},customSets={},vinculos={};
+let precoG={},precoX={},valorHist=[];
+let catalogo=[],currentSetId=null,currentSet=null,currentCards=[],currentFilter='all',openCardId=null;
+let extVersao=null;
 
-const VARIANTS=[
-  {key:'normal',label:'Normal',tcg:'normal'},
-  {key:'holofoil',label:'Holofoil',tcg:'holofoil'},
-  {key:'reverseHolofoil',label:'Reverse Holo',tcg:'reverseHolofoil'},
-];
-// "me" (Mega Evolution) NÃO tem 'svp' como companion — svp é promo de Scarlet & Violet,
-// sem relação com Mega Evolution. O "Mega Evolution Promos" oficial existe como produto,
-// mas ainda não está cadastrado na base da pokemontcg.io (testado em 09/08/2026, 0 resultados).
-// Quando a API adicionar o set, é só achar o id certo (provavelmente algo como "mep") e
-// colocar aqui: me:'ID_DO_SET_QUANDO_EXISTIR'.
-const PROMO_COMPANION={sv:'svp',swsh:'swshp',sm:'smp',xy:'xyp',bw:'bwp'};
-
-/* ---------- Código da coleção ----------
-   A pokemontcg.io só conhece o código curto em minúsculas e SEM zero à
-   esquerda: "me3", nunca "ME03" nem o nome em português. Como as lojas e a
-   Copag usam ME01/ME03, e o nome que aparece na booster é em português,
-   isso normaliza tudo antes de bater na API.                                */
-const SET_ALIAS={
-  'equilibrio perfeito':'me3','megaevolucao equilibrio perfeito':'me3',
-  'mega evolucao equilibrio perfeito':'me3','perfect order':'me3',
-  'mega evolution perfect order':'me3',
-  'megaevolucao':'me1','mega evolucao':'me1','mega evolution':'me1',
-};
-function normalizarSetId(txt){
-  const bruto=String(txt||'').trim();
-  if(!bruto)return '';
-  if(customSets[bruto])return bruto;        // coleção da Liga: id exato, não mexer
-  // tira acento, deixa minúsculo e troca traços/travessões por espaço
-  const chave=bruto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[—–_-]/g,' ').replace(/\s+/g,' ').trim();
-  if(SET_ALIAS[chave])return SET_ALIAS[chave];
-  let id=chave.replace(/\s+/g,'');
-  if(customSets[id])return id;
-  // ME03 -> me3 · sv08 -> sv8 · sv8pt5 continua sv8pt5 · svp continua svp
-  const m=id.match(/^([a-z]+)0*(\d+)([a-z].*)?$/);
-  if(m)id=m[1]+m[2]+(m[3]||'');
-  return id;
+/* ---------- utilitários ---------- */
+const $=id=>document.getElementById(id);
+function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+const J=x=>escHtml(JSON.stringify(x));            // valor seguro dentro de onclick="..."
+function fmtBRL(v){return 'R$ '+(Number(v)||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
+function normName(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
+function hojeSP(){return new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'});}
+function haQuanto(iso){
+  if(!iso)return '';
+  const m=Math.max(0,Math.round((Date.now()-new Date(iso).getTime())/60000));
+  if(m<60)return 'há '+m+' min';if(m<1440)return 'há '+Math.round(m/60)+' h';return 'há '+Math.round(m/1440)+' dia(s)';
 }
+function jget(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v;}catch(e){return d;}}
+function jset(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}
+function setSync(m,c){const el=$('syncStatus');el.textContent=m||'';el.className='sync-status'+(c?' '+c:'');}
+function showWarn(t){$('warnText').textContent=t;$('warnBanner').classList.add('show');}
+function hideWarn(){$('warnBanner').classList.remove('show');}
+function fechar(id){$(id).classList.remove('open');if(id==='cardModal')openCardId=null;}
+function fecharSeFundo(e,id){if(e.target===$(id))fechar(id);}
+function opts(lista,sel){return lista.map(([v,l])=>`<option value="${escHtml(v)}"${v===sel?' selected':''}>${escHtml(l)}</option>`).join('');}
+function setIdOf(cardId){const s=String(cardId),i=s.lastIndexOf('-');return i>0?s.slice(0,i):s;}
+// "003b" -> "3b" · "TG01" -> "TG1" · serve pra casar a numeração do catálogo com a da Liga
+function chaveNum(n){const m=String(n==null?'':n).trim().match(/^([A-Za-z]*)0*(\d+)([A-Za-z]?)$/);return m?(m[1].toUpperCase()+m[2]+m[3].toLowerCase()):String(n||'').trim().toUpperCase();}
+function numInt(n){const m=String(n||'').match(/(\d+)/);return m?parseInt(m[1],10):null;}
+function likeEsc(s){return String(s).replace(/[\\%_]/g,'\\$&');}
+function erroMsg(e){return (e&&(e.message||e.error_description||e.details))||String(e);}
 
-let allCards=[],allSets=[],currentFilter='all',openCardId=null,currentSetId='';
-let collection={},savedSets=[],setNames={},setSizes={},setBases={},spent={},ownerName='';
-// customSets: coleções criadas por você a partir do texto/PDF da Liga (sets que a
-// pokemontcg.io ainda não tem). pending: cartas marcadas que ainda NÃO tiveram o
-// salvamento confirmado pela planilha — usado pra nunca perder uma marcação.
-let customSets={},pending={},setLoadToken=0;
-const SET_DEF_PREFIX='__set__'; // como as coleções da Liga ficam guardadas na planilha
-const SPENT_PREFIX='__gasto__'; // valor gasto por coleção, também guardado na planilha
-
-// Lê uma entrada da coleção e devolve sempre no formato atual — {price, src, types:{normal,holofoil,reverseHolofoil}} —
-// mesmo que tenha sido salva no formato antigo (preço por variação, de antes de 10/08/2026).
-// Assim nenhum dado antigo já salvo na planilha ou no aparelho se perde.
-// `dups` = quantas cópias REPETIDAS existem de cada tipo (além da que você guarda).
-// Fica dentro do mesmo JSON da carta, então viaja pra planilha sem mexer no Code.gs.
-// Cartas salvas antes desta versão simplesmente voltam com dups zerado.
-function lerDups(d){
-  const n=x=>{const v=parseInt(x,10);return (isNaN(v)||v<0)?0:v;};
-  return {normal:n(d&&d.normal),holofoil:n(d&&d.holofoil),reverseHolofoil:n(d&&d.reverseHolofoil)};
+/* =====================================================================
+   LOGIN
+   ===================================================================== */
+let loginModo='entrar';
+function loginTrocarModo(){
+  loginModo=loginModo==='entrar'?'criar':'entrar';
+  $('lgNomeWrap').style.display=loginModo==='criar'?'block':'none';
+  $('lgBtn').textContent=loginModo==='criar'?'Criar conta':'Entrar';
+  $('lgTroca').textContent=loginModo==='criar'?'Já tenho conta':'Criar conta';
+  lgStatus('');
 }
-function normalizeEntry(raw){
-  const empty={price:0,src:undefined,types:{normal:false,holofoil:false,reverseHolofoil:false},dups:lerDups(null)};
-  if(!raw)return empty;
-  if(raw.types)return {price:parseFloat(raw.price)||0,src:raw.src,types:{normal:!!raw.types.normal,holofoil:!!raw.types.holofoil,reverseHolofoil:!!raw.types.reverseHolofoil},dups:lerDups(raw.dups)};
-  const types={normal:false,holofoil:false,reverseHolofoil:false};let price=0,src;
-  VARIANTS.forEach(v=>{const sub=raw[v.key];if(sub&&sub.owned){types[v.key]=true;if(!price&&sub.price){price=parseFloat(sub.price)||0;src=sub.src;}}});
-  return {price,src,types,dups:lerDups(raw.dups)};
-}
-
-function jparse(k,d){try{return JSON.parse(localStorage.getItem(k))||d;}catch(e){return d;}}
-
-/* ---------- Gravacao segura no aparelho ----------
-   O localStorage do navegador tem limite (~5 MB). Quando enche, o
-   localStorage.setItem NAO devolve erro: ele LANCA uma excecao. Como as
-   gravacoes estavam soltas, um aparelho cheio derrubava o app inteiro em
-   silencio — favoritos sumiam, colecao nao salvava, set nao abria.
-   Agora toda gravacao passa por aqui: se faltar espaco, o app joga fora o que
-   e descartavel (imagens importadas e cache de cartas, que sao refeitos
-   sozinhos) e tenta de novo. Os dados de verdade (colecao, favoritos) sao os
-   ultimos a serem sacrificados. */
-function descartaveis(){
-  const alvos=[];
-  for(let i=0;i<localStorage.length;i++){
-    const k=localStorage.key(i);
-    if(k&&(k.startsWith('pkm_imgs_')||k.startsWith('pkm_cards_')))alvos.push(k);
-  }
-  return alvos;
-}
-let avisouCheio=false;
-function lsSet(chave,valor){
-  for(let tentativa=0;tentativa<6;tentativa++){
-    try{localStorage.setItem(chave,valor);return true;}
-    catch(e){
-      const alvos=descartaveis().filter(k=>k!==chave);
-      if(!alvos.length)break;
-      // joga fora primeiro as imagens (mais pesadas), depois os caches de cartas
-      alvos.sort((a,b)=>(b.startsWith('pkm_imgs_')?1:0)-(a.startsWith('pkm_imgs_')?1:0));
-      try{localStorage.removeItem(alvos[0]);}catch(_){break;}
+function lgStatus(m,c){const el=$('lgStatus');el.textContent=m;el.className='save-note'+(c?' '+c:'');}
+async function loginEnviar(){
+  const email=$('lgEmail').value.trim(),senha=$('lgSenha').value;
+  if(!email||!senha){lgStatus('Preencha e-mail e senha.','error');return;}
+  lgStatus('Aguarde...','syncing');
+  try{
+    if(loginModo==='criar'){
+      if(senha.length<6){lgStatus('A senha precisa de pelo menos 6 caracteres.','error');return;}
+      const {data,error}=await sb.auth.signUp({email,password:senha,
+        options:{data:{nome:$('lgNome').value.trim()},emailRedirectTo:location.origin+location.pathname}});
+      if(error)throw error;
+      if(!data.session)lgStatus('Conta criada! Abra o e-mail de confirmação que acabou de chegar e depois entre aqui.','synced');
+    }else{
+      const {error}=await sb.auth.signInWithPassword({email,password:senha});
+      if(error)throw error;
     }
+  }catch(e){
+    const m=erroMsg(e);
+    lgStatus(/invalid login/i.test(m)?'E-mail ou senha incorretos.':/not confirmed/i.test(m)?'Confirme o e-mail antes de entrar (veja sua caixa de entrada).':m,'error');
   }
-  if(!avisouCheio){avisouCheio=true;
-    showWarn('A memória deste navegador encheu. Liberei o que dava (imagens e cache), mas se voltar a acontecer use "🧹 Liberar espaço" na tela inicial.');}
-  return false;
 }
-function loadStorage(){
-  collection=jparse('pkm_col',{});
-  savedSets=jparse('pkm_favs',[]);
-  setNames=jparse('pkm_setnames',{});
-  setSizes=jparse('pkm_setsizes',{});
-  setBases=jparse('pkm_setbases',{});
-  spent=jparse('pkm_spent',{});
-  customSets=jparse('pkm_customsets',{});
-  pending=jparse('pkm_pending',{});
-  ownerName=localStorage.getItem('pkm_owner')||CFG.owner||'';
-  renderSaved();renderOwner();renderPending();
+async function loginEsqueci(){
+  const email=$('lgEmail').value.trim();
+  if(!email){lgStatus('Digite seu e-mail acima e clique de novo.','error');return;}
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  lgStatus(error?erroMsg(error):'Enviei um link para redefinir a senha.',error?'error':'synced');
 }
-function saveCol(){lsSet('pkm_col',JSON.stringify(collection));}
-function saveFavs(){lsSet('pkm_favs',JSON.stringify(savedSets));}
-function saveMeta(){lsSet('pkm_setnames',JSON.stringify(setNames));lsSet('pkm_setsizes',JSON.stringify(setSizes));lsSet('pkm_setbases',JSON.stringify(setBases));}
-function saveSpent(){lsSet('pkm_spent',JSON.stringify(spent));}
-function saveCustomSets(){lsSet('pkm_customsets',JSON.stringify(customSets));}
-function savePending(){lsSet('pkm_pending',JSON.stringify(pending));renderPending();}
-function renderPending(){
-  const el=document.getElementById('pendStatus');if(!el)return;
-  const n=Object.keys(pending).length;
-  el.textContent=n?`⏳ ${n} carta(s) esperando salvar na nuvem`:'';
-  el.className='sync-status'+(n?' err':'');
+async function sair(){await sb.auth.signOut();}
+
+async function iniciar(){
+  if(!window.supabase||!CFG.supabaseUrl||/SEU-PROJETO/.test(CFG.supabaseUrl)||!CFG.supabaseAnonKey||/COLE_AQUI/.test(CFG.supabaseAnonKey)){
+    $('loginView').classList.add('open');
+    lgStatus('Falta configurar o Supabase no config.js (supabaseUrl e supabaseAnonKey).','error');return;
+  }
+  sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey);
+  // Nunca chamar o banco de dentro do callback (trava o cliente): agenda pra depois.
+  sb.auth.onAuthStateChange((ev,sess)=>{setTimeout(()=>aoMudarSessao(ev,sess),0);});
+}
+async function aoMudarSessao(ev,sess){
+  if(ev==='PASSWORD_RECOVERY'){
+    const nova=prompt('Digite a nova senha (mínimo 6 caracteres):');
+    if(nova&&nova.length>=6){const {error}=await sb.auth.updateUser({password:nova});alert(error?erroMsg(error):'Senha alterada.');}
+  }
+  const novo=sess&&sess.user||null;
+  if(!novo){user=null;$('loginView').classList.add('open');return;}
+  if(user&&user.id===novo.id)return;          // renovação de token: nada a fazer
+  user=novo;$('loginView').classList.remove('open');lgStatus('');
+  await carregarTudo();
 }
 
-/* ---------- Cache local das cartas de cada set ----------
-   A API da pokemontcg.io cai de vez em quando (HTTP 500/502). Depois que um set
-   carrega UMA vez, guardamos a lista de cartas aqui no aparelho. Nas próximas
-   vezes o set abre na hora, direto do cache, e a API só é consultada em segundo
-   plano pra atualizar. Se a API estiver fora, você nem percebe.                */
-function cacheKey(setId){return 'pkm_cards_'+setId;}
-function slimCard(c){ // guarda só o que o app usa, pra caber no localStorage
-  return {id:c.id,name:c.name,number:c.number,rarity:c.rarity||'',
-    img:(c.images&&c.images.small)||'',imgL:(c.images&&c.images.large)||'',
-    sn:(c.set&&c.set.name)||'',pt:(c.set&&c.set.printedTotal)||0,tt:(c.set&&c.set.total)||0,
-    av:deriveAvailability(c)};
+/* =====================================================================
+   DADOS DO USUÁRIO
+   ===================================================================== */
+async function selTudo(fazQuery){
+  let out=[],de=0;const N=1000;
+  for(;;){const {data,error}=await fazQuery().range(de,de+N-1);if(error)throw error;out=out.concat(data||[]);if(!data||data.length<N)break;de+=N;}
+  return out;
 }
-function fatCard(s,setId){
-  return {id:s.id,name:s.name,number:s.number,rarity:s.rarity,
-    images:{small:s.img,large:s.imgL},
-    set:{id:setId,name:s.sn,printedTotal:s.pt,total:s.tt},
-    __av:s.av};
+function reindexar(){
+  porCarta={};
+  linhas.forEach(r=>{(porCarta[r.carta_id]=porCarta[r.carta_id]||[]).push(r);});
 }
-function saveCardsCache(setId,cards){
-  try{lsSet(cacheKey(setId),JSON.stringify({t:Date.now(),cards:cards.map(slimCard)}));}catch(_){}
+async function carregarTudo(){
+  if(!user)return;
+  setSync('Carregando sua coleção...','loading');
+  try{
+    const [pf,col,des,su,cs,vl,vh]=await Promise.all([
+      sb.from('perfis').select('*').eq('id',user.id).maybeSingle(),
+      selTudo(()=>sb.from('colecao').select('*').order('id')),
+      selTudo(()=>sb.from('desejos').select('*')),
+      selTudo(()=>sb.from('sets_usuario').select('*')),
+      selTudo(()=>sb.from('sets_custom').select('*')),
+      selTudo(()=>sb.from('sets_liga').select('*')),
+      sb.from('valor_hist').select('dia,valor').order('dia',{ascending:false}).limit(90)
+    ]);
+    if(pf.error)throw pf.error;
+    perfil=pf.data;
+    if(!perfil){ // conta criada antes do gatilho existir
+      const ins=await sb.from('perfis').insert({id:user.id,nome:(user.email||'').split('@')[0],email_contato:user.email}).select().single();
+      if(ins.error)throw ins.error;perfil=ins.data;
+    }
+    linhas=col;reindexar();
+    desejos={};des.forEach(d=>desejos[d.carta_id]=d);
+    setsUser={};su.forEach(s=>setsUser[s.set_id]=s);
+    customSets={};cs.forEach(s=>customSets[s.id]=s);
+    vinculos={};vl.forEach(v=>vinculos[v.set_id]=v);
+    valorHist=(vh.data||[]).slice().reverse();
+    await carregarPrecos(meusSetIds());
+    renderOwner();renderSaved();
+    if(currentSetId)renderGrid(),updateStats();else showHome();
+    setSync('✓ Atualizado','ok');
+    fotografarValor();
+  }catch(e){setSync('Erro ao carregar: '+erroMsg(e),'err');}
 }
-function loadCardsCache(setId){
-  const d=jparse(cacheKey(setId),null);
-  if(!d||!Array.isArray(d.cards)||!d.cards.length)return null;
-  return d.cards.map(s=>fatCard(s,setId));
+function meusSetIds(){
+  const s={};Object.keys(setsUser).forEach(k=>s[k]=1);linhas.forEach(r=>s[r.set_id]=1);
+  return Object.keys(s);
 }
-loadStorage();
-if(getScriptUrl())syncFromSheet();
-
-function renderOwner(){document.getElementById('ownerLbl').textContent=ownerName?('de '+ownerName):'Toque para colocar seu nome';}
-function editOwner(){const n=prompt('De quem é esta Pokédex?',ownerName||'');if(n!==null){ownerName=n.trim();localStorage.setItem('pkm_owner',ownerName);renderOwner();if(homeVisible())renderHome();}}
-
-function getScriptUrl(){return (CFG.scriptUrl||'').trim();}
-function setSyncStatus(m,c){const el=document.getElementById('syncStatus');el.textContent=m;el.className='sync-status'+(c?' '+c:'');}
-
-// Busca a coleção da planilha e atualiza a variável `collection`, sem mexer em tela
-// (quem chama decide o que renderizar). Tenta de novo 1x em caso de falha passageira.
-async function refreshCollection(){
-  const url=getScriptUrl();if(!url)return false;
-  for(let attempt=0;attempt<2;attempt++){
-    try{const r=await fetch(url+'?action=get');const d=await r.json();
-      if(!d.ok)throw new Error(d.error||'Erro');
-      const remote={...d.collection};
-      /* Junta o que veio da planilha com o que ja esta neste aparelho, sem perder nada:
-         - carta que so existe aqui -> fica (mesmo que a planilha nao tenha recebido);
-         - carta nos dois lados     -> vence a editada por ultimo (campo `ts`);
-         - carta pendente de envio  -> a daqui sempre vence.
-         Era a falta disso que fazia carta marcada sumir depois de recarregar. */
-      const merged={...remote};
-      Object.keys(collection).forEach(id=>{
-        const loc=collection[id],rem=remote[id];
-        const lt=(loc&&loc.ts)||0,rt=(rem&&rem.ts)||0;
-        if(!rem||pending[id]||lt>rt)merged[id]=loc;
-      });
-      collection=merged;saveCol();
-      extractCustomSets();   // coleções da Liga também viajam pela planilha
-      extractSpent();        // valores gastos idem
-      migrarGastos();        // sobe pra planilha o que só existia neste aparelho
-      flushPending();        // reenvia em segundo plano o que ficou pendente
-      return true;
-    }catch(e){if(attempt>=1)return false;await new Promise(res=>setTimeout(res,600));}
+async function carregarPrecos(setIds){
+  for(const sid of setIds){
+    const pad=likeEsc(sid)+'-%';
+    const [g,x]=await Promise.all([
+      selTudo(()=>sb.from('precos_gerais').select('carta_id,preco_min,preco_max,atualizado_em').like('carta_id',pad)),
+      selTudo(()=>sb.from('precos').select('carta_id,idioma,qualidade,extra,preco_min,atualizado_em').like('carta_id',pad))
+    ]);
+    g.forEach(p=>{if(setIdOf(p.carta_id)===sid)precoG[p.carta_id]=p;});
+    x.forEach(p=>{if(setIdOf(p.carta_id)===sid)precoX[chaveX(p)]=p;});
   }
-  return false;
 }
-// Lê da coleção as linhas "__set__xxx" (definições das coleções criadas pela Liga)
-// e recria os sets neste aparelho. Assim uma coleção criada no celular aparece no PC.
-function extractCustomSets(){
-  let changed=false;
-  Object.keys(collection).forEach(k=>{
-    if(!k.startsWith(SET_DEF_PREFIX))return;
-    const def=collection[k];
-    if(!def||def.deleted||!Array.isArray(def.cards))return;
-    if(JSON.stringify(customSets[def.id])!==JSON.stringify(def)){customSets[def.id]=def;changed=true;}
-    setNames[def.id]=def.name;setSizes[def.id]=def.total||def.cards.length;
-  });
-  if(changed){saveCustomSets();saveMeta();}
-}
-// Reenvia tudo que ficou pendente de salvar (falha de rede, Apps Script fora do ar...).
-let flushing=false;
-async function flushPending(){
-  if(flushing)return;const ids=Object.keys(pending);if(!ids.length)return;
-  flushing=true;
-  for(const id of ids){
-    if(collection[id]===undefined){delete pending[id];savePending();continue;}
-    await saveToSheet(id,collection[id],true);
-  }
-  flushing=false;
-  if(!homeVisible()&&allCards.length)renderGrid();
-}
-async function syncFromSheet(){
-  if(!getScriptUrl()){setSyncStatus('Sem URL: os dados ficam só neste aparelho','err');return;}
-  setSyncStatus('Carregando...','loading');
-  const ok=await refreshCollection();
-  if(ok){
-    // Só redesenha a grade se realmente já existe um set carregado na tela —
-    // senão um sync lento chegando depois pinta "Nenhuma carta aqui" por cima.
-    if(homeVisible())renderHome();else if(allCards.length)renderGrid();
-    setSyncStatus('✓ Sincronizado','ok');setTimeout(()=>setSyncStatus('',''),3000);
-  }
-  else setSyncStatus('Erro ao sincronizar — tenta de novo','err');
-}
-// Salva uma carta na planilha com até 3 tentativas e confirmação de resposta.
-// Enquanto não confirmar, o id fica em `pending` (e é reenviado depois).
-// Salva VARIAS cartas numa unica chamada (usado pelo "Colar da Liga").
-// Se a planilha ainda estiver com o Code.gs antigo (sem 'saveMany'), cai
-// automaticamente no modo de uma carta por vez — funciona nos dois casos.
-async function saveManyToSheet(items){
-  const url=getScriptUrl();if(!url||!items.length)return true;
-  items.forEach(it=>{pending[it.card_id]=true;});savePending();
-  for(let attempt=0;attempt<2;attempt++){
-    try{
-      const r=await fetch(url,{method:'POST',body:JSON.stringify({action:'saveMany',cards:items})});
-      const d=await r.json();
-      if(!d||!d.ok||d.saved!==items.length)throw new Error('lote nao aceito');
-      items.forEach(it=>{delete pending[it.card_id];});savePending();
-      return true;
-    }catch(e){if(attempt<1)await new Promise(res=>setTimeout(res,500));}
-  }
-  let ok=true;
-  for(const it of items){if(!await saveToSheet(it.card_id,it.variants,true))ok=false;}
-  return ok;
-}
-async function saveToSheet(card_id,variants,silent){
-  const url=getScriptUrl();if(!url)return true;
-  pending[card_id]=true;savePending();
-  if(!silent)setNoteStatus('Salvando...','syncing');
-  for(let attempt=0;attempt<3;attempt++){
-    try{
-      const r=await fetch(url,{method:'POST',body:JSON.stringify({action:'save',card_id,variants})});
-      const d=await r.json();
-      if(!d||!d.ok)throw new Error((d&&d.error)||'resposta inesperada');
-      delete pending[card_id];savePending();
-      if(!silent){setNoteStatus('✓ Salvo na planilha','synced');setTimeout(()=>setNoteStatus('',''),2000);}
-      return true;
-    }catch(e){if(attempt<2)await new Promise(res=>setTimeout(res,500*(attempt+1)));}
-  }
-  if(!silent){setNoteStatus('⚠ Guardado no aparelho — vou tentar salvar de novo sozinho','error');setTimeout(()=>setNoteStatus('',''),4000);}
-  return false;
-}
-function setNoteStatus(m,c){const el=document.getElementById('saveNote');el.textContent=m;el.className='save-note'+(c?' '+c:'');}
+function chaveX(r){return [r.carta_id,r.extra,r.idioma,r.qualidade].join('|');}
 
-function showWarn(t){document.getElementById('warnText').textContent=t;document.getElementById('warnBanner').classList.add('show');}
-function hideWarn(){document.getElementById('warnBanner').classList.remove('show');}
+/* ---------- valoração: manual > Liga exato > Liga menor geral ---------- */
+function precoLinha(r){
+  if(r.preco_manual!=null)return {v:Number(r.preco_manual),fonte:'manual'};
+  const x=precoX[chaveX(r)];if(x&&x.preco_min!=null)return {v:Number(x.preco_min),fonte:'exato',ts:x.atualizado_em};
+  const g=precoG[r.carta_id];if(g&&g.preco_min!=null)return {v:Number(g.preco_min),fonte:'geral',ts:g.atualizado_em};
+  return {v:0,fonte:'sem'};
+}
+const rowsOf=id=>porCarta[id]||[];
+const isOwned=id=>rowsOf(id).length>0;
+const dupCount=id=>rowsOf(id).reduce((s,r)=>s+(r.quantidade-1),0);
+const valorCarta=id=>rowsOf(id).reduce((s,r)=>s+precoLinha(r).v,0);
+const dupVal=id=>rowsOf(id).reduce((s,r)=>s+precoLinha(r).v*(r.quantidade-1),0);
+function totalGeral(){let v=0,c=0;Object.keys(porCarta).forEach(id=>{v+=valorCarta(id);c++;});return {valor:v,cartas:c};}
+async function fotografarValor(){
+  if(!user||!linhas.length)return;
+  const t=totalGeral(),dia=hojeSP();
+  const {error}=await sb.from('valor_hist').upsert({user_id:user.id,dia,valor:+t.valor.toFixed(2),cartas:t.cartas},{onConflict:'user_id,dia'});
+  if(error)return;
+  const i=valorHist.findIndex(h=>h.dia===dia);
+  if(i>=0)valorHist[i].valor=t.valor;else valorHist.push({dia,valor:t.valor});
+}
 
+/* =====================================================================
+   CATÁLOGO — TCGdex
+   ===================================================================== */
+let langPt=localStorage.getItem('pkd_lang')||'';
+async function tcg(path,lang){
+  const r=await fetch(`${TCG}/${lang}/${path}`);
+  if(!r.ok)throw new Error('TCGdex HTTP '+r.status);
+  return r.json();
+}
+async function carregarCatalogo(){
+  if(catalogo.length)return catalogo;
+  const cache=jget('pkd_catalogo',null);
+  if(cache&&Date.now()-cache.ts<86400000&&cache.sets&&cache.sets.length){catalogo=cache.sets;return catalogo;}
+  const en=await tcg('sets','en');
+  let pt=[];
+  for(const l of (langPt?[langPt]:['pt-br','pt'])){
+    try{const s=await tcg('sets',l);if(Array.isArray(s)&&s.length){pt=s;langPt=l;localStorage.setItem('pkd_lang',l);break;}}catch(e){}
+  }
+  const nomePt={};pt.forEach(s=>nomePt[s.id]=s.name);
+  catalogo=en.map(s=>({id:s.id,name:nomePt[s.id]||s.name,nameEn:s.name,
+    total:(s.cardCount&&s.cardCount.total)||0,base:(s.cardCount&&s.cardCount.official)||0})).reverse();
+  jset('pkd_catalogo',{ts:Date.now(),sets:catalogo});
+  return catalogo;
+}
+// Aceita "ME01", "me1", "sv3pt5" (código antigo da pokemontcg.io) ou o nome em PT/EN.
+function codigoParaTcgdex(s){
+  s=String(s||'').toLowerCase().trim();
+  let m=s.match(/^(sv|me)0*(\d+)(pt5|\.5)?$/);if(m)return m[1]+m[2].padStart(2,'0')+(m[3]?'.5':'');
+  m=s.match(/^([a-z]+)(\d+)pt5$/);if(m)return m[1]+m[2]+'.5';
+  return s;
+}
+async function resolverSetId(txt){
+  const bruto=String(txt||'').trim();if(!bruto)return null;
+  if(customSets[bruto])return bruto;
+  const cl=('liga'+bruto.toLowerCase().replace(/[^a-z0-9]/g,''));if(customSets[cl])return cl;
+  const cat=await carregarCatalogo();
+  const cand=[bruto.toLowerCase(),codigoParaTcgdex(bruto)];
+  for(const c of cand){const hit=cat.find(s=>s.id.toLowerCase()===c);if(hit)return hit.id;}
+  const n=normName(bruto);
+  const ex=cat.find(s=>normName(s.name)===n||normName(s.nameEn)===n);if(ex)return ex.id;
+  const par=cat.find(s=>normName(s.name).includes(n)||normName(s.nameEn).includes(n));
+  return par?par.id:null;
+}
+function ordenarCartas(cards){
+  const peso=c=>{const k=String(c.localId||'');const pref=/^[A-Za-z]/.test(k)?1:0;return [pref,k.replace(/\d+.*$/,''),numInt(k)||0,k];};
+  return cards.slice().sort((a,b)=>{const x=peso(a),y=peso(b);for(let i=0;i<4;i++){if(x[i]<y[i])return -1;if(x[i]>y[i])return 1;}return 0;});
+}
+function imgUrl(c,q){
+  const u=c&&c.img;if(!u)return '';
+  if(/^data:|\.(png|jpe?g|webp|gif)(\?|$)/i.test(u))return u;
+  return u+'/'+(q||'low')+'.webp';
+}
+async function carregarCartasSet(setId,forcar){
+  if(customSets[setId]){
+    const d=customSets[setId];
+    const cards=(d.cartas||[]).map(c=>({id:setId+'-'+c.n,localId:c.n,name:c.name,img:c.img||''}));
+    let base=0;cards.forEach(c=>{if(/^\d+$/.test(c.localId))base=Math.max(base,parseInt(c.localId,10));});
+    return {set:{id:setId,name:d.nome,total:d.total||cards.length,base:base||cards.length,liga:true},cards:ordenarCartas(cards)};
+  }
+  const ck='pkd_set_'+setId,cache=jget(ck,null);
+  if(!forcar&&cache&&Date.now()-cache.ts<7*86400000)return cache.d;
+  await carregarCatalogo();
+  const [en,pt]=await Promise.allSettled([tcg('sets/'+encodeURIComponent(setId),'en'),
+    langPt?tcg('sets/'+encodeURIComponent(setId),langPt):Promise.reject(new Error('sem pt'))]);
+  const E=en.status==='fulfilled'?en.value:null,P=pt.status==='fulfilled'?pt.value:null;
+  if(!E&&!P)throw new Error('Set "'+setId+'" não encontrado no catálogo.');
+  const base=(E||P),ptPor={};
+  if(P)(P.cards||[]).forEach(c=>ptPor[c.localId]=c);
+  const vistos={},cards=[];
+  (base.cards||[]).forEach(c=>{const p=ptPor[c.localId];vistos[c.localId]=1;
+    cards.push({id:c.id,localId:c.localId,name:(p&&p.name)||c.name,img:(p&&p.image)||c.image||''});});
+  if(P&&E)(P.cards||[]).forEach(c=>{if(!vistos[c.localId])cards.push({id:c.id,localId:c.localId,name:c.name,img:c.image||''});});
+  const cc=base.cardCount||{};
+  const d={set:{id:base.id,name:(P&&P.name)||base.name,total:cc.total||cards.length,base:cc.official||cc.total||cards.length},cards:ordenarCartas(cards)};
+  jset(ck,{ts:Date.now(),d});
+  return d;
+}
+function limparCache(){
+  Object.keys(localStorage).forEach(k=>{if(k.startsWith('pkd_set_')||k==='pkd_catalogo')localStorage.removeItem(k);});
+  catalogo=[];$('impStatus').textContent='Cache limpo.';
+}
+function isSpecial(card,set){
+  const k=String(card.localId||'');
+  if(/^[A-Za-z]/.test(k)||/[A-Za-z]$/.test(k))return true;
+  const n=numInt(k),b=(set&&set.base)||0;
+  return !!(b&&n!=null&&n>b);
+}
+
+/* =====================================================================
+   CABEÇALHO / INÍCIO
+   ===================================================================== */
+function renderOwner(){$('ownerLbl').textContent=perfil&&perfil.nome?('de '+perfil.nome):'Toque para completar seu perfil';}
 function renderSaved(){
-  const chips=document.getElementById('savedChips'),nf=document.getElementById('noFav');
-  if(!savedSets.length){chips.innerHTML='';nf.style.display='';return;}
-  nf.style.display='none';
-  chips.innerHTML=savedSets.map(s=>`<span class="saved-chip" onclick="fetchSet('${s.id}')">${s.name}<span class="rm" onclick="removeFav(event,'${s.id}')">×</span></span>`).join('');
+  const favs=Object.values(setsUser).filter(s=>s.favorito);
+  $('noFav').style.display=favs.length?'none':'inline';
+  $('savedChips').innerHTML=favs.map(s=>`<span class="saved-chip" onclick="fetchSet(${J(s.set_id)})">${escHtml(s.nome||s.set_id)}</span>`).join('');
 }
-function saveAsFav(){
-  if(!currentSetId)return;
-  const name=setNames[currentSetId]||document.getElementById('setTitleLbl').textContent||currentSetId;
-  if(!savedSets.find(s=>s.id===currentSetId)){savedSets.push({id:currentSetId,name});saveFavs();renderSaved();}
+function esconderTudo(){
+  ['homeView','comView','cardGrid'].forEach(id=>$(id).style.display='none');
+  ['statsBar','progressBar','filterBar'].forEach(id=>$(id).style.display='none');
 }
-function removeFav(e,id){e.stopPropagation();savedSets=savedSets.filter(s=>s.id!==id);saveFavs();renderSaved();}
-
-function homeVisible(){return document.getElementById('homeView').style.display!=='none';}
 function showHome(){
-  document.getElementById('homeView').style.display='';
-  ['statsBar','filterBar','progressBar','cardGrid'].forEach(id=>document.getElementById(id).style.display='none');
-  document.querySelectorAll('.qs-chip').forEach(c=>c.classList.remove('active'));
-  renderHome();
+  esconderTudo();currentSetId=null;currentSet=null;currentCards=[];
+  $('homeView').style.display='block';renderHome();
 }
-function showSetView(){document.getElementById('homeView').style.display='none';document.getElementById('cardGrid').style.display='grid';}
-
-function setIdOf(cardId){return String(cardId).split('-')[0];}
-function collectionSummary(){
+function resumoPorSet(){
   const g={};
   const novo=sid=>({id:sid,count:0,value:0,base:0,spec:0,dup:0,dupValue:0});
-  Object.keys(collection).forEach(cid=>{
-    if(cid.startsWith(SET_DEF_PREFIX)||cid.startsWith(SPENT_PREFIX))return;   // linha de controle, nao e carta
-    const nd=dupCount(cid);
-    if(!isOwned(cid)&&!nd)return;
-    const sid=setIdOf(cid);
-    if(!g[sid])g[sid]=novo(sid);
-    // repetidas contam à parte: entram no bloco "repetidas", nunca no valor
-    g[sid].dup+=nd;g[sid].dupValue+=dupVal(cid);
-    if(!isOwned(cid))return;
-    g[sid].count++;g[sid].value+=getVal(cid);
-    const sufixo=/\d[a-z]$/i.test(String(cid).split('-').pop());
-    if(sufixo||isSpecialNum(sid,numFromCardId(cid)))g[sid].spec++;else g[sid].base++;
+  Object.keys(porCarta).forEach(cid=>{
+    const r0=porCarta[cid][0],sid=r0.set_id;if(!g[sid])g[sid]=novo(sid);
+    g[sid].count++;g[sid].value+=valorCarta(cid);g[sid].dup+=dupCount(cid);g[sid].dupValue+=dupVal(cid);
+    const su=setsUser[sid]||{};
+    if(isSpecial({localId:r0.numero},{base:su.base||su.total||0}))g[sid].spec++;else g[sid].base++;
   });
-  savedSets.forEach(s=>{if(!g[s.id])g[s.id]=novo(s.id);});
+  Object.keys(setsUser).forEach(sid=>{if(!g[sid])g[sid]=novo(sid);});
   return Object.values(g).sort((a,b)=>b.value-a.value);
 }
+function sparkline(){
+  const h=valorHist.slice(-60);if(h.length<2)return '';
+  const vs=h.map(x=>Number(x.valor)),mn=Math.min(...vs),mx=Math.max(...vs),W=300,H=46,d=(mx-mn)||1;
+  const pts=vs.map((v,i)=>`${(i/(vs.length-1)*W).toFixed(1)},${(H-4-((v-mn)/d)*(H-8)).toFixed(1)}`).join(' ');
+  const dif=vs[vs.length-1]-vs[0];
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="#F4C430" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
+    <div class="hero-sub">${h.length} dia(s) de histórico · ${dif>=0?'+':''}${fmtBRL(dif)} no período</div>`;
+}
 function renderHome(){
-  const el=document.getElementById('homeView');
-  const sums=collectionSummary();
-  const totalCards=sums.reduce((s,x)=>s+x.count,0);
-  const totalValue=sums.reduce((s,x)=>s+x.value,0);
-  const totalSpent=Object.keys(spent).reduce((s,k)=>s+(parseFloat(spent[k])||0),0);
-  const totalDup=sums.reduce((s,x)=>s+x.dup,0);
-  const totalDupVal=sums.reduce((s,x)=>s+x.dupValue,0);
-  const diff=totalValue-totalSpent,diffCls=diff>=0?'diff-pos':'diff-neg';
-  const who=ownerName?('Pokédex de '+ownerName):'Sua Pokédex';
-  let hero=`<div class="hero">
-      <div class="hero-card big"><div class="hero-lbl">${who} · valor atual</div><div class="hero-val">${fmtBRL(totalValue)}</div><div class="hero-sub">${totalCards} cartas em ${sums.filter(s=>s.count>0).length} coleções</div></div>
-      <div class="hero-card"><div class="mini-lbl">Total investido</div><div class="mini-val">${fmtBRL(totalSpent)}</div></div>
-      <div class="hero-card"><div class="mini-lbl">Diferença</div><div class="mini-val ${diffCls}">${diff>=0?'+':''}${fmtBRL(diff)}</div></div>
-      <div class="hero-card"><div class="mini-lbl">Repetidas (fora do total)</div><div class="mini-val">${totalDup}</div><div class="hero-sub" style="color:var(--ink2)">valeriam ${fmtBRL(totalDupVal)}</div></div>
-    </div>`;
-  let colls;
+  const sums=resumoPorSet();
+  const totalCards=sums.reduce((s,x)=>s+x.count,0),totalValue=sums.reduce((s,x)=>s+x.value,0);
+  const totalSpent=Object.values(setsUser).reduce((s,x)=>s+(Number(x.gasto)||0),0);
+  const totalDup=sums.reduce((s,x)=>s+x.dup,0),totalDupVal=sums.reduce((s,x)=>s+x.dupValue,0);
+  const diff=totalValue-totalSpent;
+  const who=perfil&&perfil.nome?('Pokédex de '+escHtml(perfil.nome)):'Sua Pokédex';
+  let html=`<div class="hero">
+    <div class="hero-card big"><div class="hero-lbl">${who} · valor atual</div><div class="hero-val">${fmtBRL(totalValue)}</div>
+      <div class="hero-sub">${totalCards} cartas em ${sums.filter(s=>s.count>0).length} coleções</div>${sparkline()}</div>
+    <div class="hero-card"><div class="mini-lbl">Total investido</div><div class="mini-val">${fmtBRL(totalSpent)}</div></div>
+    <div class="hero-card"><div class="mini-lbl">Diferença</div><div class="mini-val ${diff>=0?'diff-pos':'diff-neg'}">${diff>=0?'+':''}${fmtBRL(diff)}</div></div>
+    <div class="hero-card"><div class="mini-lbl">Repetidas (fora do total)</div><div class="mini-val">${totalDup}</div><div class="hero-sub" style="color:var(--ink2)">valeriam ${fmtBRL(totalDupVal)}</div></div>
+  </div>
+  <div class="tools-row">
+    <button class="tb-btn blue" onclick="atualizarTodos()">🔄 Atualizar preços de todas as coleções (Liga)</button>
+    <button class="tb-btn" onclick="openExp()">📤 Exportar faltando / repetidas</button>
+    <button class="tb-btn" onclick="abrirDivulgar()">📣 O que eu divulgo</button>
+  </div>`;
   if(!sums.length){
-    colls=`<div class="home-empty"><div class="t">Sua Pokédex está vazia</div>Carregue um set lá em cima e comece a marcar as cartas que você tem.</div>`;
+    html+=`<div class="home-empty" style="margin-top:18px"><div class="t">Sua Pokédex está vazia</div>Busque um set lá em cima e comece a marcar as cartas que você tem.<br>Já usava a versão antiga? Vá em <b>⚙ Perfil → Importar da planilha antiga</b>.</div>`;
   }else{
-    colls='<div class="home-h">Minhas coleções</div><div class="coll-grid">'+sums.map(s=>{
-      const name=setNames[s.id]||s.id;
-      const size=setSizes[s.id]||0;              // total geral da colecao
-      const bSize=baseSizeOf(s.id);              // quantas sao da colecao base
-      const sSize=Math.max(0,size-bSize);        // quantas sao especiais
-      const bPct=bSize?Math.min(100,Math.round(s.base/bSize*100)):0;
-      const sPct=sSize?Math.min(100,Math.round(s.spec/sSize*100)):0;
-      const sp=spent[s.id]!=null?spent[s.id]:'',spNum=parseFloat(sp)||0,d=s.value-spNum;
-      const dTxt=sp!==''?`<span class="spent-diff ${d>=0?'diff-pos':'diff-neg'}">${d>=0?'+':''}${fmtBRL(d)}</span>`:'';
-      const mini=(n)=>`<span style="font-size:12px;color:var(--ink3)">/${n}</span>`;
+    html+='<div class="home-h">Minhas coleções</div><div class="coll-grid">'+sums.map(s=>{
+      const su=setsUser[s.id]||{},name=su.nome||(customSets[s.id]&&customSets[s.id].nome)||s.id;
+      const size=su.total||0,bSize=su.base||size,sSize=Math.max(0,size-bSize);
+      const bPct=bSize?Math.min(100,Math.round(s.base/bSize*100)):0,sPct=sSize?Math.min(100,Math.round(s.spec/sSize*100)):0;
+      const sp=su.gasto!=null?su.gasto:'',d=s.value-(Number(sp)||0);
+      const temLink=!!((customSets[s.id]&&customSets[s.id].liga_url)||vinculos[s.id]);
+      const mini=n=>`<span style="font-size:12px;color:var(--ink3)">/${n}</span>`;
       return `<div class="coll">
-        <div class="coll-top"><div class="coll-name" onclick="fetchSet('${s.id}')">${name}</div>
-          <div style="display:flex;align-items:center;gap:4px"><span class="coll-id">${s.id}</span>
-          <button class="coll-del" title="Excluir esta coleção" onclick="excluirColecao('${s.id}')">🗑</button></div></div>
+        <div class="coll-top"><div class="coll-name" onclick="fetchSet(${J(s.id)})">${escHtml(name)}</div>
+          <div style="display:flex;align-items:center;gap:4px"><span class="coll-id" title="${temLink?'Página da Liga vinculada':'Sem página da Liga vinculada'}">${temLink?'🔗 ':''}${escHtml(s.id)}</span>
+          <button class="coll-del" title="Excluir esta coleção" onclick="excluirColecao(${J(s.id)})">🗑</button></div></div>
         <div class="coll-stats">
           <div class="coll-stat"><div class="n">${s.base}${bSize?mini(bSize):''}</div><div class="l">base</div></div>
           <div class="coll-stat"><div class="n">${s.spec}${sSize?mini(sSize):''}</div><div class="l">especiais</div></div>
           <div class="coll-stat"><div class="n">${fmtBRL(s.value)}</div><div class="l">valor</div></div>
-          ${s.dup?`<div class="coll-stat" title="Repetidas — valeriam ${fmtBRL(s.dupValue)}, mas não entram no valor acima"><div class="n" style="color:#0d5c4a">+${s.dup}</div><div class="l">repetidas</div></div>`:''}
+          ${s.dup?`<div class="coll-stat"><div class="n" style="color:#0d5c4a">+${s.dup}</div><div class="l">repetidas</div></div>`:''}
         </div>
         ${bSize?`<div class="coll-barlbl">Base ${bPct}%</div><div class="coll-bar"><i style="width:${bPct}%"></i></div>`:''}
         ${sSize?`<div class="coll-barlbl">Especiais ${sPct}%</div><div class="coll-bar"><i class="sp" style="width:${sPct}%"></i></div>`:''}
-        <div class="spent-row"><label>Gasto: R$</label><input class="spent-inp" type="number" step="0.01" min="0" value="${sp}" placeholder="0,00" onchange="setSpent('${s.id}',this.value)"/>${dTxt}</div>
-      </div>`;
-    }).join('')+'</div>';
+        <div class="spent-row"><label>Gasto: R$</label><input class="spent-inp" type="number" step="0.01" min="0" value="${escHtml(sp)}" placeholder="0,00" onchange="setGasto(${J(s.id)},this.value)"/>
+          ${sp!==''?`<span class="spent-diff ${d>=0?'diff-pos':'diff-neg'}">${d>=0?'+':''}${fmtBRL(d)}</span>`:''}</div>
+      </div>`;}).join('')+'</div>';
   }
-  const ferramentas=`<div class="tools-row">
-    <button class="tb-btn blue" onclick="openExp()">📤 Exportar faltando / repetidas</button>
-    <button class="tb-btn" onclick="liberarEspaco()">🧹 Liberar espaço</button>
-    <span style="font-size:11px;color:var(--ink3);align-self:center">${espacoUsado()}</span>
-  </div>`;
-  el.innerHTML=hero+colls+ferramentas;
+  $('homeView').innerHTML=html;
 }
-// Quanto do aparelho as imagens/caches estao ocupando (aproximado).
-function espacoUsado(){
-  let total=0,desc=0;
-  for(let i=0;i<localStorage.length;i++){
-    const k=localStorage.key(i);if(!k||!k.startsWith('pkm_'))continue;
-    const n=(localStorage.getItem(k)||'').length;total+=n;
-    if(k.startsWith('pkm_imgs_')||k.startsWith('pkm_cards_'))desc+=n;
-  }
-  const mb=x=>(x/1048576).toFixed(1).replace('.',',')+' MB';
-  return `Guardado neste aparelho: ${mb(total)} (${mb(desc)} são imagens e cache, dá pra liberar)`;
+async function garantirSetUsuario(setId,extra){
+  const atual=setsUser[setId]||{};
+  const meta=(currentSet&&currentSet.id===setId)?{nome:currentSet.name,total:currentSet.total,base:currentSet.base}:{};
+  const linha=Object.assign({user_id:user.id,set_id:setId},
+    {nome:atual.nome,total:atual.total,base:atual.base,favorito:!!atual.favorito,gasto:atual.gasto==null?null:atual.gasto},meta,extra||{});
+  const {data,error}=await sb.from('sets_usuario').upsert(linha,{onConflict:'user_id,set_id'}).select().single();
+  if(error)throw error;setsUser[setId]=data;return data;
 }
-function liberarEspaco(){
-  const alvos=descartaveis();
-  if(!alvos.length){alert('Não há nada descartável guardado — sua coleção não ocupa espaço relevante.');return;}
-  if(!confirm(`Liberar espaço apagando ${alvos.length} item(ns) de imagens e cache de cartas?\n\nSuas marcações e preços NÃO são afetados. Os sets voltam a ser baixados da internet quando você abrir de novo.`))return;
-  alvos.forEach(k=>{try{localStorage.removeItem(k);}catch(_){}});
-  avisouCheio=false;hideWarn();renderHome();
-}
-
-/* Exclui uma coleção inteira da Pokédex, com confirmação.
-   Fica na tela inicial de propósito: se o set não abre (API fora do ar, por
-   exemplo), você ainda consegue removê-lo sem precisar entrar nele. */
-async function excluirColecao(sid){
-  const nome=setNames[sid]||sid;
-  const ids=Object.keys(collection).filter(cid=>!cid.startsWith(SET_DEF_PREFIX)&&!cid.startsWith(SPENT_PREFIX)&&setIdOf(cid)===sid&&isOwned(cid));
-  const ehLiga=!!customSets[sid];
-  let aviso=`Excluir a coleção "${nome}" da sua Pokédex?`;
-  if(ids.length)aviso+=`\n\nAtenção: isso apaga também as ${ids.length} carta(s) que você marcou nela (e o valor delas sai do total).`;
-  if(ehLiga)aviso+=`\n\nA lista de cartas importada da Liga também será removida.`;
-  aviso+=`\n\nEssa ação não tem desfazer.`;
-  if(!confirm(aviso))return;
-
-  savedSets=savedSets.filter(x=>x.id!==sid);saveFavs();renderSaved();
-  try{localStorage.removeItem(cacheKey(sid));localStorage.removeItem(imgsKey(sid));}catch(_){}
-  if(ehLiga){
-    delete customSets[sid];saveCustomSets();
-    collection[SET_DEF_PREFIX+sid]={id:sid,deleted:true,ts:Date.now()};
-    saveToSheet(SET_DEF_PREFIX+sid,{id:sid,deleted:true,ts:Date.now()},true);
-  }
-  const lote=[];
-  ids.forEach(cid=>{const vazio={price:0,types:{normal:false,holofoil:false,reverseHolofoil:false},ts:Date.now()};
-    collection[cid]=vazio;lote.push({card_id:cid,variants:vazio});});
-  setSpent(sid,'');   // apaga o gasto tambem na planilha
-  delete setNames[sid];delete setSizes[sid];delete setBases[sid];saveMeta();
-  saveCol();
-  if(currentSetId===sid){allCards=[];currentSetId='';}
-  showHome();
-  if(lote.length)await saveManyToSheet(lote);
-  renderHome();
-}
-/* ---------- Valor gasto por coleção ----------
-   Antes ficava só no localStorage, então o que você digitava no PC não aparecia
-   no celular. Agora cada valor vira uma linha na planilha com a chave
-   "__gasto__<set>", exatamente como as coleções da Liga já faziam com
-   "__set__<set>". Não muda nada no Code.gs — é só mais uma linha na aba.      */
-function setSpent(sid,val){
+async function setGasto(sid,val){
   const n=parseFloat(val);
-  const vazio=(isNaN(n)||val==='');
-  if(vazio)delete spent[sid];else spent[sid]=n;
-  saveSpent();renderHome();
-  // v:null marca "apagado", pra propagar a remoção pros outros aparelhos
-  const linha={id:sid,v:vazio?null:n,ts:Date.now()};
-  collection[SPENT_PREFIX+sid]=linha;saveCol();
-  saveToSheet(SPENT_PREFIX+sid,linha,true);
+  try{await garantirSetUsuario(sid,{gasto:(isNaN(n)||val==='')?null:n});renderHome();}catch(e){showWarn(erroMsg(e));}
 }
-// Lê as linhas "__gasto__" da coleção e aplica no objeto `spent` deste aparelho.
-// O merge por `ts` já aconteceu em refreshCollection, então aqui é só espelhar.
-function extractSpent(){
-  Object.keys(collection).forEach(k=>{
-    if(!k.startsWith(SPENT_PREFIX))return;
-    const linha=collection[k];if(!linha||!linha.id)return;
-    if(linha.v==null)delete spent[linha.id];
-    else spent[linha.id]=parseFloat(linha.v)||0;
-  });
-  saveSpent();
+async function alternarFavorito(){
+  if(!currentSetId)return;
+  try{const s=await garantirSetUsuario(currentSetId,{favorito:!(setsUser[currentSetId]&&setsUser[currentSetId].favorito)});
+    renderSaved();$('favBtn').textContent=s.favorito?'★ Favorito ✓':'★ Favorito';}catch(e){showWarn(erroMsg(e));}
 }
-// Um aparelho que já tinha valores gastos salvos só no navegador: sobe pra planilha.
-function migrarGastos(){
-  Object.keys(spent).forEach(sid=>{
-    if(collection[SPENT_PREFIX+sid])return;   // já tem linha, nada a fazer
-    const linha={id:sid,v:parseFloat(spent[sid])||0,ts:Date.now()};
-    collection[SPENT_PREFIX+sid]=linha;
-    saveToSheet(SPENT_PREFIX+sid,linha,true);
-  });
-  saveCol();
+async function excluirColecao(sid){
+  if(!sid)return;
+  const n=linhas.filter(r=>r.set_id===sid).length;
+  if(!confirm(`Excluir a coleção "${(setsUser[sid]&&setsUser[sid].nome)||sid}" da SUA Pokédex?\n\nIsso apaga ${n} exemplar(es) marcados e os "procuro" desse set. Não afeta outros usuários.`))return;
+  try{
+    let r=await sb.from('colecao').delete().eq('set_id',sid);if(r.error)throw r.error;
+    r=await sb.from('desejos').delete().eq('set_id',sid);if(r.error)throw r.error;
+    r=await sb.from('sets_usuario').delete().eq('set_id',sid);if(r.error)throw r.error;
+    linhas=linhas.filter(x=>x.set_id!==sid);reindexar();
+    Object.keys(desejos).forEach(k=>{if(desejos[k].set_id===sid)delete desejos[k];});
+    delete setsUser[sid];renderSaved();showHome();fotografarValor();
+  }catch(e){showWarn(erroMsg(e));}
 }
 
-function loadFromInput(){const v=normalizarSetId(document.getElementById('setInput').value);if(v)fetchSet(v);}
-function quickLoad(btn){document.querySelectorAll('.qs-chip').forEach(c=>c.classList.remove('active'));btn.classList.add('active');fetchSet(btn.dataset.id);}
-document.getElementById('setInput').addEventListener('keydown',e=>{if(e.key==='Enter')loadFromInput();});
-
-async function fetchAllCards(setId){
-  let page=1,cards=[];
-  while(true){
-    let r,data,attempt=0;
-    while(true){
-      r=await fetch(`${API}/cards?q=set.id:${setId}&pageSize=250&page=${page}&orderBy=number`,{headers:apiHeaders});
-      data=r.ok?await r.json().catch(()=>null):null;
-      // A pokemontcg.io as vezes responde 200 com lista VAZIA quando esta instavel.
-      // Para a primeira pagina isso e sintoma de falha, nao de set inexistente:
-      // vale insistir antes de dizer "nenhuma carta encontrada".
-      const vazioSuspeito=page===1&&data&&Array.isArray(data.data)&&data.data.length===0;
-      if((r.ok&&data&&!vazioSuspeito)||attempt>=3)break;
-      attempt++;await new Promise(res=>setTimeout(res,700*attempt));
-    }
-    if(!r.ok||!data)throw new Error(`A API da pokemontcg.io não respondeu para o set "${setId}" (HTTP ${r.status}). Costuma ser instabilidade temporária deles — tente de novo em alguns segundos.`);
-    cards=cards.concat(data.data||[]);
-    if(!data.data||!data.data.length||cards.length>=data.totalCount)break;page++;
-  }
-  return cards;
+/* =====================================================================
+   BUSCA E TELA DO SET
+   ===================================================================== */
+async function openSearch(){
+  $('searchModal').classList.add('open');$('searchQ').value='';
+  $('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--ink3)">Carregando lista de sets...</div>';
+  try{await carregarCatalogo();filterSets();setTimeout(()=>$('searchQ').focus(),50);}
+  catch(e){$('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--red)">Não consegui carregar o catálogo: '+escHtml(erroMsg(e))+'</div>';}
 }
-/* A pokemontcg.io ordena por `number` como TEXTO, então "100" vem antes de "11"
-   e sets novos às vezes voltam em ordem embaralhada (foi o que aconteceu com o
-   me3). Em vez de confiar na API, o app reordena sempre: número de verdade,
-   sufixo de variação (003 antes de 003b) e promos do set companheiro no fim. */
-function ordenarCartas(cards){
-  return cards.slice().sort((a,b)=>{
-    if(!!a.__isPromo!==!!b.__isPromo)return a.__isPromo?1:-1;
-    const sa=(a.set&&a.set.id)||'',sb=(b.set&&b.set.id)||'';
-    if(sa!==sb)return sa<sb?-1:1;
-    const na=cardNumberInt(a.number),nb=cardNumberInt(b.number);
-    if(na!==nb)return (na==null?999999:na)-(nb==null?999999:nb);
-    const xa=cardNumberSuffix(a.number),xb=cardNumberSuffix(b.number);
-    return xa<xb?-1:xa>xb?1:0;
-  });
+function filterSets(){
+  const q=normName($('searchQ').value);
+  const custom=Object.values(customSets).map(s=>({id:s.id,name:s.nome,nameEn:'',total:s.total||(s.cartas||[]).length,liga:true}));
+  const lista=custom.concat(catalogo).filter(s=>!q||normName(s.name).includes(q)||normName(s.nameEn).includes(q)||s.id.toLowerCase().includes(q)).slice(0,80);
+  $('setResults').innerHTML=lista.map(s=>`<div class="set-row" onclick="pickSet(${J(s.id)})">
+    <div><div class="set-row-name">${escHtml(s.name)}</div><div class="set-row-meta">${s.nameEn&&s.nameEn!==s.name?escHtml(s.nameEn)+' · ':''}${s.total||'?'} cartas${s.liga?' · só na Liga':''}</div></div>
+    <div><span class="set-row-id">${escHtml(s.id)}</span><button class="set-row-btn">Abrir</button></div></div>`).join('')
+    ||'<div style="padding:12px;font-size:13px;color:var(--ink3)">Nada encontrado.</div>';
 }
-// Mostra a tela do set já com as cartas na mão (venham do cache ou da API).
-function showCards(setId,cards,token){
-  if(token!==setLoadToken)return; // outra coleção começou a carregar: ignora esta
-  cards=ordenarCartas(cards);
-  allCards=cards;currentSetId=setId;
-  const setName=(cards[0]&&cards[0].set&&cards[0].set.name)||setNames[setId]||setId;
-  setNames[setId]=setName;
-  setSizes[setId]=(cards[0]&&cards[0].set&&cards[0].set.total)||cards.length;
-  setBases[setId]=(cards[0]&&cards[0].set&&cards[0].set.printedTotal)||setSizes[setId];
-  saveMeta();
-  document.getElementById('setTitleLbl').textContent=setName;
-  document.getElementById('setInput').value=setId;
-  document.getElementById('statsBar').style.display='flex';
-  document.getElementById('progressBar').style.display='block';
-  document.getElementById('filterBar').style.display='flex';
-  document.getElementById('delSetBtn').style.display='';
-  renderGrid();
+function pickSet(id){fechar('searchModal');fetchSet(id);}
+async function loadFromInput(){
+  const v=$('setInput').value;if(!v.trim())return;
+  setSync('Procurando set...','loading');
+  try{const id=await resolverSetId(v);if(!id){setSync('Não achei esse set — use 🔍 Buscar.','err');return;}fetchSet(id);}
+  catch(e){setSync(erroMsg(e),'err');}
 }
+let fetchToken=0;
 async function fetchSet(setId){
-  setId=normalizarSetId(setId)||setId;   // aceita "ME03", "Equilíbrio Perfeito", etc.
-  const token=++setLoadToken;
-  showSetView();
-  const grid=document.getElementById('cardGrid');
-  grid.style.display='grid';
-  ['statsBar','filterBar'].forEach(id=>document.getElementById(id).style.display='none');
-  document.getElementById('progressBar').style.display='none';currentSetId='';
-  document.getElementById('loadPromosBtn').style.display='none';
-  currentFilter='all';document.querySelectorAll('.filter-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
-
-  // 1) Coleção criada por você pela Liga: não depende de API nenhuma.
-  if(customSets[setId]){
-    showCards(setId,customSetCards(customSets[setId]),token);
-    if(getScriptUrl())refreshCollection().then(()=>{if(token===setLoadToken)renderGrid();});
-    return;
-  }
-
-  // 2) Cache local: se esse set já abriu uma vez neste aparelho, aparece na hora.
-  const cached=loadCardsCache(setId);
-  if(cached){showCards(setId,cached,token);}
-  else{grid.innerHTML='<div class="loading">Buscando cartas...</div>';}
-
-  // 3) Atualiza coleção (marcações/preços) e cartas em paralelo, em segundo plano.
-  const syncP=getScriptUrl()?refreshCollection():Promise.resolve(false);
+  const token=++fetchToken;
+  esconderTudo();hideWarn();
+  const grid=$('cardGrid');grid.style.display='grid';grid.innerHTML='<div class="loading">Carregando cartas...</div>';
   try{
-    const cards=await fetchAllCards(setId);
-    if(token!==setLoadToken)return;
-    if(!cards.length)throw new Error(`A API não devolveu nenhuma carta para "${setId}" agora. Se o código estiver certo, é instabilidade deles — tente de novo.`);
-    saveCardsCache(setId,cards);
-    showCards(setId,cards,token);
-  }catch(e){
-    if(token!==setLoadToken)return;
-    if(cached){ // já tem o set na tela pelo cache: só avisa, não quebra nada
-      showWarn(`Não deu pra atualizar "${setId}" agora (${e.message}) — mostrando a última versão salva no aparelho.`);
-    }else{
-      grid.innerHTML=`<div class="empty"><div class="empty-title">Erro</div><div class="empty-sub">${e.message}</div>
-        <div style="margin-top:14px"><button class="tb-btn blue" onclick="fetchSet('${setId}')">↺ Tentar de novo</button></div></div>`;
-      return;
-    }
-  }
-  await syncP;
-  if(token!==setLoadToken)return;
-  renderGrid();
-  const comp=companionPromoId(setId);
-  if(comp&&comp!==setId)await loadCompanionPromos(comp);
+    const d=await carregarCartasSet(setId);
+    if(token!==fetchToken)return;
+    currentSetId=d.set.id;currentSet=d.set;currentCards=d.cards;
+    if(!Object.keys(precoG).some(k=>setIdOf(k)===currentSetId))await carregarPrecos([currentSetId]);
+    if(token!==fetchToken)return;
+    // mantém nome/tamanho do set atualizados pra quem já acompanha
+    const su=setsUser[currentSetId];
+    if(su&&(su.nome!==d.set.name||su.total!==d.set.total||su.base!==d.set.base))garantirSetUsuario(currentSetId).catch(()=>{});
+    ['statsBar','filterBar'].forEach(id=>$(id).style.display='flex');$('progressBar').style.display='block';
+    $('setTitleLbl').textContent=d.set.name+' ('+d.set.id+')';
+    $('favBtn').textContent=(su&&su.favorito)?'★ Favorito ✓':'★ Favorito';
+    $('setInput').value=d.set.id;
+    renderGrid();updateStats();setSync('','');
+  }catch(e){if(token===fetchToken)grid.innerHTML='<div class="empty"><div class="empty-title">Não deu pra abrir esse set</div><div class="empty-sub">'+escHtml(erroMsg(e))+'</div></div>';}
 }
-function companionPromoId(setId){const m=String(setId).match(/^([a-z]+)/i);const p=m?m[1].toLowerCase():'';return PROMO_COMPANION[p]||null;}
-async function loadCompanionPromos(compOverride){
-  const comp=compOverride||companionPromoId(currentSetId);if(!comp)return;
-  const btn=document.getElementById('loadPromosBtn');
-  btn.style.display='';btn.textContent='Carregando promos...';btn.onclick=()=>loadCompanionPromos(comp);
-  try{
-    const promo=await fetchAllCards(comp);const ex=new Set(allCards.map(c=>c.id));
-    const add=promo.filter(c=>!ex.has(c.id)).map(c=>{c.__isPromo=true;return c;});
-    allCards=ordenarCartas(allCards.concat(add));renderGrid();
-    if(add.length){btn.textContent=`✓ +${add.length} promos`;setTimeout(()=>btn.style.display='none',2000);}
-    else{btn.style.display='none';}
-  }catch(e){
-    btn.textContent='↺ Tentar promos novamente';
-    showWarn(`Não consegui carregar as promos (${comp}): ${e.message}`);
+function setFilter(f,btn){currentFilter=f;document.querySelectorAll('#filterBar .filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderGrid();}
+function passaFiltro(c){
+  const own=isOwned(c.id);
+  switch(currentFilter){
+    case 'owned':return own;case 'missing':return !own;
+    case 'base':return !isSpecial(c,currentSet);case 'special':return isSpecial(c,currentSet);
+    case 'dup':return dupCount(c.id)>0;case 'wish':return !!desejos[c.id];
+    case 'noprice':return own&&valorCarta(c.id)<=0;default:return true;
   }
 }
-
-function getCardMeta(n){if(!n)return null;return ME01_DATA[String(n).padStart(3,'0')]||null;}
-function rarityRule(rarity){
-  const r=(rarity||'').toLowerCase();
-  if(r.includes('common')||r.includes('uncommon'))return{normal:true,holofoil:false,reverseHolofoil:true};
-  if(r==='rare'||r.includes('rare holo')||r.includes('holo rare'))return{normal:false,holofoil:true,reverseHolofoil:true};
-  if(r.includes('double')||r.includes('illustration')||r.includes('ultra')||r.includes('hyper')||r.includes('secret')||r.includes('special')||r.includes('rainbow')||r.includes('shiny')||r.includes('promo'))
-    return{normal:false,holofoil:true,reverseHolofoil:false};
-  return{normal:true,holofoil:true,reverseHolofoil:true};
+const CHECK='<svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3 4.7-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function chipsHtml(id){
+  const rs=rowsOf(id);if(!rs.length)return '';
+  const ex={};rs.forEach(r=>ex[r.extra]=1);
+  let h='';if(ex.Normal)h+='<span class="type-chip">N</span>';if(ex.Holo)h+='<span class="type-chip holo">H</span>';if(ex.Reverse)h+='<span class="type-chip rev">R</span>';
+  const d=dupCount(id);if(d)h+=`<span class="type-chip dup">+${d}</span>`;
+  return `<div class="type-badges">${h}</div>`;
 }
-function deriveAvailability(card){
-  if(card.__av)return card.__av; // veio do cache local, já calculado
-  if(card.set&&card.set.id==='me1'){const m=getCardMeta(card.number);if(m)return{normal:m.normal,holofoil:m.holo,reverseHolofoil:m.reverse};}
-  const tp=card.tcgplayer&&card.tcgplayer.prices?card.tcgplayer.prices:null;
-  if(tp){const k=Object.keys(tp);const has=n=>k.some(x=>x.toLowerCase()===n.toLowerCase());
-    const a={normal:has('normal')||has('1stEditionNormal')||has('unlimitedNormal'),holofoil:has('holofoil')||has('1stEditionHolofoil')||has('unlimitedHolofoil'),reverseHolofoil:has('reverseHolofoil')};
-    if(a.normal||a.holofoil||a.reverseHolofoil)return a;}
-  return rarityRule(card.rarity);
-}
-/* ---------- Base x Especiais ----------
-   Toda colecao tem a parte "base", numerada de 1 ate o printedTotal (ex.: 132),
-   e depois as cartas ESPECIAIS (ilustracao rara, ultra, hiper, secretas...),
-   numeradas de 133 em diante. Como sao dois "colecionaveis" diferentes, o
-   progresso e contado separado. */
-function numFromCardId(cid){
-  const parts=String(cid).split('-');
-  const v=parseInt(String(parts[parts.length-1]).replace(/\D/g,''),10);
-  return isNaN(v)?null:v;
-}
-function baseSizeOf(setId){return setBases[setId]||setSizes[setId]||0;}
-function isSpecialNum(setId,num){const b=baseSizeOf(setId);return !!(b&&num!=null&&num>b);}
-function isSpecialCard(c){
-  // numero com letra no fim (003b, 014b...) e sempre uma versao alternativa/especial
-  if(cardNumberSuffix(c.number))return true;
-  const sid=(c.set&&c.set.id)||currentSetId;
-  // Se o set nunca foi aberto neste aparelho, `setBases` esta vazio — nesse caso
-  // usa o total impresso que a propria carta carrega. Sem isso, exportar "so a
-  // colecao base" de um set fechado trazia as especiais junto.
-  const b=baseSizeOf(sid)||(c.set&&c.set.printedTotal)||0;
-  const n=cardNumberInt(c.number);
-  return !!(b&&n!=null&&n>b);
-}
-function isOwned(id){const e=normalizeEntry(collection[id]);return e.types.normal||e.types.holofoil||e.types.reverseHolofoil;}
-function getVal(id){if(!isOwned(id))return 0;return normalizeEntry(collection[id]).price;}
-
-/* ---------- Cartas repetidas ----------
-   dupCount = total de cópias extras da carta (somando os 3 tipos).
-   dupVal   = quanto essas extras valeriam. NUNCA entra no valor da coleção:
-              `getVal` continua devolvendo o preço de UMA carta só, então o
-              total do set e o total da Pokédex seguem contando 1x cada carta. */
-function dupCount(id){const d=normalizeEntry(collection[id]).dups;return d.normal+d.holofoil+d.reverseHolofoil;}
-function dupVal(id){const e=normalizeEntry(collection[id]);return dupCount(id)*(e.price||0);}
-function dupTxt(id){
-  const d=normalizeEntry(collection[id]).dups,p=[];
-  if(d.normal)p.push(d.normal+'x Normal');
-  if(d.holofoil)p.push(d.holofoil+'x Holo');
-  if(d.reverseHolofoil)p.push(d.reverseHolofoil+'x Reverse');
-  return p.join(' + ');
-}
-
-/* ---------- Raridade ----------
-   Usada só na hora de exportar as repetidas ("raras na frente"). Quanto maior
-   o número, mais rara. Coleções da Liga não trazem raridade nenhuma — nesse
-   caso a numeração decide: carta acima do total impresso é especial/rara. */
-const RARITY_RANK=[
-  [/hiper|hyper|secret|secreta/i,95],
-  [/ilustra..o rara especial|special illustration/i,90],
-  [/ultra/i,85],
-  [/ilustra..o rara|illustration rare/i,80],
-  [/ace spec|rara ace/i,76],
-  [/rainbow|shiny|brilhante|radiant/i,74],
-  [/rara dupla|double rare/i,72],
-  // ---- daqui pra baixo NAO entra no bloco "Raras" da exportacao ----
-  [/rara holo|rare holo|holo rare/i,62],
-  [/^\s*(rara|rare)\s*$/i,58],
-  [/promo/i,52],
-  [/incomum|uncommon/i,20],
-  [/comum|common/i,10],
-];
-// Corte do bloco "Raras": Rara Dupla pra cima (dupla, shiny, ACE SPEC,
-// ilustração rara, ultra, ilustração rara especial e hiper).
-// Rara e Rara Holo simples ficam junto das comuns, no bloco "Demais cartas".
-const RARA_MIN=70;
-function rarityLabel(card){
-  if(card.set&&card.set.id==='me1'){const m=getCardMeta(card.number);if(m)return m.rarity;}
-  return card.rarity||'';
-}
-function rarityRank(card){
-  const r=rarityLabel(card);
-  for(let i=0;i<RARITY_RANK.length;i++)if(RARITY_RANK[i][0].test(r))return RARITY_RANK[i][1];
-  // Coleção da Liga não traz raridade: a numeração decide. Carta acima do total
-  // impresso é especial, então entra no bloco das raras.
-  return isSpecialCard(card)?71:15;
-}
-
-function typeBadgesHtml(id){
-  const e=normalizeEntry(collection[id]),t=e.types,b=[];
-  if(t.normal)b.push('<span class="type-chip">N</span>');
-  if(t.holofoil)b.push('<span class="type-chip holo">H</span>');
-  if(t.reverseHolofoil)b.push('<span class="type-chip rev">R</span>');
-  const nd=dupCount(id);
-  if(nd)b.push(`<span class="type-chip dup" title="${dupTxt(id)}">+${nd}</span>`);
-  return b.length?`<div class="type-badges">${b.join('')}</div>`:'';
-}
-function fmtBRL(v){return'R$ '+(v||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
 function renderGrid(){
-  const grid=document.getElementById('cardGrid');
-  const list=allCards.filter(c=>{
-    if(currentFilter==='owned')return isOwned(c.id);
-    if(currentFilter==='missing')return !isOwned(c.id);
-    if(currentFilter==='base')return !isSpecialCard(c);
-    if(currentFilter==='special')return isSpecialCard(c);
-    if(currentFilter==='dup')return dupCount(c.id)>0;
-    if(currentFilter==='noprice')return isOwned(c.id)&&!getVal(c.id);
-    return true;
-  });
-  if(!list.length){grid.innerHTML='<div class="empty"><div class="empty-title">Nenhuma carta aqui</div><div class="empty-sub">Tente outro filtro</div></div>';}
-  else{grid.innerHTML=list.map(c=>{const owned=isOwned(c.id),val=getVal(c.id);
-    const face=(c.images&&c.images.small)
-      ?`<img src="${c.images.small}" alt="${c.name}" loading="lazy"/>`
-      :`<div class="card-ph"><div class="n">${c.number}</div><div class="t">${c.name}</div></div>`;
-    return `<div class="card-wrap" onclick="openCard('${c.id}')"><div class="card-img-box ${owned?'owned':'missing'}">
-      ${face}
-      ${c.__liga?'<div class="liga-tag">LIGA</div>':''}
-      ${c.__isPromo?'<div class="promo-tag">PROMO</div>':''}
-      ${owned?'<div class="owned-badge"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>':''}
-      ${owned&&val>0?`<div class="price-tag">${fmtBRL(val)}</div>`:''}
-      ${typeBadgesHtml(c.id)}
-    </div><div class="card-num">${c.number}/${c.set?.printedTotal||'?'}</div><div class="card-name">${c.name}</div></div>`;
-  }).join('');}
-  updateStats();
+  const grid=$('cardGrid');
+  const lista=currentCards.filter(passaFiltro);
+  if(!lista.length){grid.innerHTML='<div class="empty"><div class="empty-title">Nenhuma carta neste filtro</div></div>';return;}
+  grid.innerHTML=lista.map(c=>{
+    const own=isOwned(c.id),g=precoG[c.id],v=own?valorCarta(c.id):(g&&g.preco_min?Number(g.preco_min):0),src=imgUrl(c,'low');
+    const inner=src?`<img loading="lazy" referrerpolicy="no-referrer" src="${escHtml(src)}" alt="" onerror="this.style.display='none'"/>`
+      :`<div class="card-ph"><div class="n">#${escHtml(c.localId)}</div><div class="t">${escHtml(c.name)}</div></div>`;
+    return `<div class="card-wrap" onclick="openCard(${J(c.id)})">
+      <div class="card-img-box ${own?'owned':'missing'}">${inner}
+        ${own?`<div class="owned-badge">${CHECK}</div>`:''}
+        ${desejos[c.id]?'<div class="wish-tag">🔎</div>':''}
+        ${v?`<div class="price-tag${own?'':' ref'}">${fmtBRL(v)}</div>`:''}
+        ${chipsHtml(c.id)}
+      </div>
+      <div class="card-num">#${escHtml(c.localId)}</div><div class="card-name">${escHtml(c.name)}</div></div>`;
+  }).join('');
 }
 function updateStats(){
-  const base=allCards.filter(c=>!isSpecialCard(c)),spec=allCards.filter(c=>isSpecialCard(c));
-  const bOwn=base.filter(c=>isOwned(c.id)).length,sOwn=spec.filter(c=>isOwned(c.id)).length;
-  const total=allCards.length,owned=bOwn+sOwn,pct=total?Math.round(owned/total*100):0;
-  const val=allCards.reduce((s,c)=>s+getVal(c.id),0);
-  // Repetidas do set: contagem e valor. O valor fica SÓ aqui — não soma no total.
-  const nDup=allCards.reduce((s,c)=>s+dupCount(c.id),0);
-  const vDup=allCards.reduce((s,c)=>s+dupVal(c.id),0);
-  document.getElementById('statDup').textContent=nDup?`${nDup} · ${fmtBRL(vDup)}`:'0';
-  document.getElementById('statBase').textContent=`${bOwn}/${base.length}`;
-  document.getElementById('statSpecial').textContent=`${sOwn}/${spec.length}`;
-  document.getElementById('statTotal').textContent=`${owned}/${total}`;
-  document.getElementById('statPct').textContent=pct+'%';
-  document.getElementById('statValue').textContent=fmtBRL(val);
-  document.getElementById('progressFill').style.width=pct+'%';
-}
-function setFilter(f,btn){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderGrid();}
-
-function openLigaPaste(){document.getElementById('ligaPasteModal').classList.add('open');ligaSessao={paginas:0,mudou:0,preencheu:0};document.getElementById('ligaPasteStatus').textContent='';document.getElementById('ligaPasteArea').value='';setTimeout(()=>document.getElementById('ligaPasteArea').focus(),50);}
-function closeLigaPaste(){document.getElementById('ligaPasteModal').classList.remove('open');}
-function closeLigaPasteBg(e){if(e.target===document.getElementById('ligaPasteModal'))closeLigaPaste();}
-
-/* ============================================================
-   LEITOR DO TEXTO DA LIGA
-
-   Toda página de edição da Liga imprime cada carta assim:
-
-       Meganium
-       Meganium (#001/∞)          <- linha "âncora": nome + número
-       R$ 34,99                   <- menor preço
-       R$ 349,99                  <- maior preço
-
-   Em vez de procurar o nome solto (que se repete em "[Staff]", reimpressão,
-   Pokémon Center...), a gente lê a linha-âncora e pega o preço que está
-   DENTRO daquele bloco. Cada carta fica com o preço dela, sem chance de
-   pegar o de outra.
-   ============================================================ */
-function parsePriceBetween(text,from,to){
-  const m=text.slice(from,Math.min(to,from+800)).match(/R\$\s*([\d]{1,3}(?:\.\d{3})*,\d{2})/);
-  return m?parseFloat(m[1].replace(/\./g,'').replace(',','.')):null;
-}
-function parseLigaListings(text){
-  const re=/^(.*?)\s*\(#\s*(\d{1,4})\s*([a-z]?)\s*\/([^)\n]*)\)\s*$/gim;
-  const out=[];let m;
-  while((m=re.exec(text))){
-    out.push({name:(m[1]||'').trim(),number:parseInt(m[2],10),suffix:(m[3]||'').toLowerCase(),
-      tot:(m[4]||'').trim(),at:m.index,end:m.index+m[0].length});
-  }
-  // preço de cada carta = primeiro "R$" depois da âncora dela e antes da âncora da próxima
-  out.forEach((it,i)=>{it.price=parsePriceBetween(text,it.end,i+1<out.length?out[i+1].at:text.length);});
-  return out.filter(x=>x.name);
-}
-// Normaliza nome pra comparar: minúsculo, sem acento, só letras e números.
-function normName(s){
-  return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
-}
-function cardNumberInt(n){const v=parseInt(String(n||'').replace(/\D/g,''),10);return isNaN(v)?null:v;}
-function cardNumberSuffix(n){const m=String(n||'').match(/\d+([a-z])$/i);return m?m[1].toLowerCase():'';}
-
-let ligaSessao={paginas:0,mudou:0,preencheu:0};
-
-async function applyLigaPaste(){
-  const text=document.getElementById('ligaPasteArea').value;
-  const status=document.getElementById('ligaPasteStatus');
-  if(!text.trim()){status.className='save-note error';status.textContent='Cola o texto copiado da Liga primeiro.';return;}
-  const owned=allCards.filter(c=>isOwned(c.id));
-  if(!owned.length){status.className='save-note error';status.textContent='Nenhuma carta marcada como "tenho" nesse set ainda.';return;}
-
-  const listings=parseLigaListings(text);
-  if(!listings.length){
-    status.className='save-note error';
-    status.textContent='Não achei nenhuma carta no texto colado. Confirme que copiou a página da EDIÇÃO na Liga (a que lista "Nome (#001/...)" com os preços) usando Ctrl+A e Ctrl+C.';
-    return;
-  }
-  // Indices de busca: pelo numero (exato) e pelo nome (so quando o nome e unico).
-  const byNum={},byName={},usado={};
-  listings.forEach((l,i)=>{
-    if(l.price==null)return;l.__i=i;
-    const nk=l.number+'|'+l.suffix;
-    if(byNum[nk]===undefined)byNum[nk]=l;
-    const key=normName(l.name);
-    if(byName[key]===undefined)byName[key]=l;else byName[key]='DUP';
+  if(!currentSet)return;
+  let b=0,s=0,bT=0,sT=0,val=0,dup=0,falta=0,faltaSem=0;
+  currentCards.forEach(c=>{
+    const sp=isSpecial(c,currentSet),own=isOwned(c.id);
+    if(sp){sT++;if(own)s++;}else{bT++;if(own)b++;}
+    if(own){val+=valorCarta(c.id);dup+=dupCount(c.id);}
+    else{const g=precoG[c.id];if(g&&g.preco_min)falta+=Number(g.preco_min);else faltaSem++;}
   });
+  const tot=bT+sT,tenho=b+s,pct=tot?Math.round(tenho/tot*100):0;
+  $('statBase').textContent=b+'/'+bT;$('statSpecial').textContent=s+'/'+sT;$('statTotal').textContent=tenho+'/'+tot;
+  $('statPct').textContent=pct+'%';$('statDup').textContent=dup;$('statValue').textContent=fmtBRL(val);
+  $('statFalta').textContent=falta?fmtBRL(falta)+(faltaSem?' +'+faltaSem+' s/ preço':''):'—';
+  $('progressFill').style.width=pct+'%';
+}
 
-  status.className='save-note syncing';
-  // Categorias: o que MUDOU de preco, o que foi PREENCHIDO (estava zerado),
-  // o que ja estava IGUAL, e o que simplesmente nao veio nesta pagina da Liga.
-  const mudou=[],preencheu=[],lote=[],conferir=[];let igual=0,naoVeio=0;
-  const upd=(i)=>{status.textContent=`Conferindo ${i}/${owned.length} carta(s)... ${mudou.length+preencheu.length} para atualizar`;};
-  upd(0);
-  for(let i=0;i<owned.length;i++){
-    const card=owned[i];
-    const num=cardNumberInt(card.number),sfx=cardNumberSuffix(card.number);
-    let hit=null;
-    // Casa SO pelo numero da carta. O nome nunca decide.
-    // Motivo: cartas especiais repetem o nome da carta base (a #133 "Bulbasaur"
-    // e a #001 "Bulbasaur" sao cartas diferentes, com precos muito diferentes).
-    // Quando a #133 nao vinha na pagina colada, o casamento por nome pegava o
-    // preco da #001 e colocava nela. Agora, se o numero nao esta no texto, a
-    // carta simplesmente fica como estava.
-    if(num!=null)hit=byNum[num+'|'+sfx]||null;
-    // Unica excecao: cartas cuja numeracao nao e numerica (ex.: "SWSH123"),
-    // onde nao ha numero para comparar. Ai vale o nome, se for unico no texto.
-    if(!hit&&num==null){const c=byName[normName(card.name)];
-      if(c&&c!=='DUP'&&!usado[c.__i])hit=c;}
-    if(!hit||hit.price==null){naoVeio++;if(i%20===0)upd(i+1);continue;}
-    usado[hit.__i]=true;
-    // Conferencia: numero igual mas nome completamente diferente = sinal de que
-    // o texto colado talvez seja de OUTRA colecao. Aplica, mas avisa no fim.
-    const na=normName(card.name),nb=normName(hit.name);
-    if(na&&nb&&na!==nb&&nb.indexOf(na)<0&&na.indexOf(nb)<0)conferir.push(`${card.number} ${card.name} ≠ "${hit.name}"`);
-    const e=normalizeEntry(collection[card.id]);
-    const antigo=e.price||0;
-    if(Math.abs(antigo-hit.price)<0.005){igual++;if(i%20===0)upd(i+1);continue;} // ja estava certo: nao regrava
-    e.price=hit.price;e.src='Liga (colado)';e.ts=Date.now();
-    collection[card.id]=e;lote.push({card_id:card.id,variants:e});
-    (antigo>0?mudou:preencheu).push(`${card.number} ${card.name}`);
-    if(i%20===0){renderGrid();upd(i+1);}
+/* =====================================================================
+   CARTA — exemplares (variação + idioma + qualidade + quantidade)
+   ===================================================================== */
+function cartaAtual(){return currentCards.find(c=>c.id===openCardId)||null;}
+function openCard(cardId){
+  openCardId=cardId;const c=cartaAtual();if(!c)return;
+  $('cmName').textContent=c.name;$('cmMeta').textContent='#'+c.localId+' · '+(currentSet?currentSet.name:'');
+  const src=imgUrl(c,'high'),img=$('cmImg'),ph=$('cmPh');
+  if(src){img.style.display='block';img.referrerPolicy='no-referrer';img.src=src;ph.style.display='none';}
+  else{img.style.display='none';ph.style.display='flex';ph.querySelector('.n').textContent='#'+c.localId;ph.querySelector('.t').textContent=c.name;}
+  $('cmAdd').innerHTML=EXTRAS.map(([k,l])=>`<button class="tb-btn" onclick="addLinha(${J(k)})">＋ ${escHtml(l)}</button>`).join('');
+  setNote('');renderCardModal();
+  $('cardModal').classList.add('open');
+  carregarRaridade(c);
+}
+const raridadeCache={};
+async function carregarRaridade(c){
+  if(customSets[setIdOf(c.id)])return;
+  try{
+    let d=raridadeCache[c.id];
+    if(!d){try{d=await tcg('cards/'+encodeURIComponent(c.id),langPt||'en');}catch(e){d=await tcg('cards/'+encodeURIComponent(c.id),'en');}raridadeCache[c.id]=d;}
+    if(openCardId!==c.id||!d)return;
+    const v=d.variants||{},tem=[];if(v.normal)tem.push('Normal');if(v.holo)tem.push('Holo');if(v.reverse)tem.push('Reverse');
+    $('cmMeta').textContent='#'+c.localId+' · '+(currentSet?currentSet.name:'')+(d.rarity?' · '+d.rarity:'')+(tem.length?' · existe em: '+tem.join(', '):'');
+  }catch(e){}
+}
+function setNote(m,c){const el=$('saveNote');el.textContent=m||'';el.className='save-note'+(c?' '+c:'');}
+function renderCardModal(){
+  const c=cartaAtual();if(!c)return;
+  const rs=rowsOf(c.id);
+  $('cmLinhas').innerHTML=rs.length?rs.map(r=>{
+    const p=precoLinha(r),rot={manual:'manual',exato:'Liga · exato',geral:'Liga · menor geral',sem:'sem preço'}[p.fonte];
+    return `<div class="ex-row">
+      <select onchange="mudarLinha(${r.id},'extra',this.value)">${opts(EXTRAS,r.extra)}</select>
+      <select onchange="mudarLinha(${r.id},'idioma',this.value)">${opts(IDIOMAS,r.idioma)}</select>
+      <select onchange="mudarLinha(${r.id},'qualidade',this.value)">${opts(QUALS,r.qualidade)}</select>
+      <div class="ex-line">
+        <span>Qtd</span><button class="qty-b" onclick="mudarLinha(${r.id},'quantidade',${r.quantidade-1})">−</button>
+        <b style="min-width:18px;text-align:center;color:var(--ink)">${r.quantidade}</b>
+        <button class="qty-b" onclick="mudarLinha(${r.id},'quantidade',${r.quantidade+1})">+</button>
+        <span class="sp ex-price">${fmtBRL(p.v)}</span><span class="ex-src ${p.fonte==='manual'?'manual':p.fonte==='exato'?'exato':''}">${rot}</span>
+        <button class="ex-del" title="Remover este exemplar" onclick="delLinha(${r.id})">🗑</button>
+      </div>
+      <div class="ex-line">
+        <span>Preço manual R$</span>
+        <input type="number" step="0.01" min="0" style="width:90px" value="${r.preco_manual==null?'':escHtml(r.preco_manual)}" placeholder="usar Liga" onchange="mudarLinha(${r.id},'preco_manual',this.value)"/>
+        ${r.quantidade>1?`<label class="sp" style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" ${r.divulgar?'checked':''} onchange="mudarLinha(${r.id},'divulgar',this.checked)"/> divulgar ${r.quantidade-1} repetida(s)</label>`:''}
+      </div></div>`;}).join('')
+    :'<div class="hint-box" style="margin:0 0 8px">Você ainda não tem esta carta. Toque na variação abaixo para marcar.</div>';
+  $('cmDesejo').checked=!!desejos[c.id];
+  const g=precoG[c.id],links=jget('pkd_links_'+currentSetId,{}),lk=links[chaveNum(c.localId)];
+  const edUrl=(customSets[currentSetId]&&customSets[currentSetId].liga_url)||(vinculos[currentSetId]&&vinculos[currentSetId].liga_url);
+  let h=g&&g.preco_min!=null?`Menor: <b>${fmtBRL(g.preco_min)}</b>${g.preco_max?` · Maior: ${fmtBRL(g.preco_max)}`:''} <span style="color:var(--ink3)">(${haQuanto(g.atualizado_em)})</span>`
+    :'Ainda sem preço da Liga para esta carta.';
+  h+='<br>A ordem usada é: <b>manual</b> → <b>Liga exato</b> (idioma + qualidade + variação) → <b>menor geral</b>.';
+  if(lk)h+=`<div style="margin-top:6px"><a href="${escHtml(lk)}" target="_blank" rel="noopener">🔗 Ver esta carta na Liga</a></div>`;
+  else if(edUrl)h+=`<div style="margin-top:6px"><a href="${escHtml(edUrl)}" target="_blank" rel="noopener">🔗 Abrir a edição na Liga</a></div>`;
+  if(lk&&extVersao)h+=`<div style="margin-top:6px"><button class="mini-btn" onclick="leituraBrutaCarta()">🧪 Baixar leitura bruta desta carta</button> <span style="color:var(--ink3)">(usada pra evoluir o preço por idioma/qualidade)</span></div>`;
+  $('cmPreco').innerHTML=h;
+}
+function aposMudar(){renderCardModal();renderGrid();updateStats();fotografarValor();}
+async function addLinha(extra){
+  const c=cartaAtual();if(!c||!user)return;
+  const idioma=(perfil&&perfil.idioma_padrao)||'PT',qualidade=(perfil&&perfil.qualidade_padrao)||'NM';
+  const igual=rowsOf(c.id).find(r=>r.extra===extra&&r.idioma===idioma&&r.qualidade===qualidade);
+  if(igual)return mudarLinha(igual.id,'quantidade',igual.quantidade+1);
+  setNote('Salvando...','syncing');
+  try{
+    const {data,error}=await sb.from('colecao').insert({user_id:user.id,carta_id:c.id,set_id:currentSetId,numero:String(c.localId),
+      nome:c.name,imagem_url:imgUrl(c,'low')||null,extra,idioma,qualidade}).select().single();
+    if(error)throw error;
+    linhas.push(data);reindexar();
+    if(!setsUser[currentSetId])await garantirSetUsuario(currentSetId);
+    if(desejos[c.id])await alternarDesejo(false,true);      // achou a carta: sai da lista de procurados
+    setNote('✓ Salvo','synced');aposMudar();
+  }catch(e){setNote(erroMsg(e),'error');}
+}
+async function mudarLinha(id,campo,valor){
+  const r=linhas.find(x=>x.id===id);if(!r)return;
+  if(campo==='quantidade'){valor=parseInt(valor,10);if(!(valor>=1))return delLinha(id);}
+  if(campo==='preco_manual'){const n=parseFloat(valor);valor=(valor===''||isNaN(n))?null:n;}
+  const patch={[campo]:valor,atualizado_em:new Date().toISOString()};
+  if(campo==='quantidade'&&valor<=1)patch.divulgar=false;
+  setNote('Salvando...','syncing');
+  try{
+    const {data,error}=await sb.from('colecao').update(patch).eq('id',id).select().single();
+    if(error)throw error;
+    Object.assign(r,data);setNote('✓ Salvo','synced');aposMudar();
+  }catch(e){
+    const m=erroMsg(e);
+    setNote(/duplicate|unique/i.test(m)?'Você já tem um exemplar com essa mesma variação/idioma/qualidade — aumente a quantidade dele.':m,'error');
+    renderCardModal();
   }
-  saveCol();renderGrid();
-  if(lote.length){status.textContent=`Salvando ${lote.length} carta(s) na planilha...`;await saveManyToSheet(lote);}
-
-  // ---- Situacao geral do set depois desta colada ----
-  ligaSessao.paginas++;ligaSessao.mudou+=mudou.length;ligaSessao.preencheu+=preencheu.length;
-  const semPreco=allCards.filter(c=>isOwned(c.id)&&!getVal(c.id));
-  const comPreco=owned.length-semPreco.length;
-
-  status.className='save-note synced';
-  let msg=`✓ Página ${ligaSessao.paginas}: ${mudou.length} preço(s) mudaram, ${preencheu.length} estavam zerados e foram preenchidos, ${igual} já estavam iguais.`;
-  if(naoVeio)msg+=` (${naoVeio} carta(s) não vieram nesta página — sem problema, elas continuam como estavam.)`;
-  if(conferir.length)msg+=`\n\n⚠ ${conferir.length} carta(s) com o número certo mas nome diferente — confira se o texto é desta coleção mesmo: ${conferir.slice(0,8).join('; ')}${conferir.length>8?'...':''}.`;
-  msg+=`\n\nSituação do set: ${comPreco} de ${owned.length} carta(s) suas já têm preço.`;
-  if(semPreco.length){
-    msg+=` Ainda faltam ${semPreco.length}: ${semPreco.slice(0,14).map(c=>c.number+' '+c.name).join(', ')}${semPreco.length>14?'...':''}.`;
-    msg+=`\nVá para a próxima página da Liga, copie (Ctrl+A, Ctrl+C) e cole aqui de novo.`;
+}
+async function delLinha(id){
+  setNote('Removendo...','syncing');
+  const {error}=await sb.from('colecao').delete().eq('id',id);
+  if(error){setNote(erroMsg(error),'error');return;}
+  linhas=linhas.filter(x=>x.id!==id);reindexar();setNote('✓ Removido','synced');aposMudar();
+}
+async function alternarDesejo(marcar,silencioso){
+  const c=cartaAtual();if(!c)return;
+  try{await gravarDesejo(c,currentSetId,marcar);if(!silencioso){setNote(marcar?'✓ Marcada como procurada':'✓ Removida dos procurados','synced');renderGrid();}}
+  catch(e){setNote(erroMsg(e),'error');$('cmDesejo').checked=!!desejos[c.id];}
+}
+async function gravarDesejo(c,setId,marcar){
+  if(marcar){
+    const {data,error}=await sb.from('desejos').upsert({user_id:user.id,carta_id:c.id,set_id:setId,numero:String(c.localId),
+      nome:c.name,imagem_url:imgUrl(c,'low')||null},{onConflict:'user_id,carta_id'}).select().single();
+    if(error)throw error;desejos[c.id]=data;
   }else{
-    msg+=` Não falta nenhuma. 🎉`;
+    const {error}=await sb.from('desejos').delete().eq('carta_id',c.id);
+    if(error)throw error;delete desejos[c.id];
   }
-  status.style.whiteSpace='pre-line';
-  status.textContent=msg;
-  // deixa a caixa limpa e pronta para a proxima pagina
-  const area=document.getElementById('ligaPasteArea');area.value='';area.focus();
 }
 
-/* ============================================================
-   CRIAR UMA COLEÇÃO INTEIRA PELO TEXTO/PDF DA LIGA
-   (para sets que a pokemontcg.io ainda não cadastrou, tipo as promos)
-   ============================================================ */
-function openLigaSet(){
-  document.getElementById('ligaSetModal').classList.add('open');
-  ['ligaSetArea','ligaSetName','ligaSetCode'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('ligaSetStatus').textContent='';
-  document.getElementById('ligaSetPreview').textContent='';
-  document.getElementById('ligaSetDrop').textContent='📄 Escolher o PDF da Liga';
-}
-function closeLigaSet(){document.getElementById('ligaSetModal').classList.remove('open');}
-function closeLigaSetBg(e){if(e.target===document.getElementById('ligaSetModal'))closeLigaSet();}
-
-// Tenta descobrir sozinho o nome, o total de cartas e o código da edição.
-// No texto da Liga isso vem assim: "Mega Evolution Promos" / "135 cards" / data / "MEP".
-function detectLigaSetInfo(text){
-  const lines=text.split('\n').map(l=>l.trim());
-  let name='',code='',total=0;
-  for(let i=0;i<lines.length;i++){
-    const m=lines[i].match(/^(\d{1,4})\s*cards?$/i);
-    if(!m)continue;
-    total=parseInt(m[1],10);
-    // nome = primeira linha com texto ACIMA de "N cards" (ignorando linhas em branco)
-    for(let j=i-1,seen=0;j>=0&&seen<4;j--){
-      const l=lines[j];if(!l)continue;seen++;
-      if(!/^\d+$/.test(l)){name=l;break;}
-    }
-    // codigo = primeira linha curta em MAIUSCULAS ABAIXO (pulando a data de lancamento)
-    for(let j=i+1,seen=0;j<lines.length&&seen<6;j++){
-      const l=lines[j];if(!l)continue;seen++;
-      if(/^\d{2}\/\d{2}\/\d{4}$/.test(l))continue;
-      if(/^[A-Z0-9]{2,6}$/.test(l)){code=l;break;}
-    }
-    break;
-  }
-  return {name,code,total};
-}
-function previewLigaSet(){
-  const text=document.getElementById('ligaSetArea').value;
-  const pv=document.getElementById('ligaSetPreview');
-  if(!text.trim()){pv.textContent='';return;}
-  const listings=parseLigaListings(text),info=detectLigaSetInfo(text);
-  const nameEl=document.getElementById('ligaSetName'),codeEl=document.getElementById('ligaSetCode');
-  if(info.name&&!nameEl.value)nameEl.value=info.name;
-  if(info.code&&!codeEl.value)codeEl.value=info.code;
-  pv.className='save-note'+(listings.length?' synced':' error');
-  pv.textContent=listings.length
-    ?`Encontrei ${listings.length} carta(s)${info.total?` (a edição tem ${info.total} no total)`:''}.`
-    :'Não achei cartas nesse texto. Copie a página da EDIÇÃO na Liga (a lista com "Nome (#001/...)" e os preços).';
-}
-
-// Lê um PDF no próprio navegador usando pdf.js (carregado só quando você usa).
-function loadPdfJs(){
-  if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);
-  return new Promise((res,rej)=>{
-    const s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-    s.onload=()=>{window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';res(window.pdfjsLib);};
-    s.onerror=()=>rej(new Error('não consegui carregar o leitor de PDF (sem internet?)'));
-    document.head.appendChild(s);
+/* =====================================================================
+   LIGA POKÉMON — leitura pela extensão (roda no navegador do usuário)
+   ===================================================================== */
+const extPend={};
+window.addEventListener('message',ev=>{
+  if(ev.source!==window||ev.origin!==location.origin)return;
+  const m=ev.data;if(!m||m.de!=='pokedex-ext')return;
+  if(m.tipo==='PRONTA'){extVersao=m.versao;renderExt();return;}
+  const p=extPend[m.id];if(!p)return;delete extPend[m.id];clearTimeout(p.t);
+  if(m.ok)p.ok(m.dados);else p.err(new Error(m.erro||'A extensão não respondeu.'));
+});
+function renderExt(){const el=$('extPill');if(!el)return;el.textContent=extVersao?('extensão v'+extVersao+' ✓'):'extensão: não detectada';el.className='ext-pill'+(extVersao?' on':'');}
+function extChamar(tipo,url,opcoes,limite){
+  return new Promise((ok,err)=>{
+    const id='m'+Date.now()+Math.random().toString(36).slice(2);
+    extPend[id]={ok,err,t:setTimeout(()=>{delete extPend[id];err(new Error('A extensão demorou demais para responder.'));},limite||300000)};
+    window.postMessage({de:'pokedex-site',id,tipo,url,opcoes:opcoes||{}},location.origin);
   });
 }
-// Multiplicacao de matrizes no padrao do PDF (usada pra saber ONDE cada
-// imagem foi desenhada na pagina).
-function matMul(a,b){return [
-  a[0]*b[0]+a[1]*b[2], a[0]*b[1]+a[1]*b[3],
-  a[2]*b[0]+a[3]*b[2], a[2]*b[1]+a[3]*b[3],
-  a[4]*b[0]+a[5]*b[2]+b[4], a[4]*b[1]+a[5]*b[3]+b[5]];}
+function urlLigaValida(u){try{const x=new URL(u);return x.protocol==='https:'&&x.hostname==='www.ligapokemon.com.br';}catch(e){return false;}}
+function codigoDaUrl(u){try{const m=decodeURIComponent(u).match(/[?&=]ed=([^&]+)/i);return m?m[1].toUpperCase():null;}catch(e){return null;}}
 
-// Onde cada imagem de carta foi desenhada nesta pagina (em coordenadas do PDF).
-// Percorre a "lista de operacoes" de desenho acompanhando a matriz atual.
-function imagePlacements(ops,OPS){
-  let ctm=[1,0,0,1,0,0];const pilha=[],out=[];
-  for(let i=0;i<ops.fnArray.length;i++){
-    const fn=ops.fnArray[i],args=ops.argsArray[i];
-    if(fn===OPS.save)pilha.push(ctm.slice());
-    else if(fn===OPS.restore)ctm=pilha.pop()||[1,0,0,1,0,0];
-    else if(fn===OPS.transform)ctm=matMul(args,ctm);
-    else if(fn===OPS.paintImageXObject||fn===OPS.paintJpegXObject||fn===OPS.paintImageXObjectRepeat){
-      // Mede os lados pelos VETORES da matriz, nao pelos eixos: assim funciona
-      // igual quando a pagina foi impressa deitada (o PDF em grade sai girado
-      // 90 graus, e ai a carta "parece" paisagem se olharmos so ctm[0]/ctm[3]).
-      const w=Math.hypot(ctm[0],ctm[1]),h=Math.hypot(ctm[2],ctm[3]);
-      const prop=h?w/h:0;
-      // Carta em pe (proporcao ~0,71) OU deitada (~1,4). A versao deitada
-      // aparece nos PDFs impressos em paisagem/grade, onde o proprio arquivo de
-      // imagem ja vem girado. Nesse caso marcamos `girada` para endireitar no
-      // recorte.
-      const emPe=prop>0.55&&prop<0.9, deitada=prop>1.1&&prop<1.8;
-      if(Math.max(w,h)>60&&Math.min(w,h)>40&&(emPe||deitada))
-        out.push({x:ctm[4],y:ctm[5],w,h,girada:deitada,ctm:ctm.slice()});
-    }
-  }
+/* Toda página de edição da Liga imprime cada carta assim:
+       Meganium (#001/∞)      <- âncora: nome + número
+       R$ 34,99               <- menor preço
+       R$ 349,99              <- maior preço
+   Lemos a âncora e pegamos os preços DENTRO do bloco dela.            */
+function parseLiga(text){
+  const re=/^(.*?)\s*\(#\s*([A-Za-z]{0,3}\d{1,4}[A-Za-z]?)\s*\/([^)\n]*)\)\s*$/gim;
+  const brutos=[];let m;
+  while((m=re.exec(text)))brutos.push({name:(m[1]||'').trim(),num:m[2],tot:(m[3]||'').trim(),at:m.index,end:m.index+m[0].length});
+  const vistos={},out=[];
+  brutos.forEach((it,i)=>{
+    const ate=Math.min(i+1<brutos.length?brutos[i+1].at:text.length,it.end+800);
+    const ps=(text.slice(it.end,ate).match(/R\$\s*\d{1,3}(?:\.\d{3})*,\d{2}/g)||[])
+      .map(p=>parseFloat(p.replace(/[^\d,]/g,'').replace(',','.')));
+    it.min=ps.length?ps[0]:null;it.max=ps.length>1&&ps[1]>=ps[0]?ps[1]:null;it.key=chaveNum(it.num);
+    if(!it.name)return;
+    const ja=vistos[it.key];
+    if(!ja){vistos[it.key]=it;out.push(it);}else if(ja.min==null&&it.min!=null){ja.min=it.min;ja.max=it.max;}
+  });
   return out;
 }
-
-/* Recorta a carta do canvas da pagina e devolve um JPEG pequeno (data URL).
-   Em vez de recortar um retangulo alinhado aos eixos, aplica a INVERSA da
-   matriz de desenho da imagem. Com isso a carta sai sempre em pe, na proporcao
-   certa, mesmo que a pagina tenha sido impressa deitada (PDF em grade) ou
-   espelhada — nao e preciso adivinhar para que lado girar. */
-function recortarCarta(canvasPagina,M,larg,alt,girada){
-  const det=M[0]*M[3]-M[1]*M[2];
-  if(!det)return null;
-  const inv=[M[3]/det,-M[1]/det,-M[2]/det,M[0]/det,
-             (M[2]*M[5]-M[3]*M[4])/det,(M[1]*M[4]-M[0]*M[5])/det];
-  // quadrado unitario da imagem -> canvas de destino.
-  // Normal: u vira a largura, v vira a altura (invertida).
-  // Girada: gira 90 graus no sentido horario para a carta ficar em pe.
-  const A=girada?[0,alt,larg,0,0,0]:[larg,0,0,-alt,0,alt];
-  const T=matMul(inv,A);                // tela da pagina -> carta em pe
-  const c=document.createElement('canvas');c.width=larg;c.height=alt;
-  const ctx=c.getContext('2d');
-  ctx.setTransform(T[0],T[1],T[2],T[3],T[4],T[5]);
-  ctx.drawImage(canvasPagina,0,0);
-  return c.toDataURL('image/jpeg',0.68);
+function numCustom(num){const m=String(num).match(/^([A-Za-z]*)(\d+)([A-Za-z]?)$/);return m?(m[1].toUpperCase()+m[2].padStart(3,'0')+m[3].toLowerCase()):String(num);}
+function mapaLinks(links){
+  const out={};(links||[]).forEach(l=>{try{const u=new URL(l.href),n=u.searchParams.get('num');if(n){const k=chaveNum(n);if(!out[k])out[k]={href:l.href,img:l.img||''};}}catch(e){}});
+  return out;
 }
-
-let ligaPdfImages={}; // { "003": "data:image/jpeg;base64,..." } do ultimo PDF lido
-
-/* Como as imagens sao ligadas as cartas
-   -------------------------------------
-   No PDF da Liga cada carta ocupa uma faixa [imagem | nome (#001/...) | precos],
-   mas ao imprimir a quebra de pagina separa a imagem do texto: a imagem quase
-   sempre cai UMA PAGINA depois da linha de texto dela. Tentar casar "a imagem
-   mais proxima do texto na mesma pagina" erra por uma posicao (o Golduck ficava
-   com a arte do Psyduck).
-   O que vale e a ORDEM: a 1a imagem do documento e a 1a carta, a 2a e a 2a, etc.
-   Confirmado abrindo as imagens do PDF: pag 10 = Meganium 001, pag 11 = Meganium
-   [Staff] 001b, pag 12 = Inteleon 002, pag 13 = Inteleon [Staff] 002b.
-   O "deslocamento de pagina" tipico e medido no proprio arquivo e serve de
-   trava: se o PDF tiver deixado de carregar imagens no meio, o pareamento
-   percebe a defasagem e reencontra o lugar certo em vez de sair errando tudo. */
-function parearImagens(ancoras,imgs){
-  if(!ancoras.length||!imgs.length)return [];
-  // 1) passada ingenua so pra medir o deslocamento normal entre imagem e carta
-  const desl=[];
-  for(let i=0;i<Math.min(ancoras.length,imgs.length);i++)desl.push(imgs[i].pg-ancoras[i].pg);
-  desl.sort((x,y)=>x-y);
-  const mediana=desl[Math.floor(desl.length/2)]||0;
-  const tolerancia=mediana+1;
-  // 2) passada real, na ordem, pulando cartas cuja imagem nao foi impressa
-  const pares=[];let ia=0;
-  for(const im of imgs){
-    while(ia<ancoras.length&&(im.pg-ancoras[ia].pg)>tolerancia)ia++;
-    if(ia>=ancoras.length)break;
-    if(im.pg<ancoras[ia].pg)continue;     // imagem antes da carta: nao e dela
-    pares.push({im,num:ancoras[ia].num});ia++;
+async function upsertLotes(tabela,rows,conflito){
+  for(let i=0;i<rows.length;i+=500){const {error}=await sb.from(tabela).upsert(rows.slice(i,i+500),{onConflict:conflito});if(error)throw error;}
+}
+// Coração da atualização: recebe o texto (da extensão ou colado) e grava os preços.
+async function aplicarLeitura(setId,texto,links){
+  const lidas=parseLiga(texto||'');
+  if(!lidas.length)throw new Error('O leitor não achou nenhuma carta nessa página. Confira se o endereço é o da EDIÇÃO (lista de cartas). Se for, a Liga pode ter mudado o layout — me avise.');
+  const lk=mapaLinks(links);
+  if(Object.keys(lk).length){const soHref={};Object.keys(lk).forEach(k=>soHref[k]=lk[k].href);jset('pkd_links_'+setId,soHref);}
+  if(customSets[setId]){                                   // coleção só da Liga: a lista de cartas também vem daqui
+    const d=customSets[setId],por={};(d.cartas||[]).forEach(c=>por[chaveNum(c.n)]=c);
+    let mudou=false;
+    lidas.forEach(l=>{const k=l.key,img=(lk[k]&&lk[k].img)||'';
+      if(!por[k]){por[k]={n:numCustom(l.num),name:l.name,img};mudou=true;}
+      else if(img&&!por[k].img){por[k].img=img;mudou=true;}});
+    if(mudou){const cartas=Object.values(por);
+      const {data,error}=await sb.from('sets_custom').update({cartas,total:Math.max(d.total||0,cartas.length)}).eq('id',setId).select().single();
+      if(error)throw error;customSets[setId]=data;}
   }
-  return pares;
+  const d=await carregarCartasSet(setId),porChave={};
+  d.cards.forEach(c=>{porChave[chaveNum(c.localId)]=c;});
+  const agora=new Date().toISOString(),rows=[],semPar=[];
+  lidas.forEach(l=>{const c=porChave[l.key];
+    if(!c){semPar.push('#'+l.num+' '+l.name);return;}
+    if(l.min!=null)rows.push({carta_id:c.id,preco_min:l.min,preco_max:l.max,atualizado_em:agora,atualizado_por:user.id});});
+  await upsertLotes('precos_gerais',rows,'carta_id');
+  rows.forEach(r=>precoG[r.carta_id]=r);
+  return {lidas:lidas.length,gravadas:rows.length,semPar};
 }
-
-async function onLigaPdf(input){
-  const file=input.files&&input.files[0];if(!file)return;
-  const drop=document.getElementById('ligaSetDrop'),st=document.getElementById('ligaSetStatus');
-  drop.textContent='📄 Lendo '+file.name+'...';st.className='save-note syncing';st.textContent='Abrindo o PDF...';
-  ligaPdfImages={};
+function urlDoSet(setId){return (customSets[setId]&&customSets[setId].liga_url)||(vinculos[setId]&&vinculos[setId].liga_url)||null;}
+async function atualizarPrecosSet(setId,emLote){
+  if(!setId)return null;
+  const url=urlDoSet(setId);
+  if(!url){if(!emLote)abrirVinculo(setId);return null;}
+  if(!extVersao){if(!emLote){showWarn('Extensão não detectada neste navegador. Instale a extensão (pasta "extensao") ou use "📋 Colar da Liga".');abrirColar();}return null;}
+  setSync('Lendo a Liga ('+setId+')… pode abrir uma aba por alguns segundos.','loading');
   try{
-    const pdfjsLib=await loadPdfJs();
-    const OPS=pdfjsLib.OPS;
-    const buf=await file.arrayBuffer();
-    const doc=await pdfjsLib.getDocument({data:buf}).promise;
-
-    // ---- PASSO 1: ler texto e ANOTAR onde estao as imagens (sem desenhar nada) ----
-    let out='';const ancoras=[],imgs=[];
-    for(let p=1;p<=doc.numPages;p++){
-      st.textContent=`Lendo página ${p} de ${doc.numPages}...`;
-      const page=await doc.getPage(p);
-      const tc=await page.getTextContent();
-      const rows={};
-      tc.items.forEach(it=>{
-        const y=Math.round(it.transform[5]);
-        (rows[y]=rows[y]||[]).push({x:it.transform[4],s:it.str});
-      });
-      Object.keys(rows).map(Number).sort((a,b)=>b-a).forEach(y=>{
-        const linha=rows[y].sort((a,b)=>a.x-b.x).map(o=>o.s).join('').trim();
-        out+=linha+'\n';
-        const m=linha.match(/\(#\s*(\d{1,4})\s*([a-z]?)\s*\//i);
-        if(m)ancoras.push({num:String(parseInt(m[1],10)).padStart(3,'0')+(m[2]||'').toLowerCase(),pg:p});
-      });
-      try{
-        const ops=await page.getOperatorList();
-        imagePlacements(ops,OPS).forEach(im=>imgs.push({pg:p,ctm:im.ctm,girada:im.girada}));
-      }catch(_){}
+    const dados=await extChamar('LER_EDICAO',url);
+    if(dados.bloqueio)throw new Error('A Liga pediu verificação anti-robô. Abra o site da Liga numa aba, resolva a verificação e tente de novo.');
+    const r=await aplicarLeitura(setId,dados.texto,dados.links);
+    if(!emLote){
+      setSync(`✓ ${r.gravadas} preço(s) atualizados (${r.lidas} cartas lidas)`,'ok');
+      if(r.semPar.length)showWarn(`${r.semPar.length} carta(s) da Liga não casaram com o catálogo: ${r.semPar.slice(0,6).join(', ')}${r.semPar.length>6?'…':''}`);
+      if(currentSetId===setId){if(customSets[setId]){const d=await carregarCartasSet(setId);currentCards=d.cards;currentSet=d.set;}renderGrid();updateStats();if(openCardId)renderCardModal();}
+      fotografarValor();
     }
-    const area=document.getElementById('ligaSetArea');
-    const temTexto=ancoras.length>0;
+    return r;
+  }catch(e){if(!emLote){setSync('','');showWarn(erroMsg(e));}else throw e;return null;}
+}
+async function atualizarTodos(){
+  if(!extVersao){showWarn('Extensão não detectada neste navegador. A atualização em lote precisa dela (Chrome/Edge no computador).');return;}
+  const ids=meusSetIds(),com=ids.filter(urlDoSet),sem=ids.filter(i=>!urlDoSet(i));
+  if(!com.length){showWarn('Nenhuma das suas coleções tem a página da Liga vinculada ainda. Abra o set e clique em "🔗 Página na Liga".');return;}
+  let ok=0,precos=0;const falhas=[];
+  for(let i=0;i<com.length;i++){
+    setSync(`Lendo a Liga: ${com[i]} (${i+1}/${com.length})…`,'loading');
+    try{const r=await atualizarPrecosSet(com[i],true);if(r){ok++;precos+=r.gravadas;}}catch(e){falhas.push(com[i]+': '+erroMsg(e));}
+    if(i<com.length-1)await new Promise(r=>setTimeout(r,2500));          // pausa: não martelar a Liga
+  }
+  setSync(`✓ ${ok}/${com.length} coleções · ${precos} preços atualizados`,'ok');
+  const avisos=[];if(falhas.length)avisos.push('Falharam — '+falhas.join(' | '));
+  if(sem.length)avisos.push('Sem página da Liga vinculada: '+sem.join(', '));
+  if(avisos.length)showWarn(avisos.join(' · '));
+  renderHome();fotografarValor();
+}
+async function leituraBrutaCarta(){
+  const c=cartaAtual();if(!c)return;
+  const lk=jget('pkd_links_'+currentSetId,{})[chaveNum(c.localId)];if(!lk)return;
+  setNote('Lendo a página da carta na Liga...','syncing');
+  try{const d=await extChamar('LER_CARTA',lk,{bruto:true});
+    baixarArquivo('leitura_liga_'+c.id+'.json',JSON.stringify(d,null,1),'application/json');setNote('✓ Arquivo baixado','synced');}
+  catch(e){setNote(erroMsg(e),'error');}
+}
 
-    // ---- PASSO 2: casar imagem <-> carta ----
-    let pares;
-    if(temTexto){
-      area.value=out;                       // PDF traz nomes, numeros e precos
-      pares=parearImagens(ancoras,imgs);
+/* ---------- vincular set -> página da Liga ---------- */
+let vincSetId=null;
+function abrirVinculo(setId){
+  if(!setId)return;vincSetId=setId;
+  $('vincUrl').value=urlDoSet(setId)||'';$('vincStatus').textContent='';
+  $('vincModal').classList.add('open');setTimeout(()=>$('vincUrl').focus(),50);
+}
+async function salvarVinculo(){
+  const url=$('vincUrl').value.trim(),st=$('vincStatus');
+  if(!urlLigaValida(url)){st.className='save-note error';st.textContent='Cole o endereço completo, começando com https://www.ligapokemon.com.br/';return;}
+  try{
+    if(customSets[vincSetId]){
+      const {data,error}=await sb.from('sets_custom').update({liga_url:url,liga_codigo:codigoDaUrl(url)}).eq('id',vincSetId).select().single();
+      if(error)throw error;customSets[vincSetId]=data;
     }else{
-      /* PDF SEM camada de texto (impresso "como imagem", ou a visao em grade
-         gerada por impressora virtual tipo Foxit). Ele so serve para fornecer
-         as FIGURAS. As cartas vem do texto que voce colou na caixa, e o
-         casamento e 1 pra 1 na ordem: 1a figura = 1a carta. */
-      const lista=parseLigaListings(area.value);
-      if(!lista.length){
-        drop.textContent='📄 Escolher o PDF da Liga';
-        st.className='save-note error';
-        st.textContent='Esse PDF não tem texto dentro (foi impresso como imagem), então sozinho ele não monta a coleção. Cole primeiro o texto da página da Liga na caixa abaixo e depois escolha este PDF de novo — aí eu uso só as figuras dele.';
-        return;
-      }
-      if(!imgs.length){
-        drop.textContent='📄 Escolher o PDF da Liga';
-        st.className='save-note error';st.textContent='Não encontrei nem texto nem figuras de carta nesse PDF.';
-        return;
-      }
-      /* A visao em grade da Liga mostra cada carta DUAS vezes (a impressao em
-         portugues e a em ingles). Quando o numero de figuras for perto do dobro
-         do numero de cartas, pegamos uma sim, uma nao — ficando com a primeira
-         de cada par. */
-      let fila=imgs;
-      const dobro=lista.length&&Math.abs(imgs.length/lista.length-2)<0.25;
-      if(dobro)fila=imgs.filter((_,i)=>i%2===0);
-      pares=[];
-      const n=Math.min(lista.length,fila.length);
-      for(let i=0;i<n;i++)pares.push({im:fila[i],num:String(lista[i].number).padStart(3,'0')+lista[i].suffix});
-      /* Aviso honesto: sem texto no arquivo, o casamento e um palpite baseado na
-         ordem. Na visao em GRADE da Liga isso costuma sair deslocado, porque a
-         grade mostra a impressao em portugues e a em ingles de cada carta, e
-         esse ritmo nem sempre bate com a lista de variacoes ([Staff] etc).
-         Por isso pedimos confirmacao em vez de aplicar calado. */
-      const ok=confirm(
-        `Esse PDF não tem texto dentro (foi impresso como imagem).\n\n`+
-        `Consigo aproveitar só as figuras, ligando-as às ${n} primeiras cartas na ordem`+
-        `${dobro?' (descartando a segunda versão de cada par)':''}.\n\n`+
-        `ATENÇÃO: isso é um palpite pela ordem e costuma sair DESLOCADO na visão em grade.\n`+
-        `O jeito confiável é imprimir a Liga na visão em LISTA, que sai com texto.\n\n`+
-        `Quer usar as figuras assim mesmo?`);
-      if(!ok){
-        drop.textContent='📄 Escolher o PDF da Liga';
-        st.className='save-note';st.textContent='Beleza — nenhuma figura foi usada. A coleção sai só com o texto colado.';
-        return;
-      }
-      showWarn(`Figuras ligadas pela ordem (${n} carta(s)). Confira na grade — se estiver deslocado, refaça o PDF pela visão em LISTA da Liga.`);
+      const {data,error}=await sb.from('sets_liga').upsert({set_id:vincSetId,liga_url:url,liga_codigo:codigoDaUrl(url),
+        atualizado_por:user.id,atualizado_em:new Date().toISOString()},{onConflict:'set_id'}).select().single();
+      if(error)throw error;vinculos[vincSetId]=data;
     }
-
-    // ---- PASSO 3: desenhar SO as paginas que tem imagem aproveitada e recortar ----
-    const porPagina={};
-    pares.forEach(par=>{(porPagina[par.im.pg]=porPagina[par.im.pg]||[]).push(par);});
-    const paginas=Object.keys(porPagina).map(Number).sort((a,b)=>a-b);
-    let feitas=0;
-    for(const pg of paginas){
-      feitas++;
-      st.textContent=`Recortando imagens... ${feitas}/${paginas.length}`;
-      try{
-        const page=await doc.getPage(pg);
-        const vp=page.getViewport({scale:1.6});
-        const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
-        await page.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
-        porPagina[pg].forEach(par=>{
-          // matriz completa: quadrado unitario da imagem -> pixels do canvas
-          const M=matMul(par.im.ctm,vp.transform);
-          const d=recortarCarta(cv,M,140,196,par.im.girada);
-          if(d)ligaPdfImages[par.num]=d;
-        });
-      }catch(_){}
-    }
-    const n=Object.keys(ligaPdfImages).length;
-    drop.textContent='✓ '+file.name+(n?` (${n} imagens)`:'');
-    st.className='save-note';st.textContent='';
-    previewLigaSet();
-  }catch(e){
-    drop.textContent='📄 Escolher o PDF da Liga';
-    st.className='save-note error';st.textContent='Erro ao ler o PDF: '+e.message+'. Dá pra usar o Ctrl+A / Ctrl+C na página no lugar disso.';
-  }
+    fechar('vincModal');
+    if(extVersao)atualizarPrecosSet(vincSetId);else setSync('✓ Página vinculada','ok');
+  }catch(e){st.className='save-note error';st.textContent=erroMsg(e);}
 }
-
-function createLigaSet(){
-  const text=document.getElementById('ligaSetArea').value;
-  const st=document.getElementById('ligaSetStatus');
-  const listings=parseLigaListings(text);
-  if(!listings.length){st.className='save-note error';st.textContent='Cole o texto (ou escolha o PDF) da página da edição primeiro.';return;}
-  const info=detectLigaSetInfo(text);
-  const name=(document.getElementById('ligaSetName').value||info.name||'Coleção da Liga').trim();
-  const rawCode=(document.getElementById('ligaSetCode').value||info.code||'').trim();
-  const clean=rawCode.toLowerCase().replace(/[^a-z0-9]/g,'');
-  if(!clean){st.className='save-note error';st.textContent='Preencha o código curto da coleção (ex: MEP).';return;}
-  const id='liga'+clean; // sem hífen de propósito: o app usa o hífen pra separar set-carta
-  // Uma carta por âncora encontrada; número vira "001", "003b"...
-  const seen={},cards=[];
-  listings.forEach(l=>{
-    const n=String(l.number).padStart(3,'0')+l.suffix;
-    if(seen[n])return;seen[n]=1;
-    cards.push({n,name:l.name,price:l.price||0,t:l.tot||''});
-  });
-  // "base" = maior numero SEM sufixo de variacao; o resto conta como especial
-  let base=0;cards.forEach(c=>{if(!/[a-z]$/i.test(c.n))base=Math.max(base,parseInt(c.n,10)||0);});
-  const def={id,name,code:rawCode.toUpperCase(),total:info.total||cards.length,base:base||undefined,cards};
-  customSets[id]=def;saveCustomSets();
-  setNames[id]=name;setSizes[id]=def.total;setBases[id]=base||def.total;saveMeta();
-  const nImgs=Object.keys(ligaPdfImages).length;
-  if(nImgs){const guardadas=saveLigaImages(id,ligaPdfImages);
-    if(guardadas<nImgs)showWarn(`Consegui guardar ${guardadas} das ${nImgs} imagens do PDF — o resto não coube na memória do navegador.`);}
-  if(!savedSets.find(s=>s.id===id)){savedSets.push({id,name});saveFavs();renderSaved();}
-  // guarda a definição na planilha também, pra coleção aparecer nos outros aparelhos
-  collection[SET_DEF_PREFIX+id]=def;saveCol();
-  saveToSheet(SET_DEF_PREFIX+id,def,true);
-  st.className='save-note synced';st.textContent=`✓ Coleção "${name}" criada com ${cards.length} carta(s)${nImgs?` e ${nImgs} imagem(ns)`:''}.`;
-  closeLigaSet();fetchSet(id);
+/* ---------- plano B: colar o texto ---------- */
+function abrirColar(){if(!currentSetId)return;$('colarArea').value='';$('colarStatus').textContent='';$('colarModal').classList.add('open');setTimeout(()=>$('colarArea').focus(),50);}
+async function aplicarColado(){
+  const st=$('colarStatus'),txt=$('colarArea').value;
+  if(!txt.trim()){st.className='save-note error';st.textContent='Cole o texto da página da Liga primeiro.';return;}
+  st.className='save-note syncing';st.textContent='Aplicando...';
+  try{const r=await aplicarLeitura(currentSetId,txt,[]);
+    st.className='save-note synced';
+    st.textContent=`✓ ${r.gravadas} preço(s) gravados (${r.lidas} cartas lidas).`+(r.semPar.length?`\n${r.semPar.length} não casaram: ${r.semPar.slice(0,5).join(', ')}`:'')+'\nSe a edição tem mais páginas, cole a próxima.';
+    $('colarArea').value='';renderGrid();updateStats();fotografarValor();
+  }catch(e){st.className='save-note error';st.textContent=erroMsg(e);}
 }
-
-function imgsKey(setId){return 'pkm_imgs_'+setId;}
-function loadLigaImages(setId){return jparse(imgsKey(setId),{})||{};}
-// Guarda as imagens tiradas do PDF. Se nao couber no aparelho, vai jogando as
-// ultimas fora ate caber (melhor ter parte das imagens do que nenhuma).
-function saveLigaImages(setId,imgs){
-  let lista=Object.keys(imgs);
-  while(lista.length){
-    const obj={};lista.forEach(k=>obj[k]=imgs[k]);
-    try{localStorage.setItem(imgsKey(setId),JSON.stringify(obj));return lista.length;}
-    catch(e){lista=lista.slice(0,Math.floor(lista.length*0.75));} // nao cabe: guarda menos
-  }
-  try{localStorage.removeItem(imgsKey(setId));}catch(_){}
-  return 0;
-}
-// Link direto da carta no site da Liga. Padrao conferido em 09/08/2026:
-// ...?view=cards/card&card=Alakazam%20%5BStaff%5D%20(003b%2F%E2%88%9E)&ed=MEP&num=003b
-function ligaCardUrl(def,c){
-  const alvo=c.name+' ('+c.n+'/'+(c.t||def.total||'')+')';
-  return 'https://www.ligapokemon.com.br/?view=cards/card&card='+encodeURIComponent(alvo)
-    +'&ed='+encodeURIComponent(def.code||'')+'&num='+encodeURIComponent(c.n);
-}
-function customSetCards(def){
-  const total=def.total||def.cards.length;
-  const imgs=loadLigaImages(def.id);
-  return def.cards.map(c=>({
-    id:def.id+'-'+c.n,name:c.name,number:c.n,rarity:'',
-    set:{id:def.id,name:def.name,printedTotal:def.base||total,total:total},
-    images:imgs[c.n]?{small:imgs[c.n],large:imgs[c.n]}:{},
-    __liga:true,__ligaPrice:c.price||0,__ligaUrl:ligaCardUrl(def,c)
-  }));
-}
-
-
-async function openSearch(){
-  document.getElementById('searchModal').classList.add('open');setTimeout(()=>document.getElementById('searchQ').focus(),50);
-  if(!allSets.length){try{const r=await fetch(`${API}/sets?orderBy=-releaseDate&pageSize=250`,{headers:apiHeaders});const d=await r.json();allSets=d.data||[];filterSets();}
-    catch(e){document.getElementById('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--ink3)">Erro ao carregar.</div>';}}
-  else filterSets();
-}
-function closeSearch(){document.getElementById('searchModal').classList.remove('open');}
-function closeSearchBg(e){if(e.target===document.getElementById('searchModal'))closeSearch();}
-function filterSets(){
-  const q=document.getElementById('searchQ').value.trim().toLowerCase();
-  const alvo=normalizarSetId(q);   // deixa achar por nome em portugues ou por ME03
-  const f=q?allSets.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.id||'').toLowerCase().includes(q)||(s.id||'')===alvo):allSets.slice(0,40);
-  if(!f.length){document.getElementById('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--ink3)">Nenhum set.</div>';return;}
-  document.getElementById('setResults').innerHTML=f.map(s=>`<div class="set-row" onclick="pickSet('${s.id}')">
-    <div><div class="set-row-name">${s.name||s.id}</div><div class="set-row-meta">${s.releaseDate||''} · ${s.total||'?'} cartas</div></div>
-    <div style="display:flex;align-items:center"><span class="set-row-id">${s.id}</span><button class="set-row-btn">Carregar</button></div></div>`).join('');
-}
-function pickSet(id){closeSearch();document.getElementById('setInput').value=id;fetchSet(id);}
-
-const RARITY_COLORS={'Comum':'#8a94a6','Common':'#8a94a6','Incomum':'#2a75bb','Uncommon':'#2a75bb','Rara':'#e6b800','Rare':'#e6b800','Rare Holo':'#e6b800','Rara Dupla':'#e3350d','Double Rare':'#e3350d','Ilustração Rara':'#8046a3','Illustration Rare':'#8046a3','Ultra Rara':'#c2185b','Ultra Rare':'#c2185b','Ilustração Rara Especial':'#00897b','Special Illustration Rare':'#00897b','Mega Hiper Raro':'#B3271A','Hyper Rare':'#B3271A'};
-function openCard(cardId){
-  const card=allCards.find(c=>c.id===cardId);if(!card)return;openCardId=cardId;
-  document.getElementById('cmName').textContent=card.name;
-  const meta=(card.set&&card.set.id==='me1')?getCardMeta(card.number):null;
-  const rl=meta?meta.rarity:(card.rarity||''),rc=RARITY_COLORS[rl]||'var(--ink2)';
-  document.getElementById('cmMeta').innerHTML=`#${card.number} · ${card.set?.name||''} · <span style="color:${rc};font-weight:700">${rl}</span>`+(card.__isPromo?' · <span style="color:var(--red);font-weight:700">PROMO</span>':'');
-  const src=card.images?.large||card.images?.small||'';
-  const imgEl=document.getElementById('cmImg'),phEl=document.getElementById('cmPh');
-  if(src){imgEl.src=src;imgEl.style.display='';phEl.style.display='none';}
-  else{ // coleção da Liga: não temos a imagem, desenhamos um "verso" com número e nome
-    imgEl.style.display='none';phEl.style.display='flex';
-    phEl.querySelector('.n').textContent=card.number;phEl.querySelector('.t').textContent=card.name;
-  }
-  const e=normalizeEntry(collection[cardId]),av=deriveAvailability(card);
-  document.getElementById('cmVariants').innerHTML=VARIANTS.map(v=>{
-    const exists=av[v.key]!==false,owned=e.types[v.key],q=e.dups[v.key]||0;
-    if(!exists)return `<div class="var-row var-disabled"><input type="checkbox" class="var-check" id="v_${v.key}" disabled/><label class="var-label" style="color:var(--ink3);text-decoration:line-through">${v.label}</label><span style="font-size:11px;color:var(--ink3);margin-left:auto">não existe</span></div>`;
-    // caixinha de repetidas: quantas cópias EXTRAS dessa variação você tem
-    return `<div class="var-row">
-      <input type="checkbox" class="var-check" id="v_${v.key}" ${owned?'checked':''} onchange="persistCard()"/>
-      <label class="var-label" for="v_${v.key}">${v.label}</label>
-      <span class="dup-wrap">
-        <span class="dup-lbl">repetidas</span>
-        <button class="qty-b" type="button" onclick="stepDup('${v.key}',-1)">−</button>
-        <input type="number" class="qty-inp" id="d_${v.key}" min="0" step="1" value="${q||''}" placeholder="0" onchange="persistCard()"/>
-        <button class="qty-b" type="button" onclick="stepDup('${v.key}',1)">+</button>
-      </span></div>`;
-  }).join('')+`<div class="dup-note" id="cmDupNote"></div>`;
-  renderDupNote();
-  document.getElementById('cmPrice').value=e.price?e.price.toFixed(2):'';
-  let srcHtml=e.src?`<span class="vbadge vbadge-src">${e.src}</span>`:'<span class="vbadge vbadge-src">sem preço ainda</span>';
-  if(card.__ligaPrice&&Math.abs((e.price||0)-card.__ligaPrice)>0.001)
-    srcHtml+=`<span class="use" onclick="useLigaPrice(${card.__ligaPrice})">usar ${fmtBRL(card.__ligaPrice)} (Liga)</span>`;
-  document.getElementById('cmPriceSrc').innerHTML=srcHtml;
-  const hint=document.getElementById('cmHint');
-  hint.innerHTML='É um preço só por carta (a Liga não separa por Normal/Holo/Reverse). Use "📋 Colar da Liga" na tela do set pra preencher em massa, ou digite aqui na mão. Marcar/desmarcar e editar já salva automático.'
-    +(card.__ligaUrl?`<div style="margin-top:8px"><a href="${card.__ligaUrl}" target="_blank" rel="noopener">🔗 Ver esta carta no site da Liga</a></div>`:'');
-  const b=[];if(av.normal)b.push('<span class="vbadge">Normal</span>');if(av.holofoil)b.push('<span class="vbadge vbadge-holo">Holo</span>');if(av.reverseHolofoil)b.push('<span class="vbadge vbadge-rev">Reverse</span>');
-  document.getElementById('cmVersionBadges').innerHTML=b.join('');
-  setNoteStatus('','');document.getElementById('cardModal').classList.add('open');
-}
-
-function useLigaPrice(p){
-  const inp=document.getElementById('cmPrice');if(!inp)return;
-  inp.value=p.toFixed(2);persistCard('Liga (importado)');
-}
-// Botões − / + da caixinha de repetidas.
-function stepDup(key,delta){
-  const inp=document.getElementById('d_'+key);if(!inp)return;
-  const atual=parseInt(inp.value,10)||0;
-  inp.value=Math.max(0,atual+delta)||'';
-  persistCard();
-}
-// Linha explicativa embaixo das variações: quanto as repetidas valeriam.
-function renderDupNote(){
-  const el=document.getElementById('cmDupNote');if(!el||!openCardId)return;
-  const n=dupCount(openCardId);
-  if(!n){el.innerHTML='Tem carta sobrando? Coloque a quantidade em <b>repetidas</b> — elas ficam separadas e <b>não entram no valor total</b> da coleção.';return;}
-  el.innerHTML=`<b>${n} repetida(s)</b>: ${dupTxt(openCardId)} · valeriam ${fmtBRL(dupVal(openCardId))} (fora do total da coleção).`;
-}
-async function persistCard(srcOverride){
-  if(!openCardId)return;
-  const card=allCards.find(c=>c.id===openCardId);
-  const prev=normalizeEntry(collection[openCardId]);
-  const types={};VARIANTS.forEach(v=>{const chk=document.getElementById('v_'+v.key);types[v.key]=chk?chk.checked:false;});
-  // quantidade de repetidas por variação (0 quando o campo está vazio)
-  const dups={};VARIANTS.forEach(v=>{const q=document.getElementById('d_'+v.key);
-    const n=q?parseInt(q.value,10):0;dups[v.key]=(isNaN(n)||n<0)?0:n;});
-  let price=parseFloat(document.getElementById('cmPrice')?.value||0)||0;
-  let src=srcOverride||prev.src;
-  // Coleção da Liga: se você acabou de marcar que tem a carta e ainda não há preço,
-  // já preenche com o preço que veio do texto/PDF da Liga.
-  const owning=types.normal||types.holofoil||types.reverseHolofoil;
-  if(!price&&owning&&card&&card.__ligaPrice){price=card.__ligaPrice;src='Liga (importado)';
-    const inp=document.getElementById('cmPrice');if(inp)inp.value=price.toFixed(2);}
-  const data={price,src,types,dups,ts:Date.now()};
-  collection[openCardId]=data;saveCol();renderGrid();renderDupNote();
-  document.getElementById('cmPriceSrc').innerHTML=data.src?`<span class="vbadge vbadge-src">${data.src}</span>`:'<span class="vbadge vbadge-src">sem preço ainda</span>';
-  await saveToSheet(openCardId,data);
-}
-function closeCard(){document.getElementById('cardModal').classList.remove('open');openCardId=null;}
-function closeCardBg(e){if(e.target===document.getElementById('cardModal'))closeCard();}
-
-/* ============================================================
-   EXPORTAÇÃO — CARTAS FALTANDO E CARTAS REPETIDAS
-
-   Duas saídas possíveis, para uma coleção só ou para todas:
-
-   1) FALTANDO  — cartas que você ainda não marcou como "tenho".
-                  Dá pra pedir só a coleção base, só as especiais ou tudo,
-                  e opcionalmente incluir variações que faltam de cartas
-                  que você já tem (tem a Normal, falta a Reverse).
-                  Ordem: coleção, depois número.
-
-   2) REPETIDAS — cartas com quantidade extra marcada.
-                  Ordem: RARAS primeiro (da mais rara pra menos), e depois
-                  as comuns, sempre agrupadas por coleção e número.
-
-   Três formatos: página com as imagens (pra imprimir ou salvar em PDF),
-   lista de texto (pra mandar no WhatsApp) e CSV (pra abrir no Excel).
-   ============================================================ */
-let expMode='faltando',expUltimoTexto='',expUltimoNome='lista.txt';
-
-function escHtml(s){return String(s==null?'':s)
-  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-// Todas as coleções que este aparelho conhece: favoritas, criadas pela Liga,
-// com cache de cartas ou com pelo menos uma carta marcada.
-function setsConhecidos(){
-  const ids={};
-  savedSets.forEach(s=>ids[s.id]=1);
-  Object.keys(customSets).forEach(id=>ids[id]=1);
-  Object.keys(collection).forEach(cid=>{if(!cid.startsWith(SET_DEF_PREFIX)&&!cid.startsWith(SPENT_PREFIX))ids[setIdOf(cid)]=1;});
-  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);
-    if(k&&k.startsWith('pkm_cards_'))ids[k.slice(10)]=1;}
-  if(currentSetId)ids[currentSetId]=1;
-  return Object.keys(ids).sort((a,b)=>(setNames[a]||a).localeCompare(setNames[b]||b));
-}
-
-/* Lista de cartas de um set, na melhor fonte disponível:
-   1) o set aberto na tela (já inclui as promos carregadas)
-   2) coleção criada pela Liga (texto/PDF)
-   3) cache local (set já aberto uma vez neste aparelho)
-   4) API da pokemontcg.io — só como último recurso                       */
-async function cardsOfSet(sid){
-  if(sid===currentSetId&&allCards.length)return allCards;
-  if(customSets[sid])return customSetCards(customSets[sid]);
-  const cache=loadCardsCache(sid);
-  if(cache)return cache;
-  try{const cards=await fetchAllCards(sid);if(cards.length){saveCardsCache(sid,cards);return cards;}}catch(_){}
-  return null;
-}
-
-function openExp(){
-  const sel=document.getElementById('expSet');
-  const ids=setsConhecidos();
-  sel.innerHTML='<option value="__all__">Todas as coleções</option>'+
-    ids.map(id=>`<option value="${escHtml(id)}">${escHtml(setNames[id]||id)} (${escHtml(id)})</option>`).join('');
-  sel.value=(currentSetId&&ids.indexOf(currentSetId)>=0)?currentSetId:'__all__';
-  setExpMode(expMode);   // deixa as opções coerentes com a aba escolhida
-  document.getElementById('expModal').classList.add('open');
-}
-function closeExp(){document.getElementById('expModal').classList.remove('open');}
-function closeExpBg(e){if(e.target===document.getElementById('expModal'))closeExp();}
-function setExpMode(m){
-  expMode=m;
-  document.getElementById('expTabFalta').classList.toggle('active',m==='faltando');
-  document.getElementById('expTabDup').classList.toggle('active',m==='repetidas');
-  // "variações que faltam" só faz sentido no modo Faltando
-  document.getElementById('expVarWrap').style.display=(m==='faltando')?'flex':'none';
-  document.getElementById('expStatus').textContent='';
-  document.getElementById('expOut').style.display='none';
-  document.getElementById('expActions').style.display='none';
-}
-
-/* Quantas cópias repetidas existem, separadas por bloco:
-   - RARAS  : total de cópias (raridade acima do corte)
-   - COMUNS : quantas são Normal e quantas são Holo/Foil (holo + reverse juntos,
-              que é como a Liga e as lojas tratam na hora da troca).           */
-function resumoRepetidas(itens){
-  let rar=0,nrm=0,foil=0;
-  itens.forEach(it=>{
-    const d=it.dups||{normal:0,holofoil:0,reverseHolofoil:0};
-    if(it.rank>=RARA_MIN)rar+=(d.normal||0)+(d.holofoil||0)+(d.reverseHolofoil||0);
-    else{nrm+=(d.normal||0);foil+=(d.holofoil||0)+(d.reverseHolofoil||0);}
-  });
-  return {rar,nrm,foil,
-    txtComuns:`${nrm} normal + ${foil} holo/foil`,
-    txtRaras:`${rar} cópia(s)`};
-}
-
-/* Ordem da exportação de REPETIDAS:
-   1) as RARAS vêm todas na frente;
-   2) dentro de cada bloco, agrupa por coleção;
-   3) entre as raras da mesma coleção, da mais rara para a menos rara;
-   4) as demais, por número.
-   Assim a lista sai com as cartas de valor no topo e sem misturar coleções. */
-function cmpExportDup(a,b){
-  const ra=a.rank>=RARA_MIN,rb=b.rank>=RARA_MIN;
-  if(ra!==rb)return ra?-1:1;                  // rara sempre antes de não-rara
-  const sa=(a.card.set&&a.card.set.id)||'',sb=(b.card.set&&b.card.set.id)||'';
-  if(sa!==sb)return sa<sb?-1:1;               // agrupa por coleção
-  if(ra&&a.rank!==b.rank)return b.rank-a.rank;// só entre raras: mais rara primeiro
-  return cmpSetNum(a,b);                      // empate: número
-}
-// Ordenação base: coleção, depois número (003 antes de 003b, 9 antes de 10).
-function cmpSetNum(a,b){
-  const sa=(a.card.set&&a.card.set.id)||'',sb=(b.card.set&&b.card.set.id)||'';
-  if(sa!==sb)return sa<sb?-1:1;
-  const na=cardNumberInt(a.card.number),nb=cardNumberInt(b.card.number);
-  if(na!==nb)return (na==null?99999:na)-(nb==null?99999:nb);
-  const xa=cardNumberSuffix(a.card.number),xb=cardNumberSuffix(b.card.number);
-  return xa<xb?-1:xa>xb?1:0;
-}
-
-async function runExport(){
-  const st=document.getElementById('expStatus');
-  const out=document.getElementById('expOut'),acts=document.getElementById('expActions');
-  out.style.display='none';acts.style.display='none';
-  const alvo=document.getElementById('expSet').value;
-  const what=document.getElementById('expWhat').value;
-  const fmt=document.getElementById('expFmt').value;
-  const incluirVar=document.getElementById('expVar').checked;
-  const sids=alvo==='__all__'?setsConhecidos():[alvo];
-  if(!sids.length){st.className='save-note error';st.textContent='Nenhuma coleção pra exportar ainda.';return;}
-
+/* ---------- coleção que só existe na Liga ---------- */
+function abrirNovoLiga(){['nlUrl','nlNome','nlCod','nlTexto'].forEach(i=>$(i).value='');$('nlStatus').textContent='';$('novoLigaModal').classList.add('open');}
+async function criarSetLiga(){
+  const st=$('nlStatus'),url=$('nlUrl').value.trim(),nome=$('nlNome').value.trim();
+  const cod=($('nlCod').value.trim()||codigoDaUrl(url)||'').toUpperCase(),limpo=cod.toLowerCase().replace(/[^a-z0-9]/g,'');
+  const erro=m=>{st.className='save-note error';st.textContent=m;};
+  if(url&&!urlLigaValida(url))return erro('O endereço precisa começar com https://www.ligapokemon.com.br/');
+  if(!nome||!limpo)return erro('Preencha o nome e o código curto.');
+  const id='liga'+limpo;
+  let texto=$('nlTexto').value,links=[];
   st.className='save-note syncing';
-  const itens=[],semLista=[];
-  for(let i=0;i<sids.length;i++){
-    const sid=sids[i];
-    st.textContent=`Lendo "${setNames[sid]||sid}" (${i+1}/${sids.length})...`;
-    const cards=await cardsOfSet(sid);
-    if(!cards){semLista.push(setNames[sid]||sid);continue;}
-    cards.forEach(c=>{
-      // filtro base / especiais
-      const esp=isSpecialCard(c);
-      if(what==='base'&&esp)return;
-      if(what==='special'&&!esp)return;
-      const nome=setNames[(c.set&&c.set.id)||sid]||(c.set&&c.set.name)||sid;
-      const base={card:c,setId:(c.set&&c.set.id)||sid,setName:nome,
-        rank:rarityRank(c),rar:rarityLabel(c),esp:esp,preco:normalizeEntry(collection[c.id]).price||0};
-      if(expMode==='faltando'){
-        const av=deriveAvailability(c);
-        if(!isOwned(c.id)){
-          itens.push({...base,tipo:'carta',faltaTxt:'carta inteira'});
-        }else if(incluirVar){
-          // tenho a carta, mas alguma variação que existe ainda não foi marcada
-          const t=normalizeEntry(collection[c.id]).types;
-          const falta=VARIANTS.filter(v=>av[v.key]!==false&&!t[v.key]).map(v=>v.label);
-          if(falta.length)itens.push({...base,tipo:'variacao',faltaTxt:'falta '+falta.join(' + ')});
-        }
-      }else{
-        const n=dupCount(c.id);
-        if(n)itens.push({...base,qtd:n,qtdTxt:dupTxt(c.id),valor:n*base.preco,
-          dups:normalizeEntry(collection[c.id]).dups});
-      }
-    });
-  }
+  try{
+    if(!texto.trim()){
+      if(!url||!extVersao)return erro('Sem a extensão, cole o texto da página da edição no campo de baixo.');
+      st.textContent='Lendo a Liga...';
+      const d=await extChamar('LER_EDICAO',url);texto=d.texto;links=d.links;
+    }
+    const lidas=parseLiga(texto);if(!lidas.length)return erro('Não achei cartas nessa página/texto.');
+    const lk=mapaLinks(links);
+    const cartas=lidas.map(l=>({n:numCustom(l.num),name:l.name,img:(lk[l.key]&&lk[l.key].img)||''}));
+    if(!customSets[id]){
+      const {data,error}=await sb.from('sets_custom').insert({id,nome,liga_url:url||null,liga_codigo:cod,total:cartas.length,cartas,criado_por:user.id}).select().single();
+      if(error)throw error;customSets[id]=data;
+    }
+    await aplicarLeitura(id,texto,links);
+    currentSet={id,name:nome,total:cartas.length,base:cartas.length};
+    await garantirSetUsuario(id,{nome,total:customSets[id].total,favorito:true});
+    renderSaved();fechar('novoLigaModal');fetchSet(id);
+  }catch(e){erro(erroMsg(e));}
+}
 
-  if(!itens.length){
-    st.className='save-note error';
-    st.textContent=expMode==='faltando'
-      ?'Não achei carta faltando com esses filtros. 🎉'
-      :'Você ainda não marcou nenhuma carta como repetida. Abra a carta e preencha o campo "repetidas".';
+/* =====================================================================
+   PERFIL
+   ===================================================================== */
+function abrirPerfil(){
+  if(!perfil)return;
+  $('pfNome').value=perfil.nome||'';$('pfCidade').value=perfil.cidade||'';$('pfTel').value=perfil.telefone||'';$('pfEmail').value=perfil.email_contato||'';
+  $('pfCom').checked=!!perfil.na_comunidade;$('pfMT').checked=!!perfil.mostrar_telefone;$('pfME').checked=!!perfil.mostrar_email;
+  $('pfIdioma').innerHTML=opts(IDIOMAS,perfil.idioma_padrao||'PT');$('pfQual').innerHTML=opts(QUALS,perfil.qualidade_padrao||'NM');
+  $('pfStatus').textContent='';$('impStatus').textContent='';$('perfilModal').classList.add('open');
+}
+async function salvarPerfil(){
+  const st=$('pfStatus');
+  const p={nome:$('pfNome').value.trim()||null,cidade:$('pfCidade').value.trim()||null,telefone:$('pfTel').value.trim()||null,
+    email_contato:$('pfEmail').value.trim()||null,na_comunidade:$('pfCom').checked,mostrar_telefone:$('pfMT').checked,
+    mostrar_email:$('pfME').checked,idioma_padrao:$('pfIdioma').value,qualidade_padrao:$('pfQual').value};
+  if(p.na_comunidade&&!((p.mostrar_telefone&&p.telefone)||(p.mostrar_email&&p.email_contato))){
+    st.className='save-note error';st.textContent='Para participar da comunidade, libere pelo menos um contato (WhatsApp ou e-mail) — senão ninguém consegue te chamar.';return;}
+  const {data,error}=await sb.from('perfis').update(p).eq('id',user.id).select().single();
+  if(error){st.className='save-note error';st.textContent=erroMsg(error);return;}
+  perfil=data;comCache={};renderOwner();st.className='save-note synced';st.textContent='✓ Salvo';
+  if($('homeView').style.display!=='none')renderHome();
+}
+
+/* =====================================================================
+   DIVULGAR — escolher QUAIS repetidas e QUAIS faltantes aparecem
+   ===================================================================== */
+let divModo='rep',divCartas=[];
+function abrirDivulgar(){
+  const ids=meusSetIds();
+  $('divSet').innerHTML=ids.map(i=>`<option value="${escHtml(i)}"${i===currentSetId?' selected':''}>${escHtml((setsUser[i]&&setsUser[i].nome)||i)}</option>`).join('');
+  $('divModal').classList.add('open');divAba(divModo);
+}
+function divAba(m){divModo=m;$('divTab_rep').classList.toggle('active',m==='rep');$('divTab_falta').classList.toggle('active',m==='falta');
+  $('divSetWrap').style.display=m==='falta'?'block':'none';renderDivulgar();}
+async function renderDivulgar(){
+  const el=$('divLista');$('divStatus').textContent='';
+  if(divModo==='rep'){
+    const rs=linhas.filter(r=>r.quantidade>1).sort((a,b)=>(a.set_id+a.numero).localeCompare(b.set_id+b.numero,undefined,{numeric:true}));
+    el.innerHTML=rs.length?rs.map(r=>`<label class="pick"><input type="checkbox" ${r.divulgar?'checked':''} onchange="divMarcarRep(${r.id},this.checked)"/>
+      <span><b>#${escHtml(r.numero)}</b> ${escHtml(r.nome)} <span style="color:var(--ink3)">· ${escHtml(r.extra)} · ${escHtml(r.idioma)} · ${escHtml(r.qualidade)}</span></span>
+      <small>${escHtml(r.set_id)} · ×${r.quantidade-1} · ${fmtBRL(precoLinha(r).v)}</small></label>`).join('')
+      :'<div class="pick">Você não tem repetidas marcadas. Aumente a quantidade de um exemplar para ele aparecer aqui.</div>';
     return;
   }
-
-  // Ordenação
-  if(expMode==='faltando')itens.sort(cmpSetNum);
-  else itens.sort(cmpExportDup);
-
-  const quando=new Date().toLocaleDateString('pt-BR');
-  const escopo=alvo==='__all__'?'Todas as coleções':(setNames[alvo]||alvo);
-  const rotuloWhat=what==='base'?'só coleção base':what==='special'?'só especiais':'base + especiais';
-  const titulo=expMode==='faltando'?'Cartas que faltam':'Cartas repetidas';
-  const res=expMode==='repetidas'?resumoRepetidas(itens):null;
-  const sub=expMode==='faltando'
-    ?`${escopo} · ${rotuloWhat} · ${itens.length} carta(s) · ${quando}`
-    :`${escopo} · ${itens.length} carta(s) repetida(s), ${itens.reduce((s,x)=>s+x.qtd,0)} cópia(s) · Raras: ${res.rar} · Comuns: ${res.txtComuns} · ${quando}`;
-  const nomeArq=(expMode==='faltando'?'faltando_':'repetidas_')+
-    (alvo==='__all__'?'todas':alvo)+'_'+new Date().toISOString().slice(0,10);
-
-  let aviso=semLista.length?`\n⚠ Não consegui a lista de cartas de: ${semLista.join(', ')} (abra essa coleção uma vez e tente de novo).`:'';
-
-  if(fmt==='img'){
-    const html=buildExportHtml(titulo,sub,itens);
-    abrirOuBaixar(html,nomeArq+'.html');
-    st.className='save-note synced';
-    st.textContent=`✓ ${itens.length} carta(s). Abri numa aba nova — use o botão "Imprimir / salvar PDF" lá em cima.`+aviso;
-  }else if(fmt==='csv'){
-    const linhas=[expMode==='faltando'
-      ?'colecao;numero;nome;raridade;tipo;o_que_falta;preco'
-      :'colecao;numero;nome;raridade;qtd_repetidas;detalhe;preco_unit;valor_total'];
-    itens.forEach(it=>{
-      const p=n=>String((n||0).toFixed(2)).replace('.',',');
-      const cel=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
-      linhas.push(expMode==='faltando'
-        ?[cel(it.setName),cel(it.card.number),cel(it.card.name),cel(it.rar),cel(it.esp?'especial':'base'),cel(it.faltaTxt),p(it.preco)].join(';')
-        :[cel(it.setName),cel(it.card.number),cel(it.card.name),cel(it.rar),it.qtd,cel(it.qtdTxt),p(it.preco),p(it.valor)].join(';'));
-    });
-    // \ufeff = BOM, faz o Excel em português abrir os acentos certos
-    baixarArquivo(nomeArq+'.csv','\ufeff'+linhas.join('\r\n'),'text/csv');
-    st.className='save-note synced';st.textContent=`✓ CSV com ${itens.length} linha(s) baixado.`+aviso;
-  }else{
-    let txt=titulo.toUpperCase()+'\n'+sub+'\n';
-    let setAtual='',blocoRaras=expMode==='repetidas',secRaras=false;
-    itens.forEach(it=>{
-      if(expMode==='repetidas'){
-        const raro=it.rank>=RARA_MIN;
-        if(blocoRaras&&!raro){txt+=secRaras?`\n\n--- DEMAIS (${res.txtComuns}) ---`:'';blocoRaras=false;setAtual='';}
-        else if(blocoRaras&&!secRaras){txt+=`\n\n--- RARAS (${res.txtRaras}) ---`;secRaras=true;}
+  const sid=$('divSet').value;if(!sid){el.innerHTML='<div class="pick">Nenhuma coleção ainda.</div>';return;}
+  el.innerHTML='<div class="pick">Carregando...</div>';
+  try{
+    const d=await carregarCartasSet(sid);if($('divSet').value!==sid||divModo!=='falta')return;
+    divCartas=d.cards.filter(c=>!isOwned(c.id));
+    el.innerHTML=divCartas.length?divCartas.map((c,i)=>{const g=precoG[c.id];
+      return `<label class="pick"><input type="checkbox" ${desejos[c.id]?'checked':''} onchange="divMarcarFalta(${i},this.checked)"/>
+      <span><b>#${escHtml(c.localId)}</b> ${escHtml(c.name)}</span><small>${g&&g.preco_min?fmtBRL(g.preco_min):''}</small></label>`;}).join('')
+      :'<div class="pick">🎉 Você tem todas as cartas deste set.</div>';
+  }catch(e){el.innerHTML='<div class="pick">'+escHtml(erroMsg(e))+'</div>';}
+}
+async function divMarcarRep(id,v){
+  const r=linhas.find(x=>x.id===id);if(!r)return;
+  const {error}=await sb.from('colecao').update({divulgar:v}).eq('id',id);
+  if(error){$('divStatus').textContent=erroMsg(error);return;}r.divulgar=v;comCache={};$('divStatus').textContent='✓ salvo';
+}
+async function divMarcarFalta(i,v){
+  const c=divCartas[i];if(!c)return;
+  try{await gravarDesejo(c,$('divSet').value,v);comCache={};$('divStatus').textContent='✓ salvo';if(currentSetId===$('divSet').value)renderGrid();}
+  catch(e){$('divStatus').textContent=erroMsg(e);}
+}
+async function divTodas(v){
+  $('divStatus').textContent='Salvando...';
+  try{
+    if(divModo==='rep'){
+      const {error}=await sb.from('colecao').update({divulgar:v}).gt('quantidade',1);if(error)throw error;
+      linhas.forEach(r=>{if(r.quantidade>1)r.divulgar=v;});
+    }else{
+      const sid=$('divSet').value;
+      if(v){
+        const rows=divCartas.map(c=>({user_id:user.id,carta_id:c.id,set_id:sid,numero:String(c.localId),nome:c.name,imagem_url:imgUrl(c,'low')||null}));
+        await upsertLotes('desejos',rows,'user_id,carta_id');rows.forEach(r=>desejos[r.carta_id]=r);
+      }else{
+        const {error}=await sb.from('desejos').delete().eq('set_id',sid);if(error)throw error;
+        Object.keys(desejos).forEach(k=>{if(desejos[k].set_id===sid)delete desejos[k];});
       }
-      if(it.setName!==setAtual){setAtual=it.setName;txt+=`\n\n[${setAtual}]`;}
-      txt+=`\n#${it.card.number} ${it.card.name}`
-        +(it.rar?` (${it.rar})`:'')
-        +(expMode==='repetidas'?` — ${it.qtdTxt}`:(it.tipo==='variacao'?` — ${it.faltaTxt}`:''));
-    });
-    expUltimoTexto=txt;expUltimoNome=nomeArq+'.txt';
-    out.value=txt;out.style.display='block';acts.style.display='flex';
-    st.className='save-note synced';st.textContent=`✓ ${itens.length} carta(s) na lista abaixo.`+aviso;
+      if(currentSetId===sid)renderGrid();
+    }
+    comCache={};await renderDivulgar();$('divStatus').textContent='✓ salvo';
+  }catch(e){$('divStatus').textContent=erroMsg(e);}
+}
+
+/* =====================================================================
+   COMUNIDADE
+   ===================================================================== */
+let comModo='matches',comCache={};
+function abrirComunidade(){esconderTudo();currentSetId=null;$('comView').style.display='block';comAba(comModo);}
+function comAba(m){comModo=m;['matches','repetidas','desejos'].forEach(k=>$('comTab_'+k).classList.toggle('active',k===m));carregarComunidade();}
+async function carregarComunidade(){
+  const el=$('comLista');
+  $('comAviso').innerHTML=perfil&&perfil.na_comunidade?'':`<div class="hint-box" style="margin:0 0 12px">Você ainda <b>não participa</b> da comunidade: dá pra ver o que os outros divulgam, mas nada seu aparece. <a href="#" onclick="abrirPerfil();return false">Ativar no perfil</a>.</div>`;
+  if(!comCache[comModo]){
+    el.innerHTML='<div class="loading">Carregando...</div>';
+    try{comCache[comModo]=await selTudo(()=>sb.from('comunidade_'+comModo).select('*'));}
+    catch(e){el.innerHTML='<div class="empty">'+escHtml(erroMsg(e))+'</div>';return;}
   }
+  renderComunidade();
+}
+function linkZap(tel,msg){let d=String(tel||'').replace(/\D/g,'');if(!d)return '';if(d.length<=11)d='55'+d;return 'https://wa.me/'+d+'?text='+encodeURIComponent(msg);}
+function renderComunidade(){
+  const q=normName($('comBusca').value);
+  let rows=(comCache[comModo]||[]);
+  if(comModo!=='matches')rows=rows.filter(r=>r.user_id!==user.id);
+  if(q)rows=rows.filter(r=>normName([r.carta,r.set_id,r.numero,r.pessoa,r.cidade].join(' ')).includes(q));
+  const vazio={matches:'Ninguém divulgou (ainda) uma repetida das cartas que você marcou como "procuro".',repetidas:'Ninguém divulgou repetidas ainda.',desejos:'Ninguém divulgou cartas procuradas ainda.'}[comModo];
+  $('comLista').innerHTML=rows.length?rows.slice(0,400).map(r=>{
+    const tem=comModo!=='desejos';
+    const msg=tem?`Oi! Vi na Pokédex que você tem repetida a carta ${r.carta} #${r.numero} (${r.set_id}). Ainda tem?`
+                 :`Oi! Vi na Pokédex que você procura a carta ${r.carta} #${r.numero} (${r.set_id}). Eu tenho!`;
+    const zap=linkZap(r.telefone,msg);
+    return `<div class="com-item">
+      ${r.imagem_url?`<img loading="lazy" referrerpolicy="no-referrer" src="${escHtml(r.imagem_url)}" alt=""/>`:'<div class="noimg"></div>'}
+      <div style="min-width:0"><div class="t">${escHtml(r.carta)} <span style="color:var(--ink3);font-weight:600">#${escHtml(r.numero)}</span></div>
+        <div class="m">${escHtml(r.set_id)}${tem?` · ${escHtml(r.extra)} · ${escHtml(r.idioma)} · ${escHtml(r.qualidade)} · ×${r.disponiveis}`:((r.idioma||r.qualidade)?` · quer ${escHtml(r.idioma||'qualquer idioma')} ${escHtml(r.qualidade||'')}`:'')}
+          ${r.preco_ref?`<br>ref. Liga: <b>${fmtBRL(r.preco_ref)}</b>`:''}</div>
+        <div class="who">${tem?'Tem':'Procura'}: ${escHtml(r.pessoa||'Colecionador')}${r.cidade?' · '+escHtml(r.cidade):''}</div>
+        <div>${zap?`<a href="${escHtml(zap)}" target="_blank" rel="noopener">💬 WhatsApp</a>`:''}${r.email?`<a href="mailto:${escHtml(r.email)}?subject=${encodeURIComponent('Pokédex — '+r.carta)}">✉ E-mail</a>`:''}</div>
+      </div></div>`;}).join(''):`<div class="empty" style="grid-column:1/-1">${vazio}</div>`;
 }
 
-/* Página pronta pra imprimir, com a imagem de cada carta.
-   Sai como arquivo .html independente: abre em aba nova e também pode ser
-   salvo/enviado. As imagens das coleções da Liga já vão embutidas. */
-function buildExportHtml(titulo,sub,itens){
-  const modoDup=expMode==='repetidas';
-  const res=modoDup?resumoRepetidas(itens):null;
-  let html='';let setAtual='',blocoRaras=modoDup,abriu=false,secRaras=false;
-  itens.forEach(it=>{
-    if(modoDup){
-      const raro=it.rank>=RARA_MIN;
-      if(blocoRaras&&!raro){ // acabaram as raras: abre o bloco das demais
-        html+=(abriu?'</div>':'')+(secRaras?`<h2 class="sec">Demais cartas <span class="qt">${escHtml(res.txtComuns)}</span></h2>`:'');
-        blocoRaras=false;setAtual='';abriu=false;
-      }else if(blocoRaras&&!secRaras){html+=`<h2 class="sec">⭐ Raras <span class="qt">${escHtml(res.txtRaras)}</span></h2>`;secRaras=true;}
-    }
-    if(it.setName!==setAtual){
-      setAtual=it.setName;
-      html+=(abriu?'</div>':'')+`<h3 class="col">${escHtml(setAtual)}</h3><div class="g">`;abriu=true;
-    }
-    const c=it.card;
-    const img=(c.images&&(c.images.large||c.images.small))||'';
-    const face=img
-      ?`<img src="${escHtml(img)}" alt="${escHtml(c.name)}" loading="eager"/>`
-      :`<div class="ph"><b>${escHtml(c.number)}</b><span>${escHtml(c.name)}</span></div>`;
-    const extra=modoDup
-      ?`<div class="q">${escHtml(it.qtdTxt)}</div>`
-      :(it.tipo==='variacao'?`<div class="q var">${escHtml(it.faltaTxt)}</div>`:'');
-    html+=`<div class="ct">${face}
-      <div class="nm">#${escHtml(c.number)} ${escHtml(c.name)}</div>
-      ${it.rar?`<div class="rr">${escHtml(it.rar)}</div>`:''}
-      ${extra}</div>`;
-  });
-  if(abriu)html+='</div>';
-
-  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>${escHtml(titulo)}</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#f3f5f8;color:#1c2430;padding:18px}
-header{background:linear-gradient(160deg,#1B3F91,#10285E);color:#fff;border-radius:14px;padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-h1{font-size:19px;font-weight:800}
-.sb{font-size:12px;opacity:.85;margin-top:3px}
-.pb{margin-left:auto;background:#F4C430;color:#7a5a00;border:none;border-radius:20px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer}
-.sec{font-size:15px;margin:18px 0 8px;padding-bottom:6px;border-bottom:2px solid #1B3F91;color:#10285E}
-.sec .qt{font-size:11px;font-weight:600;color:#0d5c4a;background:#e5f7f0;border-radius:5px;padding:2px 7px;margin-left:6px;vertical-align:middle}
-.col{font-size:13px;margin:14px 0 8px;color:#5a6577;font-weight:700}
-.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
-.ct{background:#fff;border:1px solid #e6eaf1;border-radius:10px;padding:8px;text-align:center;break-inside:avoid;page-break-inside:avoid}
-.ct img{width:100%;border-radius:7px;display:block;aspect-ratio:63/88;object-fit:cover;background:#e9edf3}
-.ph{width:100%;aspect-ratio:63/88;border-radius:7px;background:linear-gradient(160deg,#1B3F91,#081638);color:#FFE18C;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px}
-.ph b{font-size:18px;color:#F4C430}.ph span{font-size:9px;line-height:1.2}
-.nm{font-size:10px;font-weight:600;margin-top:5px;line-height:1.25}
-.rr{font-size:9px;color:#8a94a6;margin-top:2px}
-.q{font-size:10px;font-weight:700;color:#0d5c4a;background:#e5f7f0;border-radius:5px;padding:2px 5px;margin-top:4px}
-.q.var{color:#8046a3;background:#f6ecfb}
-@media print{body{background:#fff;padding:0}header{border-radius:0}.pb{display:none}.g{grid-template-columns:repeat(6,1fr);gap:7px}.ct{border-color:#ccc}}
-</style></head><body>
-<header><div><h1>${escHtml(titulo)}</h1><div class="sb">${escHtml(sub)}</div></div>
-<button class="pb" onclick="window.print()">🖨 Imprimir / salvar PDF</button></header>
-${html}
-</body></html>`;
+/* =====================================================================
+   EXPORTAR
+   ===================================================================== */
+let expMode='faltando',expTexto='',expNome='lista.txt';
+function openExp(){
+  const ids=meusSetIds();
+  $('expSet').innerHTML='<option value="__all">Todas as minhas coleções</option>'+ids.map(i=>`<option value="${escHtml(i)}"${i===currentSetId?' selected':''}>${escHtml((setsUser[i]&&setsUser[i].nome)||i)}</option>`).join('');
+  $('expOut').style.display='none';$('expActions').style.display='none';$('expStatus').textContent='';
+  $('expModal').classList.add('open');setExpMode(expMode);
 }
-
+function setExpMode(m){expMode=m;$('expTabFalta').classList.toggle('active',m==='faltando');$('expTabDup').classList.toggle('active',m==='repetidas');
+  $('expSoMarcadasLbl').textContent=m==='faltando'?'Só as que marquei como "procuro"':'Só as que marquei para divulgar';}
+async function runExport(){
+  const st=$('expStatus'),sel=$('expSet').value,oque=$('expWhat').value,so=$('expSoMarcadas').checked,fmt=$('expFmt').value;
+  const ids=sel==='__all'?meusSetIds():[sel];
+  st.className='save-note syncing';st.textContent='Montando...';
+  try{
+    const grupos=[];
+    for(const sid of ids){
+      const d=await carregarCartasSet(sid),itens=[];
+      d.cards.forEach(c=>{
+        const sp=isSpecial(c,d.set);if((oque==='base'&&sp)||(oque==='special'&&!sp))return;
+        if(expMode==='faltando'){
+          if(isOwned(c.id)||(so&&!desejos[c.id]))return;
+          const g=precoG[c.id];itens.push({c,qtd:1,det:'',preco:g&&g.preco_min?Number(g.preco_min):0});
+        }else rowsOf(c.id).forEach(r=>{if(r.quantidade<2||(so&&!r.divulgar))return;
+          itens.push({c,qtd:r.quantidade-1,det:[r.extra,r.idioma,r.qualidade].join(' · '),preco:precoLinha(r).v});});
+      });
+      if(itens.length)grupos.push({set:d.set,itens});
+    }
+    const n=grupos.reduce((s,g)=>s+g.itens.reduce((a,i)=>a+i.qtd,0),0);
+    if(!n){st.className='save-note';st.textContent='Nada para exportar com esses filtros.';return;}
+    const titulo=(expMode==='faltando'?'🔎 FALTANDO':'🔁 REPETIDAS')+(perfil&&perfil.nome?' — '+perfil.nome:'');
+    const tot=grupos.reduce((s,g)=>s+g.itens.reduce((a,i)=>a+i.preco*i.qtd,0),0);
+    if(fmt==='img'){abrirOuBaixar(htmlExport(titulo,grupos,n,tot),'pokedex_'+expMode+'.html');st.className='save-note synced';st.textContent='✓ Página aberta em outra aba (ou baixada).';return;}
+    if(fmt==='csv'){
+      const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
+      expTexto='\ufeffSet;Numero;Carta;Detalhe;Qtd;Preco\n'+grupos.map(g=>g.itens.map(i=>[q(g.set.name),q(i.c.localId),q(i.c.name),q(i.det),i.qtd,String(i.preco.toFixed(2)).replace('.',',')].join(';')).join('\n')).join('\n');
+      expNome='pokedex_'+expMode+'.csv';
+    }else{
+      expTexto=titulo+'\n'+grupos.map(g=>`\n*${g.set.name}* (${g.itens.length})\n`+g.itens.map(i=>`#${i.c.localId} ${i.c.name}${i.det?' ['+i.det+']':''}${i.qtd>1?' x'+i.qtd:''}${i.preco?' — '+fmtBRL(i.preco):''}`).join('\n')).join('\n')
+        +`\n\nTotal: ${n} carta(s)`+(tot?` · ~${fmtBRL(tot)} (menor preço da Liga)`:'');
+      expNome='pokedex_'+expMode+'.txt';
+    }
+    $('expOut').value=expTexto;$('expOut').style.display='block';$('expActions').style.display='flex';
+    st.className='save-note synced';st.textContent=`✓ ${n} carta(s).`;
+  }catch(e){st.className='save-note error';st.textContent=erroMsg(e);}
+}
+function htmlExport(titulo,grupos,n,tot){
+  const css='body{font-family:system-ui,sans-serif;margin:18px;color:#1c2430}h1{font-size:20px}h2{font-size:15px;margin:22px 0 8px;border-left:5px solid #1B3F91;padding-left:8px}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}.c{font-size:11px;text-align:center;break-inside:avoid}.c img,.c .ph{width:100%;aspect-ratio:63/88;object-fit:cover;border-radius:8px;background:#e9edf3;display:block}.c b{display:block;margin-top:4px}.c small{color:#5a6577}@media print{.g{grid-template-columns:repeat(6,1fr)}}';
+  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+escHtml(titulo)+'</title><style>'+css+'</style></head><body><h1>'+escHtml(titulo)+'</h1><div>'+n+' carta(s)'+(tot?' · ~'+fmtBRL(tot):'')+'</div>'
+    +grupos.map(g=>'<h2>'+escHtml(g.set.name)+' ('+g.itens.length+')</h2><div class="g">'+g.itens.map(i=>{const s=imgUrl(i.c,'low');
+      return '<div class="c">'+(s?'<img referrerpolicy="no-referrer" src="'+escHtml(s)+'">':'<div class="ph"></div>')+'<b>#'+escHtml(i.c.localId)+' '+escHtml(i.c.name)+'</b><small>'+escHtml(i.det)+(i.qtd>1?' ×'+i.qtd:'')+(i.preco?' · '+fmtBRL(i.preco):'')+'</small></div>';}).join('')+'</div>').join('')+'</body></html>';
+}
 function baixarArquivo(nome,conteudo,tipo){
-  const blob=new Blob([conteudo],{type:tipo+';charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=nome;
-  document.body.appendChild(a);a.click();
-  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},2000);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([conteudo],{type:(tipo||'text/plain')+';charset=utf-8'}));
+  a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);
 }
-// Tenta abrir em aba nova; se o navegador bloquear o pop-up, baixa o arquivo.
 function abrirOuBaixar(html,nome){
-  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const w=window.open(url,'_blank');
-  if(!w){URL.revokeObjectURL(url);baixarArquivo(nome,html,'text/html');
-    showWarn('O navegador bloqueou a aba nova, então baixei o arquivo. Abra-o pra imprimir ou salvar em PDF.');}
-  else setTimeout(()=>URL.revokeObjectURL(url),60000);
+  const url=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
+  const w=window.open(url,'_blank');if(!w)baixarArquivo(nome,html,'text/html');
 }
-function copiarExport(){
-  const out=document.getElementById('expOut');out.select();
-  try{document.execCommand('copy');}catch(_){}
-  if(navigator.clipboard)navigator.clipboard.writeText(expUltimoTexto).catch(()=>{});
-  const st=document.getElementById('expStatus');st.className='save-note synced';st.textContent='✓ Copiado.';
-}
-function baixarExportTxt(){baixarArquivo(expUltimoNome,expUltimoTexto,'text/plain');}
+function copiarExport(){const t=$('expOut');t.select();(navigator.clipboard?navigator.clipboard.writeText(expTexto):Promise.reject()).catch(()=>document.execCommand('copy'));$('expStatus').textContent='✓ Copiado';}
+function baixarExportTxt(){baixarArquivo(expNome,expTexto,/\.csv$/.test(expNome)?'text/csv':'text/plain');}
 
-showHome();
+/* =====================================================================
+   MIGRAÇÃO — importa a coleção da planilha antiga (Apps Script)
+   ===================================================================== */
+function entradaAntiga(raw){
+  const n=x=>{const v=parseInt(x,10);return(isNaN(v)||v<0)?0:v;};
+  const out={price:0,types:{normal:false,holofoil:false,reverseHolofoil:false},dups:{normal:0,holofoil:0,reverseHolofoil:0}};
+  if(!raw)return out;
+  const d=raw.dups||{};Object.keys(out.dups).forEach(k=>out.dups[k]=n(d[k]));
+  if(raw.types){out.price=parseFloat(raw.price)||0;Object.keys(out.types).forEach(k=>out.types[k]=!!raw.types[k]);return out;}
+  Object.keys(out.types).forEach(k=>{const s=raw[k];if(s&&s.owned){out.types[k]=true;if(!out.price&&s.price)out.price=parseFloat(s.price)||0;}});
+  return out;
+}
+async function importarAntigo(){
+  const st=$('impStatus');const log=m=>{st.textContent=m;};
+  if(!CFG.scriptUrlAntigo)return log('config.js sem scriptUrlAntigo.');
+  if(!confirm('Importar a coleção da planilha antiga para a SUA conta?\n\nCartas que já existirem aqui não são duplicadas.'))return;
+  try{
+    log('Lendo a planilha antiga...');
+    const j=await (await fetch(CFG.scriptUrlAntigo+'?action=get')).json();
+    if(!j.ok)throw new Error(j.error||'A planilha não respondeu.');
+    const col=j.collection||{},nomesAntigos=jget('pkm_setnames',{});
+    const MAPA={normal:'Normal',holofoil:'Holo',reverseHolofoil:'Reverse'};
+    // 1) coleções criadas pela Liga
+    for(const k of Object.keys(col)){
+      if(!k.startsWith('__set__'))continue;const def=col[k];if(!def||def.deleted||!Array.isArray(def.cards)||customSets[def.id])continue;
+      const cartas=def.cards.map(c=>({n:c.n,name:c.name,img:''}));
+      const {data,error}=await sb.from('sets_custom').insert({id:def.id,nome:def.name,liga_codigo:def.code||null,total:def.total||cartas.length,cartas,criado_por:user.id}).select().single();
+      if(error)throw error;customSets[def.id]=data;
+      const precos=def.cards.filter(c=>c.price>0).map(c=>({carta_id:def.id+'-'+c.n,preco_min:c.price,atualizado_por:user.id}));
+      if(precos.length)await upsertLotes('precos_gerais',precos,'carta_id');
+    }
+    // 2) cartas, agrupadas pelo set antigo
+    const porSet={};
+    Object.keys(col).forEach(k=>{if(k.startsWith('__'))return;const i=k.indexOf('-');if(i<1)return;
+      (porSet[k.slice(0,i)]=porSet[k.slice(0,i)]||[]).push({num:k.slice(i+1),e:entradaAntiga(col[k])});});
+    await carregarCatalogo();
+    const naoAchados=[],semPar=[];let nLinhas=0;
+    for(const antigo of Object.keys(porSet)){
+      log('Importando '+antigo+'...');
+      let novo=customSets[antigo]?antigo:null;
+      if(!novo){const c=codigoParaTcgdex(antigo);const hit=catalogo.find(s=>s.id.toLowerCase()===c)||catalogo.find(s=>s.id.toLowerCase()===antigo.toLowerCase());
+        if(hit)novo=hit.id;else if(nomesAntigos[antigo]){const n=normName(nomesAntigos[antigo]);const h2=catalogo.find(s=>normName(s.nameEn)===n||normName(s.name)===n);if(h2)novo=h2.id;}}
+      if(!novo){naoAchados.push(antigo);continue;}
+      let d;try{d=await carregarCartasSet(novo);}catch(e){naoAchados.push(antigo);continue;}
+      const porChave={};d.cards.forEach(c=>porChave[chaveNum(c.localId)]=c);
+      const rows=[],seeds=[];
+      porSet[antigo].forEach(({num,e})=>{
+        const c=porChave[chaveNum(num)];
+        const tem=Object.keys(MAPA).filter(t=>e.types[t]);if(!tem.length)return;
+        if(!c){semPar.push(antigo+'-'+num);return;}
+        tem.forEach(t=>{if(rowsOf(c.id).some(r=>r.extra===MAPA[t]))return;
+          rows.push({user_id:user.id,carta_id:c.id,set_id:novo,numero:String(c.localId),nome:c.name,imagem_url:imgUrl(c,'low')||null,
+            extra:MAPA[t],idioma:(perfil&&perfil.idioma_padrao)||'PT',qualidade:(perfil&&perfil.qualidade_padrao)||'NM',quantidade:1+e.dups[t]});});
+        if(e.price>0&&!precoG[c.id])seeds.push({carta_id:c.id,preco_min:e.price,atualizado_por:user.id});
+      });
+      if(rows.length){await upsertLotes('colecao',rows,'user_id,carta_id,extra,idioma,qualidade');nLinhas+=rows.length;}
+      if(seeds.length)await upsertLotes('precos_gerais',seeds,'carta_id');
+      const g=col['__gasto__'+antigo];
+      const {error}=await sb.from('sets_usuario').upsert({user_id:user.id,set_id:novo,nome:d.set.name,total:d.set.total,base:d.set.base,
+        favorito:true,gasto:g&&g.v!=null?parseFloat(g.v)||0:((setsUser[novo]&&setsUser[novo].gasto)||null)},{onConflict:'user_id,set_id'});
+      if(error)throw error;
+    }
+    await carregarTudo();
+    log(`✓ Importação concluída: ${nLinhas} exemplar(es).`
+      +(naoAchados.length?`\nSets que não achei no catálogo novo: ${naoAchados.join(', ')} — abra-os pela busca e me avise o código.`:'')
+      +(semPar.length?`\nCartas sem par (${semPar.length}): ${semPar.slice(0,12).join(', ')}${semPar.length>12?'…':''}`:''));
+  }catch(e){log('Erro: '+erroMsg(e));}
+}
+
+/* ---------- vai! ---------- */
+renderExt();
+iniciar();
 </script>
 </body>
 </html>
