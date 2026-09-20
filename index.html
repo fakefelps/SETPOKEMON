@@ -1178,6 +1178,45 @@ function parseLiga(text){
   });
   return out;
 }
+/* A página de edição da Liga traz o set INTEIRO num JSON embutido:
+       var cardsjson = [{"sN":"001","nPT":"Bulbasaur","precoMenor":"0.12","precoMaior":"60.00","sP":"//arquivos/...jpg",...}]
+   A tela só desenha 24 por vez, mas o JSON tem todas — então lemos ele direto
+   (confirmado no diagnóstico de 20/09/2026: 188 de 188 cartas do MEG).          */
+function extrairCardsJson(src){
+  if(!src)return null;
+  const m=src.match(/var\s+cardsjson\s*=\s*\[/);if(!m)return null;
+  const ini=m.index+m[0].length-1;let prof=0,emStr=false,esc=false;
+  for(let i=ini;i<src.length;i++){
+    const ch=src[i];
+    if(emStr){if(esc)esc=false;else if(ch==='\\')esc=true;else if(ch==='"')emStr=false;continue;}
+    if(ch==='"')emStr=true;else if(ch==='['||ch==='{')prof++;
+    else if(ch===']'||ch==='}'){prof--;if(prof===0){try{const a=JSON.parse(src.slice(ini,i+1));return Array.isArray(a)?a:null;}catch(e){return null;}}}
+  }
+  return null;
+}
+function semEntidades(t){if(!/&[#a-z0-9]+;/i.test(t))return t;const e=document.createElement('textarea');e.innerHTML=t;return e.value;}
+function listagemDeCardsJson(arr){
+  const vistos={},out=[];
+  (arr||[]).forEach(c=>{
+    const num=String(c.sN||'').trim();if(!num)return;
+    const key=chaveNum(num);if(vistos[key])return;vistos[key]=1;
+    const en=String(c.nEN||''),nomeEn=en.replace(/\s*\(#?[^)]*\)\s*$/,'').trim();
+    const mn=parseFloat(c.precoMenor),mx=parseFloat(c.precoMaior);
+    const sp=String(c.sP||'').replace(/^\/+/,'');
+    const href=c.sSigla&&en?('https://www.ligapokemon.com.br/?view=cards/card&card='+encodeURIComponent(en.replace('(#','('))+'&ed='+encodeURIComponent(c.sSigla)+'&num='+encodeURIComponent(num)):'';
+    out.push({num,key,name:semEntidades(String(c.nPT||nomeEn||'').trim()),min:mn>0?mn:null,max:mx>0?mx:null,
+      img:sp?('https://repositorio.sbrauble.com//'+sp):'',href});
+  });
+  return out;
+}
+// Normaliza qualquer leitura (extensão ou texto colado) para [{num,key,name,min,max,img,href}]
+function lerListagem(dados){
+  const fontes=[].concat(dados.scripts||[],dados.html||[]);
+  for(const f of fontes){const arr=extrairCardsJson(f);if(arr&&arr.length)return {lidas:listagemDeCardsJson(arr),fonte:'cardsjson'};}
+  const lk=mapaLinks(dados.links);
+  return {lidas:parseLiga(dados.texto||'').map(l=>({num:l.num,key:l.key,name:l.name,min:l.min,max:l.max,
+    img:(lk[l.key]&&lk[l.key].img)||'',href:(lk[l.key]&&lk[l.key].href)||''})),fonte:'texto'};
+}
 function numCustom(num){const m=String(num).match(/^([A-Za-z]*)(\d+)([A-Za-z]?)$/);return m?(m[1].toUpperCase()+m[2].padStart(3,'0')+m[3].toLowerCase()):String(num);}
 function mapaLinks(links){
   const out={};(links||[]).forEach(l=>{try{const u=new URL(l.href),n=u.searchParams.get('num');if(n){const k=chaveNum(n);if(!out[k])out[k]={href:l.href,img:l.img||''};}}catch(e){}});
@@ -1186,18 +1225,17 @@ function mapaLinks(links){
 async function upsertLotes(tabela,rows,conflito){
   for(let i=0;i<rows.length;i+=500){const {error}=await sb.from(tabela).upsert(rows.slice(i,i+500),{onConflict:conflito});if(error)throw error;}
 }
-// Coração da atualização: recebe o texto (da extensão ou colado) e grava os preços.
-async function aplicarLeitura(setId,texto,links){
-  const lidas=parseLiga(texto||'');
-  if(!lidas.length)throw new Error('O leitor não achou nenhuma carta nessa página. Confira se o endereço é o da EDIÇÃO (lista de cartas). Se for, a Liga pode ter mudado o layout — me avise.');
-  const lk=mapaLinks(links);
-  if(Object.keys(lk).length){const soHref={};Object.keys(lk).forEach(k=>soHref[k]=lk[k].href);jset('pkd_links_'+setId,soHref);}
+// Coração da atualização: recebe a listagem normalizada e grava os preços (valem pra todos os usuários).
+async function aplicarLeitura(setId,lidas){
+  if(!lidas||!lidas.length)throw new Error('O leitor não achou nenhuma carta nessa página. Confira se o endereço é o da EDIÇÃO (lista de cartas). Se for, a Liga pode ter mudado o layout — use "🧪 Diagnóstico" e me mande o arquivo.');
+  const soHref={};lidas.forEach(l=>{if(l.href)soHref[l.key]=l.href;});
+  if(Object.keys(soHref).length)jset('pkd_links_'+setId,Object.assign(jget('pkd_links_'+setId,{}),soHref));
   if(customSets[setId]){                                   // coleção só da Liga: a lista de cartas também vem daqui
     const d=customSets[setId],por={};(d.cartas||[]).forEach(c=>por[chaveNum(c.n)]=c);
     let mudou=false;
-    lidas.forEach(l=>{const k=l.key,img=(lk[k]&&lk[k].img)||'';
-      if(!por[k]){por[k]={n:numCustom(l.num),name:l.name,img};mudou=true;}
-      else if(img&&!por[k].img){por[k].img=img;mudou=true;}});
+    lidas.forEach(l=>{const k=l.key;
+      if(!por[k]){por[k]={n:numCustom(l.num),name:l.name,img:l.img||''};mudou=true;}
+      else if(l.img&&!por[k].img){por[k].img=l.img;mudou=true;}});
     if(mudou){const cartas=Object.values(por);
       const {data,error}=await sb.from('sets_custom').update({cartas,total:Math.max(d.total||0,cartas.length)}).eq('id',setId).select().single();
       if(error)throw error;customSets[setId]=data;}
@@ -1237,17 +1275,19 @@ async function atualizarPrecosSet(setId,emLote){
 }
 // Lê a edição e, se a Liga paginar por link, segue as outras páginas (com pausa).
 async function lerEdicaoCompleta(setId,url,esperado){
-  const soma={lidas:0,gravadas:0,semPar:[]},feitas={},vistas={};
+  const soma={lidas:0,gravadas:0,semPar:[],fonte:''},feitas={},vistas={};
   const fila=[url];
   while(fila.length&&Object.keys(feitas).length<25){
     const u=fila.shift();if(feitas[u])continue;feitas[u]=1;
-    const dados=await extChamar('LER_EDICAO',u,{esperado});
+    const dados=await extChamar('LER_EDICAO',u,{esperado,bruto:true});
     if(dados.bloqueio)throw new Error('A Liga pediu verificação anti-robô. Abra o site da Liga numa aba, resolva a verificação e tente de novo.');
-    let r;try{r=await aplicarLeitura(setId,dados.texto,dados.links);}catch(e){if(soma.lidas)break;throw e;}
-    const novas=parseLiga(dados.texto).filter(l=>!vistas[l.key]);
+    const L=lerListagem(dados);soma.fonte=L.fonte;
+    let r;try{r=await aplicarLeitura(setId,L.lidas);}catch(e){if(soma.lidas)break;throw e;}
+    const novas=L.lidas.filter(l=>!vistas[l.key]);
     novas.forEach(l=>vistas[l.key]=1);
     soma.lidas=Object.keys(vistas).length;soma.gravadas+=r.gravadas;
     r.semPar.forEach(x=>{if(soma.semPar.indexOf(x)<0)soma.semPar.push(x);});
+    if(L.fonte==='cardsjson')break;                                     // o JSON já traz o set inteiro
     if(!novas.length&&u!==url)break;                                   // página repetida: acabou
     if(esperado&&soma.lidas>=esperado)break;
     (dados.paginas||[]).forEach(p=>{if(urlLigaValida(p)&&!feitas[p]&&fila.indexOf(p)<0)fila.push(p);});
@@ -1261,7 +1301,7 @@ async function diagnosticoEdicao(){
   if(!extVersao)return showWarn('Extensão não detectada neste navegador.');
   setSync('Gerando diagnóstico da edição…','loading');
   try{const d=await extChamar('LER_EDICAO',url,{bruto:true,esperado:(currentSet&&currentSet.total)||0});
-    d.extensao=extVersao;d.esperado=(currentSet&&currentSet.total)||0;d.cartasLidas=parseLiga(d.texto||'').length;
+    d.extensao=extVersao;d.esperado=(currentSet&&currentSet.total)||0;const L=lerListagem(d);d.cartasLidas=L.lidas.length;d.fonteLeitura=L.fonte;
     baixarArquivo('diagnostico_liga_'+currentSetId+'.json',JSON.stringify(d),'application/json');
     setSync(`✓ Diagnóstico baixado (${d.cartasLidas} cartas lidas)`,'ok');}
   catch(e){setSync('','');showWarn(erroMsg(e));}
@@ -1321,7 +1361,7 @@ async function aplicarColado(){
   const st=$('colarStatus'),txt=$('colarArea').value;
   if(!txt.trim()){st.className='save-note error';st.textContent='Cole o texto da página da Liga primeiro.';return;}
   st.className='save-note syncing';st.textContent='Aplicando...';
-  try{const r=await aplicarLeitura(currentSetId,txt,[]);
+  try{const r=await aplicarLeitura(currentSetId,lerListagem({texto:txt,html:txt}).lidas);
     st.className='save-note synced';
     st.textContent=`✓ ${r.gravadas} preço(s) gravados (${r.lidas} cartas lidas).`+(r.semPar.length?`\n${r.semPar.length} não casaram: ${r.semPar.slice(0,5).join(', ')}`:'')+'\nSe a edição tem mais páginas, cole a próxima.';
     $('colarArea').value='';renderGrid();updateStats();fotografarValor();
@@ -1336,22 +1376,22 @@ async function criarSetLiga(){
   if(url&&!urlLigaValida(url))return erro('O endereço precisa começar com https://www.ligapokemon.com.br/');
   if(!nome||!limpo)return erro('Preencha o nome e o código curto.');
   const id='liga'+limpo;
-  let texto=$('nlTexto').value,links=[];
+  const texto=$('nlTexto').value;
   st.className='save-note syncing';
   try{
+    let dados={texto};
     if(!texto.trim()){
       if(!url||!extVersao)return erro('Sem a extensão, cole o texto da página da edição no campo de baixo.');
       st.textContent='Lendo a Liga...';
-      const d=await extChamar('LER_EDICAO',url);texto=d.texto;links=d.links;
+      dados=await extChamar('LER_EDICAO',url,{bruto:true});
     }
-    const lidas=parseLiga(texto);if(!lidas.length)return erro('Não achei cartas nessa página/texto.');
-    const lk=mapaLinks(links);
-    const cartas=lidas.map(l=>({n:numCustom(l.num),name:l.name,img:(lk[l.key]&&lk[l.key].img)||''}));
+    const lidas=lerListagem(dados).lidas;if(!lidas.length)return erro('Não achei cartas nessa página/texto.');
+    const cartas=lidas.map(l=>({n:numCustom(l.num),name:l.name,img:l.img||''}));
     if(!customSets[id]){
       const {data,error}=await sb.from('sets_custom').insert({id,nome,liga_url:url||null,liga_codigo:cod,total:cartas.length,cartas,criado_por:user.id}).select().single();
       if(error)throw error;customSets[id]=data;
     }
-    await aplicarLeitura(id,texto,links);
+    await aplicarLeitura(id,lidas);
     currentSet={id,name:nome,total:cartas.length,base:cartas.length};
     await garantirSetUsuario(id,{nome,total:customSets[id].total,favorito:true});
     renderSaved();fechar('novoLigaModal');fetchSet(id);
