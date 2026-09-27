@@ -1329,7 +1329,7 @@ async function atualizarPrecosSet(setId,emLote){
       if(parcial)avisos.push(`A Liga só entregou ${r.lidas} das ${esperado} cartas deste set. Clique em "🧪 Diagnóstico" e me mande o arquivo para eu ajustar o leitor.`);
       if(r.semPar.length)avisos.push(`${r.semPar.length} carta(s) da Liga não casaram com o catálogo: ${r.semPar.slice(0,6).join(', ')}${r.semPar.length>6?'…':''}`);
       if(avisos.length)showWarn(avisos.join(' · '));
-      if(currentSetId===setId){if(customSets[setId]){const d=await carregarCartasSet(setId);currentCards=d.cards;currentSet=d.set;}renderGrid();updateStats();if(openCardId)renderCardModal();}
+      if(currentSetId===setId){const d=await carregarCartasSet(setId);currentCards=d.cards;currentSet=d.set;renderGrid();updateStats();if(openCardId)renderCardModal();}
       fotografarValor();
     }
     return r;
