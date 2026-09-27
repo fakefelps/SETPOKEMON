@@ -4,8 +4,8 @@
 // NUNCA coloque aqui a service_role key.
 window.POKEDEX_CONFIG = {
   // Supabase > Project Settings > API
-  supabaseUrl: "https://epsrhrbisdgprepdzcab.supabase.co",
-  supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwc3JocmJpc2RncHJlcGR6Y2FiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5MDg0NjAsImV4cCI6MjEwNTQ4NDQ2MH0.JlyrkfyR6xOd2Pmbk9PIYMvwRKRRxiJ4mwAgwkSBFX0",
+  supabaseUrl: "https://uzgncrggeggnphlbwbwv.supabase.co",
+  supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6Z25jcmdnZWdnbnBobGJ3Ynd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0ODgyODgsImV4cCI6MjEwNjA2NDI4OH0.0fGgCmVoAVCfTN9kt3wbtn5I2cicKOE57QUb-8sT1Ps",
 
   // Só para o botão "Importar da planilha antiga" (migração, usa 1 vez).
   scriptUrlAntigo: "https://script.google.com/macros/s/AKfycbwYxmpbZ6DLfNu6cKpBkniKN3WzVfTnyGDG0WfchPMVScOidcpK1kcPgVYpzKuE4XL1/exec"
