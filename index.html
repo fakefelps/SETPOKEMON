@@ -815,6 +815,8 @@ async function carregarCartasSetBruto(setId,forcar){
     const d=customSets[setId];
     const cards=(d.cartas||[]).map(c=>({id:setId+'-'+c.n,localId:c.n,name:c.name,img:c.img||''}));
     let base=0;cards.forEach(c=>{if(/^\d+$/.test(c.localId))base=Math.max(base,parseInt(c.localId,10));});
+    const cont={};(d.cartas||[]).forEach(c=>{if(c.b)cont[c.b]=(cont[c.b]||0)+1;});
+    const den=Object.keys(cont).sort((a,b)=>cont[b]-cont[a])[0];if(den&&+den>0&&+den<base)base=+den;
     return {set:{id:setId,name:d.nome,total:d.total||cards.length,base:base||cards.length,liga:true},cards:ordenarCartas(cards)};
   }
   const ck='pkd_set2_'+setId,cache=jget(ck,null);
@@ -1256,9 +1258,10 @@ function listagemDeCardsJson(arr){
     const en=String(c.nEN||''),nomeEn=en.replace(/\s*\(#?[^)]*\)\s*$/,'').trim();
     const mn=parseFloat(c.precoMenor),mx=parseFloat(c.precoMaior),md=parseFloat(c.p1b);
     const sp=String(c.sP||'').replace(/^\/+/,'');
+    const dn=en.match(/\/\s*0*(\d{1,4})\s*\)\s*$/),den=dn?parseInt(dn[1],10):null;   // "(#119/094)" -> 94
     const href=c.sSigla&&en?('https://www.ligapokemon.com.br/?view=cards/card&card='+encodeURIComponent(en.replace('(#','('))+'&ed='+encodeURIComponent(c.sSigla)+'&num='+encodeURIComponent(num)):'';
     out.push({num,key,name:semEntidades(String(c.nPT||nomeEn||'').trim()),min:mn>0?mn:null,med:md>0?md:null,max:mx>0?mx:null,
-      img:sp?('https://repositorio.sbrauble.com//'+sp):'',href});
+      img:sp?('https://repositorio.sbrauble.com//'+sp):'',href,den});
   });
   return out;
 }
@@ -1267,7 +1270,7 @@ function lerListagem(dados){
   const fontes=[].concat(dados.scripts||[],dados.html||[]);
   for(const f of fontes){const arr=extrairCardsJson(f);if(arr&&arr.length)return {lidas:listagemDeCardsJson(arr),fonte:'cardsjson'};}
   const lk=mapaLinks(dados.links);
-  return {lidas:parseLiga(dados.texto||'').map(l=>({num:l.num,key:l.key,name:l.name,min:l.min,max:l.max,
+  return {lidas:parseLiga(dados.texto||'').map(l=>({num:l.num,key:l.key,name:l.name,min:l.min,max:l.max,den:/^0*\d{1,4}$/.test(l.tot)?parseInt(l.tot,10):null,
     img:(lk[l.key]&&lk[l.key].img)||'',href:(lk[l.key]&&lk[l.key].href)||''})),fonte:'texto'};
 }
 function numCustom(num){const m=String(num).match(/^([A-Za-z]*)(\d+)([A-Za-z]?)$/);return m?(m[1].toUpperCase()+m[2].padStart(3,'0')+m[3].toLowerCase()):String(num);}
@@ -1291,8 +1294,9 @@ async function aplicarLeitura(setId,lidas){
     const d=customSets[setId],por={};(d.cartas||[]).forEach(c=>por[chaveNum(c.n)]=c);
     let mudou=false;
     lidas.forEach(l=>{const k=l.key;
-      if(!por[k]){por[k]={n:numCustom(l.num),name:l.name,img:l.img||''};mudou=true;}
-      else if(l.img&&!por[k].img){por[k].img=l.img;mudou=true;}});
+      if(!por[k]){por[k]={n:numCustom(l.num),name:l.name,img:l.img||''};if(l.den)por[k].b=l.den;mudou=true;}
+      else{if(l.img&&!por[k].img){por[k].img=l.img;mudou=true;}
+           if(l.den&&por[k].b!==l.den){por[k].b=l.den;mudou=true;}}});
     if(mudou){const cartas=Object.values(por);
       const {data,error}=await sb.from('sets_custom').update({cartas,total:Math.max(d.total||0,cartas.length)}).eq('id',setId).select().single();
       if(error)throw error;customSets[setId]=data;}
@@ -1709,6 +1713,10 @@ async function raridadeTxt(c){
 }
 // 6 hiper/secreta · 5 arte especial · 4 ultra · 3 ilustração · 2 dupla rara/ACE/brilhante · 0 demais
 function nivelRaro(rar,c,set){
+  const n=nivelPorRaridade(rar,c,set);
+  return isSpecial(c,set)?Math.max(n,3):n;   // tudo acima da coleção base (ex.: 119/094) vai para a frente
+}
+function nivelPorRaridade(rar,c,set){
   const r=String(rar||'').toLowerCase();
   if(r){
     if(/hyper|hiper|secret|secreta|rainbow|arco|gold|dourad/.test(r))return 6;
