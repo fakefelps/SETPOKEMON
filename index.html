@@ -1693,6 +1693,38 @@ function openExp(){
 }
 function setExpMode(m){expMode=m;$('expTabFalta').classList.toggle('active',m==='faltando');$('expTabDup').classList.toggle('active',m==='repetidas');
   $('expSoMarcadasLbl').textContent=m==='faltando'?'Só as que marquei como "procuro"':'Só as que marquei para divulgar';}
+/* Raridade p/ ordenar a exportação: busca no TCGdex 1x por carta e guarda no navegador */
+const RAR_KEY='pkd_rar_';
+async function raridadeTxt(c){
+  const mem=raridadeCache[c.id];if(mem&&mem.rarity!=null)return mem.rarity||'';
+  let s=null;try{s=localStorage.getItem(RAR_KEY+c.id);}catch(e){}
+  if(s!==null)return s;
+  if(customSets[setIdOf(c.id)])return '';
+  try{
+    let d;try{d=await tcg('cards/'+encodeURIComponent(c.id),langPt||'en');}catch(e){d=await tcg('cards/'+encodeURIComponent(c.id),'en');}
+    if(d)raridadeCache[c.id]=d;const r=(d&&d.rarity)||'';
+    try{localStorage.setItem(RAR_KEY+c.id,r);}catch(e){}
+    return r;
+  }catch(e){return '';}
+}
+// 6 hiper/secreta · 5 arte especial · 4 ultra · 3 ilustração · 2 dupla rara/ACE/brilhante · 0 demais
+function nivelRaro(rar,c,set){
+  const r=String(rar||'').toLowerCase();
+  if(r){
+    if(/hyper|hiper|secret|secreta|rainbow|arco|gold|dourad/.test(r))return 6;
+    if(/special illustration|ilustra[çc][ãa]o especial|arte especial|special art/.test(r))return 5;
+    if(/ultra/.test(r))return 4;
+    if(/illustration|ilustra/.test(r))return 3;
+    if(/double|dupla|ace spec|shiny|brilhante|radiant|radiante|\b(v|vmax|vstar|gx|ex)\b/.test(r))return 2;
+    return 0;
+  }
+  // sem raridade no catálogo (sets só da Liga): estima pelo nome e pelo número
+  const nm=String(c.name||''),poke=/\b(ex|gx|vmax|vstar|v)\b/i.test(nm);
+  if(isSpecial(c,set))return poke?5:3;
+  return poke?2:0;
+}
+const NOME_NIVEL={6:'Hiper/Secreta',5:'Arte Especial',4:'Ultra Rara',3:'Ilustração Rara',2:'Dupla Rara'};
+async function emParalelo(lista,n,fn){let i=0;await Promise.all(Array.from({length:Math.min(n,lista.length)},async()=>{while(i<lista.length){const k=i++;await fn(lista[k],k);}}));}
 async function runExport(){
   const st=$('expStatus'),sel=$('expSet').value,oque=$('expWhat').value,so=$('expSoMarcadas').checked,fmt=$('expFmt').value;
   const ids=sel==='__all'?meusSetIds():[sel];
@@ -1705,11 +1737,22 @@ async function runExport(){
         const sp=isSpecial(c,d.set);if((oque==='base'&&sp)||(oque==='special'&&!sp))return;
         if(expMode==='faltando'){
           if(isOwned(c.id)||(so&&!desejos[c.id]))return;
-          itens.push({c,qtd:1,det:'',preco:escolher(precoG[c.id])||0});
+          itens.push({c,sn:d.set.name,qtd:1,det:'',preco:escolher(precoG[c.id])||0});
         }else rowsOf(c.id).forEach(r=>{if(r.quantidade<2?!r.divulgar:(so&&!r.divulgar))return;
-          itens.push({c,qtd:qtdTroca(r),det:[r.extra,r.idioma,r.qualidade].join(' · '),preco:precoLinha(r).v});});
+          itens.push({c,sn:d.set.name,set:d.set,qtd:qtdTroca(r),det:[r.extra,r.idioma,r.qualidade].join(' · '),preco:precoLinha(r).v});});
       });
       if(itens.length)grupos.push({set:d.set,itens});
+    }
+    if(expMode==='repetidas'){   // raras e especiais na frente
+      const todos=grupos.flatMap(g=>g.itens);let feitos=0;
+      await emParalelo(todos,6,async it=>{
+        it.rar=await raridadeTxt(it.c);it.nivel=nivelRaro(it.rar,it.c,it.set);
+        st.textContent=`Verificando raridades... ${++feitos}/${todos.length}`;});
+      const top=todos.filter(i=>i.nivel>=2).sort((a,b)=>(b.nivel-a.nivel)||(b.preco-a.preco));
+      top.forEach(i=>i.tag=(i.rar||NOME_NIVEL[i.nivel])+' · '+i.sn);
+      grupos.forEach(g=>g.itens=g.itens.filter(i=>!(i.nivel>=2)));
+      for(let k=grupos.length-1;k>=0;k--)if(!grupos[k].itens.length)grupos.splice(k,1);
+      if(top.length)grupos.unshift({set:{name:'⭐ Raras e especiais'},itens:top});
     }
     const n=grupos.reduce((s,g)=>s+g.itens.reduce((a,i)=>a+i.qtd,0),0);
     if(!n){st.className='save-note';st.textContent='Nada para exportar com esses filtros.';return;}
@@ -1718,10 +1761,10 @@ async function runExport(){
     if(fmt==='img'){abrirOuBaixar(htmlExport(titulo,grupos,n,tot),'pokedex_'+expMode+'.html');st.className='save-note synced';st.textContent='✓ Página aberta em outra aba (ou baixada).';return;}
     if(fmt==='csv'){
       const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
-      expTexto='\ufeffSet;Numero;Carta;Detalhe;Qtd;Preco\n'+grupos.map(g=>g.itens.map(i=>[q(g.set.name),q(i.c.localId),q(i.c.name),q(i.det),i.qtd,String(i.preco.toFixed(2)).replace('.',',')].join(';')).join('\n')).join('\n');
+      expTexto='\ufeffSet;Numero;Carta;Detalhe;Raridade;Qtd;Preco\n'+grupos.map(g=>g.itens.map(i=>[q(i.sn||g.set.name),q(i.c.localId),q(i.c.name),q(i.det),q(i.rar||NOME_NIVEL[i.nivel]||''),i.qtd,String(i.preco.toFixed(2)).replace('.',',')].join(';')).join('\n')).join('\n');
       expNome='pokedex_'+expMode+'.csv';
     }else{
-      expTexto=titulo+'\n'+grupos.map(g=>`\n*${g.set.name}* (${g.itens.length})\n`+g.itens.map(i=>`#${i.c.localId} ${i.c.name}${i.det?' ['+i.det+']':''}${i.qtd>1?' x'+i.qtd:''}${i.preco?' — '+fmtBRL(i.preco):''}`).join('\n')).join('\n')
+      expTexto=titulo+'\n'+grupos.map(g=>`\n*${g.set.name}* (${g.itens.length})\n`+g.itens.map(i=>`#${i.c.localId} ${i.c.name}${i.det?' ['+i.det+']':''}${i.tag?' ('+i.tag+')':''}${i.qtd>1?' x'+i.qtd:''}${i.preco?' — '+fmtBRL(i.preco):''}`).join('\n')).join('\n')
         +`\n\nTotal: ${n} carta(s)`+(tot?` · ~${fmtBRL(tot)} (menor preço da Liga)`:'');
       expNome='pokedex_'+expMode+'.txt';
     }
@@ -1733,7 +1776,7 @@ function htmlExport(titulo,grupos,n,tot){
   const css='body{font-family:system-ui,sans-serif;margin:18px;color:#1c2430}h1{font-size:20px}h2{font-size:15px;margin:22px 0 8px;border-left:5px solid #1B3F91;padding-left:8px}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}.c{font-size:11px;text-align:center;break-inside:avoid}.c img,.c .ph{width:100%;aspect-ratio:63/88;object-fit:cover;border-radius:8px;background:#e9edf3;display:block}.c b{display:block;margin-top:4px}.c small{color:#5a6577}@media print{.g{grid-template-columns:repeat(6,1fr)}}';
   return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+escHtml(titulo)+'</title><style>'+css+'</style></head><body><h1>'+escHtml(titulo)+'</h1><div>'+n+' carta(s)'+(tot?' · ~'+fmtBRL(tot):'')+'</div>'
     +grupos.map(g=>'<h2>'+escHtml(g.set.name)+' ('+g.itens.length+')</h2><div class="g">'+g.itens.map(i=>{const s=imgUrl(i.c,'low');
-      return '<div class="c">'+(s?'<img referrerpolicy="no-referrer" src="'+escHtml(s)+'">':'<div class="ph"></div>')+'<b>#'+escHtml(i.c.localId)+' '+escHtml(i.c.name)+'</b><small>'+escHtml(i.det)+(i.qtd>1?' ×'+i.qtd:'')+(i.preco?' · '+fmtBRL(i.preco):'')+'</small></div>';}).join('')+'</div>').join('')+'</body></html>';
+      return '<div class="c">'+(s?'<img referrerpolicy="no-referrer" src="'+escHtml(s)+'">':'<div class="ph"></div>')+'<b>#'+escHtml(i.c.localId)+' '+escHtml(i.c.name)+'</b><small>'+escHtml(i.det)+(i.tag?'<br>'+escHtml(i.tag):'')+(i.qtd>1?' ×'+i.qtd:'')+(i.preco?' · '+fmtBRL(i.preco):'')+'</small></div>';}).join('')+'</div>').join('')+'</body></html>';
 }
 function baixarArquivo(nome,conteudo,tipo){
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([conteudo],{type:(tipo||'text/plain')+';charset=utf-8'}));
