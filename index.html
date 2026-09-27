@@ -1007,12 +1007,14 @@ async function fetchSet(setId){
   }catch(e){if(token===fetchToken)grid.innerHTML='<div class="empty"><div class="empty-title">Não deu pra abrir esse set</div><div class="empty-sub">'+escHtml(erroMsg(e))+'</div></div>';}
 }
 function setFilter(f,btn){currentFilter=f;document.querySelectorAll('#filterBar .filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderGrid();}
+// Para troca: repetidas (qtd-1) ou, se marcou a única, 1
+function qtdTroca(r){return r.quantidade>1?r.quantidade-1:1;}
 function passaFiltro(c){
   const own=isOwned(c.id);
   switch(currentFilter){
     case 'owned':return own;case 'missing':return !own;
     case 'base':return !isSpecial(c,currentSet);case 'special':return isSpecial(c,currentSet);
-    case 'dup':return dupCount(c.id)>0;case 'wish':return !!desejos[c.id];
+    case 'dup':return dupCount(c.id)>0||rowsOf(c.id).some(r=>r.divulgar);case 'wish':return !!desejos[c.id];
     case 'noprice':return own&&valorCarta(c.id)<=0;default:return true;
   }
 }
@@ -1111,7 +1113,7 @@ function renderCardModal(){
       <div class="ex-line">
         <span>Preço manual R$</span>
         <input type="number" step="0.01" min="0" style="width:90px" value="${r.preco_manual==null?'':escHtml(r.preco_manual)}" placeholder="usar Liga" onchange="mudarLinha(${r.id},'preco_manual',this.value)"/>
-        ${r.quantidade>1?`<label class="sp" style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" ${r.divulgar?'checked':''} onchange="mudarLinha(${r.id},'divulgar',this.checked)"/> divulgar ${r.quantidade-1} repetida(s)</label>`:''}
+        <label class="sp" style="display:flex;align-items:center;gap:5px;cursor:pointer" title="Aparece em 🔁 Repetidas da galera para quem participa da comunidade"><input type="checkbox" ${r.divulgar?'checked':''} onchange="mudarLinha(${r.id},'divulgar',this.checked)"/> ${r.quantidade>1?`divulgar ${r.quantidade-1} repetida(s) p/ troca`:'disponível p/ troca'}</label>
       </div></div>`;}).join('')
     :'<div class="hint-box" style="margin:0 0 8px">Você ainda não tem esta carta. Toque na variação abaixo para marcar.</div>';
   $('cmDesejo').checked=!!desejos[c.id];
@@ -1152,7 +1154,7 @@ async function mudarLinha(id,campo,valor){
   if(campo==='quantidade'){valor=parseInt(valor,10);if(!(valor>=1))return delLinha(id);}
   if(campo==='preco_manual'){const n=parseFloat(valor);valor=(valor===''||isNaN(n))?null:n;}
   const patch={[campo]:valor,atualizado_em:new Date().toISOString()};
-  if(campo==='quantidade'&&valor<=1)patch.divulgar=false;
+  if(campo==='quantidade'&&valor<=1&&r.quantidade>1)patch.divulgar=false;
   setNote('Salvando...','syncing');
   try{
     const {data,error}=await sb.from('colecao').update(patch).eq('id',id).select().single();
@@ -1591,11 +1593,11 @@ function divAba(m){divModo=m;$('divTab_rep').classList.toggle('active',m==='rep'
 async function renderDivulgar(){
   const el=$('divLista');$('divStatus').textContent='';
   if(divModo==='rep'){
-    const rs=linhas.filter(r=>r.quantidade>1).sort((a,b)=>(a.set_id+a.numero).localeCompare(b.set_id+b.numero,undefined,{numeric:true}));
+    const rs=linhas.filter(r=>r.quantidade>1||r.divulgar).sort((a,b)=>(a.set_id+a.numero).localeCompare(b.set_id+b.numero,undefined,{numeric:true}));
     el.innerHTML=rs.length?rs.map(r=>`<label class="pick"><input type="checkbox" ${r.divulgar?'checked':''} onchange="divMarcarRep(${r.id},this.checked)"/>
       <span><b>#${escHtml(r.numero)}</b> ${escHtml(r.nome)} <span style="color:var(--ink3)">· ${escHtml(r.extra)} · ${escHtml(r.idioma)} · ${escHtml(r.qualidade)}</span></span>
-      <small>${escHtml(r.set_id)} · ×${r.quantidade-1} · ${fmtBRL(precoLinha(r).v)}</small></label>`).join('')
-      :'<div class="pick">Você não tem repetidas marcadas. Aumente a quantidade de um exemplar para ele aparecer aqui.</div>';
+      <small>${escHtml(r.set_id)} · ×${qtdTroca(r)}${r.quantidade>1?'':' (única)'} · ${fmtBRL(precoLinha(r).v)}</small></label>`).join('')
+      :'<div class="pick">Nada para troca ainda. Aumente a quantidade de um exemplar, ou abra a carta e marque "disponível p/ troca" na que você tem uma só.</div>';
     return;
   }
   const sid=$('divSet').value;if(!sid){el.innerHTML='<div class="pick">Nenhuma coleção ainda.</div>';return;}
@@ -1623,8 +1625,9 @@ async function divTodas(v){
   $('divStatus').textContent='Salvando...';
   try{
     if(divModo==='rep'){
-      const {error}=await sb.from('colecao').update({divulgar:v}).gt('quantidade',1);if(error)throw error;
-      linhas.forEach(r=>{if(r.quantidade>1)r.divulgar=v;});
+      const q=sb.from('colecao').update({divulgar:v});
+      const {error}=await (v?q.gt('quantidade',1):q.eq('divulgar',true));if(error)throw error;   // marcar: só repetidas · desmarcar: tudo (inclui únicas)
+      linhas.forEach(r=>{if(v?r.quantidade>1:r.divulgar)r.divulgar=v;});
     }else{
       const sid=$('divSet').value;
       if(v){
@@ -1703,8 +1706,8 @@ async function runExport(){
         if(expMode==='faltando'){
           if(isOwned(c.id)||(so&&!desejos[c.id]))return;
           itens.push({c,qtd:1,det:'',preco:escolher(precoG[c.id])||0});
-        }else rowsOf(c.id).forEach(r=>{if(r.quantidade<2||(so&&!r.divulgar))return;
-          itens.push({c,qtd:r.quantidade-1,det:[r.extra,r.idioma,r.qualidade].join(' · '),preco:precoLinha(r).v});});
+        }else rowsOf(c.id).forEach(r=>{if(r.quantidade<2?!r.divulgar:(so&&!r.divulgar))return;
+          itens.push({c,qtd:qtdTroca(r),det:[r.extra,r.idioma,r.qualidade].join(' · '),preco:precoLinha(r).v});});
       });
       if(itens.length)grupos.push({set:d.set,itens});
     }
