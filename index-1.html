@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pokédex do Colecionador</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  /* Paleta reformulada: azul e dourado do verso das cartas Pokémon.
+     Os nomes das variáveis (--red/--yellow) foram mantidos para não precisar
+     reescrever cada regra do CSS abaixo — só o valor de cor mudou. */
+  --red:#1B3F91;--red-dark:#10285E;--red-deep:#081638;
+  --yellow:#F4C430;--yellow-soft:#FFE18C;
+  --blue:#2E7DD1;--blue-dark:#1F5A93;--blue-navy:#16337A;
+  --bg:#f3f5f8;--panel:#ffffff;--panel2:#f7f9fc;
+  --ink:#1c2430;--ink2:#5a6577;--ink3:#95a0b2;
+  --line:#e6eaf1;--line2:#d7dde8;
+  --green:#2a9d5c;--radius:12px;--radius-lg:16px;
+  --shadow:0 2px 10px rgba(20,30,50,.06);--shadow2:0 6px 24px rgba(20,30,50,.12);
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden}
+header{background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%);padding:14px 18px 16px;position:sticky;top:0;z-index:100;box-shadow:0 3px 14px rgba(180,30,20,.28)}
+.brand-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.lens{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#bfe3ff,#2a75bb 60%,#1a4c7d);border:3px solid #fff;box-shadow:0 0 0 3px rgba(0,0,0,.12),inset 0 0 6px rgba(255,255,255,.5);flex-shrink:0}
+.brand-txt{line-height:1.1}
+.brand-title{font-family:'Poppins';font-weight:800;font-size:20px;color:#fff;letter-spacing:.3px}
+.brand-owner{font-size:12px;color:var(--yellow-soft);font-weight:600;cursor:pointer}
+.brand-owner:hover{text-decoration:underline}
+.home-btn{margin-left:auto;font-family:'Poppins';font-weight:700;font-size:12px;padding:7px 14px;border:none;border-radius:20px;background:var(--yellow);color:#7a5a00;cursor:pointer;box-shadow:0 2px 0 #cc9f00}
+.home-btn:active{transform:translateY(1px);box-shadow:none}
+.search-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.set-input{font-size:14px;padding:9px 12px;border:none;border-radius:10px;background:rgba(255,255,255,.95);color:var(--ink);width:210px}
+.set-input:focus{outline:2px solid var(--yellow)}
+.set-input::placeholder{color:var(--ink3)}
+.load-btn{font-family:'Poppins';font-weight:700;font-size:12px;padding:9px 16px;border:none;border-radius:10px;background:var(--blue);color:#fff;cursor:pointer;box-shadow:0 2px 0 var(--blue-dark)}
+.load-btn:active{transform:translateY(1px);box-shadow:none}
+.search-btn{font-size:12px;padding:9px 14px;border:1px solid rgba(255,255,255,.6);border-radius:10px;background:transparent;color:#fff;cursor:pointer}
+.search-btn:hover{background:rgba(255,255,255,.14)}
+.quick-sets{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.qs-label{font-size:11px;color:rgba(255,255,255,.75);font-weight:600}
+.qs-chip{font-size:11px;font-weight:600;padding:4px 11px;border:1px solid rgba(255,255,255,.35);border-radius:20px;background:rgba(255,255,255,.12);color:#fff;cursor:pointer}
+.qs-chip:hover{background:rgba(255,255,255,.24)}
+.qs-chip.active{background:var(--yellow);color:#7a5a00;border-color:var(--yellow)}
+.qs-chip.promo{border-style:dashed}
+.saved-bar{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.saved-label{font-size:11px;color:rgba(255,255,255,.75);font-weight:600}
+.saved-chip{font-size:11px;font-weight:600;padding:4px 10px;border:1px solid rgba(255,255,255,.3);border-radius:20px;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px}
+.saved-chip:hover{background:rgba(255,255,255,.22)}
+.saved-chip .rm{color:rgba(255,255,255,.7);font-size:14px;line-height:1}
+.saved-chip .rm:hover{color:#ffd}
+.no-fav{font-size:11px;color:rgba(255,255,255,.6)}
+.warn-banner{display:none;background:#fff4d6;border-bottom:2px solid var(--yellow);color:#7a5a00;padding:10px 18px;font-size:13px;font-weight:500;align-items:center;gap:8px;flex-wrap:wrap;word-break:break-word}
+.warn-banner #warnText{min-width:0;flex:1}
+.warn-banner.show{display:flex}
+.warn-banner b{font-family:'Poppins'}
+.warn-banner .x{margin-left:auto;cursor:pointer;font-weight:700}
+.sync-bar{background:var(--panel);border-bottom:1px solid var(--line);padding:9px 18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sync-label{font-size:11px;font-weight:700;color:var(--ink2);white-space:nowrap}
+.sync-url-input{font-size:12px;flex:1;min-width:180px;padding:6px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink)}
+.sync-url-input:focus{outline:none;border-color:var(--blue)}
+.sync-url-input::placeholder{color:var(--ink3)}
+.sync-btn{font-size:11px;font-weight:600;padding:6px 12px;border:1px solid var(--line2);border-radius:8px;background:var(--panel);color:var(--ink2);cursor:pointer;white-space:nowrap}
+.sync-btn:hover{border-color:var(--blue);color:var(--blue)}
+.sync-status{font-size:11px;color:var(--ink2)}
+.sync-status.ok{color:var(--green)}
+.sync-status.err{color:var(--red)}
+.sync-status.loading{color:var(--blue)}
+/* Placeholder para cartas sem imagem (coleções criadas pelo PDF/texto da Liga:
+   a Liga não fornece a imagem, então desenhamos um "verso" com número e nome). */
+.card-ph{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:linear-gradient(160deg,var(--red) 0%,var(--red-deep) 100%);color:var(--yellow-soft);text-align:center;padding:8px}
+.card-ph .n{font-family:'Poppins';font-weight:800;font-size:16px;color:var(--yellow);line-height:1}
+.card-ph .t{font-size:9px;line-height:1.25;font-weight:600;word-break:break-word}
+.card-ph.big{border-radius:12px;width:150px;height:210px;margin:0 auto 16px}
+.card-ph.big .n{font-size:26px}.card-ph.big .t{font-size:12px}
+.liga-tag{position:absolute;left:5px;top:5px;font-family:'Poppins';font-weight:700;font-size:7px;letter-spacing:1px;padding:2px 6px;border-radius:6px;background:var(--blue);color:#fff}
+.file-drop{border:2px dashed var(--line2);border-radius:10px;padding:14px;text-align:center;font-size:12px;color:var(--ink2);cursor:pointer;background:var(--panel2)}
+.file-drop:hover{border-color:var(--blue);color:var(--blue)}
+.fld{margin-bottom:10px}
+.fld label{display:block;font-size:11px;font-weight:700;color:var(--ink2);margin-bottom:4px}
+.fld input{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink)}
+.fld input:focus{outline:none;border-color:var(--blue)}
+.type-badges{position:absolute;bottom:5px;right:5px;display:flex;gap:2px}
+.type-chip{font-family:'Poppins';font-weight:700;font-size:8px;padding:1px 4px;border-radius:5px;background:rgba(20,30,50,.8);color:#fff;line-height:1.4}
+.type-chip.holo{background:var(--yellow);color:var(--red-deep)}
+.type-chip.rev{background:#8046a3;color:#fff}
+.home{max-width:900px;margin:0 auto;padding:20px 16px 60px}
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:8px}
+.hero-card{background:var(--panel);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero-card.big{grid-column:1/-1;background:linear-gradient(135deg,var(--blue) 0%,var(--blue-navy) 100%);color:#fff}
+.hero-lbl{font-size:12px;font-weight:600;opacity:.85;letter-spacing:.4px;text-transform:uppercase}
+.hero-val{font-family:'Poppins';font-weight:800;font-size:30px;margin-top:4px}
+.hero-card.big .hero-val{font-size:38px}
+.hero-sub{font-size:12px;opacity:.8;margin-top:4px}
+.diff-pos{color:var(--green)}.diff-neg{color:var(--red)}
+.hero-card .mini-lbl{font-size:11px;color:var(--ink2);text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+.hero-card .mini-val{font-family:'Poppins';font-weight:700;font-size:22px;margin-top:2px}
+.home-h{font-family:'Poppins';font-weight:700;font-size:15px;margin:24px 4px 12px;color:var(--ink);display:flex;align-items:center;gap:8px}
+.home-h::before{content:"";width:5px;height:18px;background:var(--red);border-radius:3px}
+.coll-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.coll{background:var(--panel);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.coll-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.coll-del{border:none;background:none;color:var(--ink3);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;border-radius:6px}
+.coll-del:hover{background:#ffe9e9;color:#c0392b}
+.tools-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.coll-name{font-family:'Poppins';font-weight:700;font-size:15px;color:var(--ink);cursor:pointer}
+.coll-name:hover{color:var(--blue)}
+.coll-id{font-size:10px;font-weight:700;color:var(--blue);background:#eaf2fb;padding:2px 7px;border-radius:6px;letter-spacing:.5px}
+.coll-stats{display:flex;gap:14px;margin:10px 0 6px}
+.coll-stat .n{font-family:'Poppins';font-weight:700;font-size:18px;color:var(--ink)}
+.coll-stat .l{font-size:11px;color:var(--ink2)}
+.coll-bar{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin:4px 0 10px}
+.coll-bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--yellow),var(--red))}
+.coll-bar>i.sp{background:linear-gradient(90deg,#b57fce,#8046a3)}
+.coll-barlbl{font-size:10px;color:var(--ink3);font-weight:600;margin-top:-2px}
+.spent-row{display:flex;align-items:center;gap:6px;border-top:1px dashed var(--line2);padding-top:9px}
+.spent-row label{font-size:11px;color:var(--ink2);font-weight:600}
+.spent-inp{width:90px;font-size:13px;padding:4px 8px;border:1px solid var(--line2);border-radius:7px;text-align:right;color:var(--ink);background:var(--panel2)}
+.spent-inp:focus{outline:none;border-color:var(--blue)}
+.spent-diff{margin-left:auto;font-size:12px;font-weight:700}
+.home-empty{background:var(--panel);border-radius:var(--radius-lg);padding:40px 20px;text-align:center;color:var(--ink2);box-shadow:var(--shadow)}
+.home-empty .t{font-family:'Poppins';font-weight:700;font-size:16px;color:var(--ink);margin-bottom:8px}
+.stats-bar{background:var(--panel);border-bottom:1px solid var(--line);padding:11px 18px;display:none;gap:18px;align-items:center;flex-wrap:wrap}
+.stat{font-size:12px;color:var(--ink2)}
+.stat span{font-family:'Poppins';font-weight:700;font-size:15px;color:var(--ink);margin-left:4px}
+.stat-value{margin-left:auto;font-family:'Poppins';font-size:17px;color:var(--red);font-weight:800}
+.progress-bar{height:3px;background:var(--line);display:none}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--yellow),var(--red));transition:width .4s}
+.filter-bar{padding:10px 18px;border-bottom:1px solid var(--line);display:none;gap:8px;background:var(--panel);align-items:center;flex-wrap:wrap}
+.filter-btn{font-size:12px;font-weight:600;padding:5px 13px;border:1px solid var(--line2);border-radius:18px;background:var(--panel);color:var(--ink2);cursor:pointer}
+.filter-btn:hover{color:var(--ink)}
+.filter-btn.active{border-color:var(--red);color:#fff;background:var(--red)}
+.set-title-lbl{font-family:'Poppins';font-weight:600;font-size:13px;color:var(--ink);margin-left:4px}
+.toolbar-right{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.tb-btn{font-size:11px;font-weight:600;padding:5px 11px;border:1px solid var(--line2);border-radius:8px;background:var(--panel);color:var(--ink2);cursor:pointer}
+.tb-btn:hover{color:var(--ink)}
+.tb-btn.blue{border-color:var(--blue);color:#fff;background:var(--blue)}
+.tb-btn.blue:hover{background:var(--blue-dark)}
+.tb-btn.red{border-color:var(--red);color:var(--red)}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:12px;padding:18px;max-width:1200px;margin:0 auto;direction:ltr;width:100%}
+.card-wrap{cursor:pointer}
+.card-img-box{border-radius:10px;overflow:hidden;border:2px solid transparent;aspect-ratio:63/88;background:#e9edf3;position:relative;transition:transform .15s,border-color .15s;box-shadow:var(--shadow)}
+.card-wrap:hover .card-img-box{transform:translateY(-3px)}
+.card-img-box.owned{border-color:var(--yellow)}
+.card-img-box img{width:100%;height:100%;object-fit:cover;display:block}
+.card-img-box.missing{filter:grayscale(1) opacity(.55)}
+.owned-badge{position:absolute;top:5px;right:5px;width:20px;height:20px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.owned-badge svg{width:11px;height:11px}
+.price-tag{position:absolute;left:5px;bottom:5px;font-family:'Poppins';font-weight:700;font-size:9px;padding:2px 6px;border-radius:6px;background:rgba(20,30,50,.82);color:var(--yellow)}
+.promo-tag{position:absolute;left:5px;top:5px;font-family:'Poppins';font-weight:700;font-size:7px;letter-spacing:1px;padding:2px 6px;border-radius:6px;background:var(--yellow);color:#7a5a00}
+.card-num{font-family:'Poppins';font-weight:600;font-size:10px;color:var(--ink2);text-align:center;margin-top:5px}
+.card-name{font-size:11px;color:var(--ink2);text-align:center;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{grid-column:1/-1;padding:60px 20px;text-align:center;color:var(--ink2)}
+.empty-title{font-family:'Poppins';font-weight:700;font-size:15px;margin-bottom:10px;color:var(--ink)}
+.empty-sub{font-size:13px;line-height:1.8}
+.loading{grid-column:1/-1;padding:60px 20px;text-align:center;font-family:'Poppins';font-weight:600;font-size:13px;color:var(--ink2)}
+.modal-bg{position:fixed;inset:0;background:rgba(20,25,40,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--panel);border-radius:var(--radius-lg);padding:22px;width:500px;max-width:100%;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow2)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.modal-title{font-family:'Poppins';font-weight:700;font-size:15px;color:var(--ink)}
+.modal-close{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:24px;line-height:1;padding:0}
+.modal-close:hover{color:var(--ink)}
+.search-modal-input{font-size:14px;width:100%;padding:9px 12px;border:1px solid var(--line2);border-radius:9px;background:var(--panel2);color:var(--ink);margin-bottom:12px}
+.search-modal-input:focus{outline:none;border-color:var(--blue)}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:9px;cursor:pointer;border:1px solid transparent}
+.set-row:hover{background:var(--panel2);border-color:var(--line)}
+.set-row-name{font-size:14px;color:var(--ink);font-weight:500}
+.set-row-meta{font-size:11px;color:var(--ink3);margin-top:2px}
+.set-row-id{font-family:'Poppins';font-weight:700;font-size:10px;color:var(--blue);margin-right:8px}
+.set-row-btn{font-family:'Poppins';font-weight:600;font-size:10px;padding:4px 11px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;white-space:nowrap}
+.card-modal-bg{position:fixed;inset:0;background:rgba(20,25,40,.55);z-index:300;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px)}
+.card-modal-bg.open{display:flex}
+.card-modal{background:var(--panel);border-radius:var(--radius-lg);padding:22px;width:360px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow2)}
+.cm-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.cm-name{font-family:'Poppins';font-weight:700;font-size:16px;color:var(--ink)}
+.cm-meta{font-size:12px;color:var(--ink3);margin-top:3px}
+.cm-img{width:150px;border-radius:12px;display:block;margin:0 auto 16px;box-shadow:var(--shadow2)}
+.cm-section{font-family:'Poppins';font-weight:700;font-size:11px;letter-spacing:.5px;color:var(--ink2);margin:14px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.var-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.var-check{width:17px;height:17px;cursor:pointer;accent-color:var(--red);flex-shrink:0}
+.var-label{font-size:14px;color:var(--ink);flex:1;font-weight:500}
+.price-wrap{display:flex;align-items:center;gap:4px}
+.price-pfx{font-size:12px;color:var(--ink3)}
+.price-inp{font-size:13px;width:80px;padding:5px 8px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink);text-align:right}
+.price-inp:focus{outline:none;border-color:var(--red)}
+.price-src{flex-basis:100%;font-size:11px;color:var(--ink2);margin-left:27px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.price-src .use{color:var(--blue);cursor:pointer;font-weight:600}
+.mini-btn{font-family:'Poppins';font-weight:600;font-size:9px;padding:3px 8px;border:1px solid var(--line2);border-radius:6px;background:var(--panel);color:var(--ink2);cursor:pointer}
+.mini-btn:hover{border-color:var(--red);color:var(--red)}
+.mini-btn.liga{border-color:var(--red);color:#fff;background:var(--red)}
+.hint-box{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-top:10px;font-size:12px;color:var(--ink2);line-height:1.6}
+.hint-box a{color:var(--blue);text-decoration:none;font-weight:600}
+.save-btn{font-family:'Poppins';font-weight:700;font-size:13px;width:100%;margin-top:16px;padding:11px;border:none;border-radius:10px;background:var(--red);color:#fff;cursor:pointer;box-shadow:0 3px 0 var(--red-dark)}
+.save-btn:active{transform:translateY(1px);box-shadow:none}
+.save-note{font-size:11px;color:var(--ink2);text-align:center;margin-top:6px}
+.save-note.syncing{color:var(--blue)}.save-note.synced{color:var(--green)}.save-note.error{color:var(--red)}
+.vbadge{font-family:'Poppins';font-weight:600;font-size:9px;padding:3px 8px;border-radius:6px;background:var(--panel2);border:1px solid var(--line2);color:var(--ink2)}
+.vbadge-holo{border-color:#e6b800;color:#a07d00;background:#fff7d6}
+.vbadge-rev{border-color:#b57fce;color:#8046a3;background:#f6ecfb}
+.vbadge-src{border-color:var(--line);color:var(--ink3)}
+.var-disabled{opacity:.45}
+/* ---------- Cartas repetidas ---------- */
+.type-chip.dup{background:#0d5c4a;color:#9ff0d8}
+.dup-wrap{display:flex;align-items:center;gap:4px;margin-left:auto}
+.dup-lbl{font-size:10px;color:var(--ink3);font-weight:600;margin-right:2px}
+.qty-b{width:24px;height:24px;border:1px solid var(--line2);background:var(--panel2);color:var(--ink2);border-radius:6px;cursor:pointer;font-size:14px;line-height:1;font-weight:700;padding:0}
+.qty-b:hover{border-color:var(--blue);color:var(--blue)}
+.qty-inp{width:46px;font-size:13px;padding:4px 6px;border:1px solid var(--line2);border-radius:7px;background:var(--panel2);color:var(--ink);text-align:center}
+.qty-inp:focus{outline:none;border-color:var(--blue)}
+.dup-note{font-size:11px;color:var(--ink2);background:#eefaf5;border:1px solid #cdeee2;border-radius:8px;padding:7px 10px;margin-top:4px}
+.dup-note b{color:#0d5c4a}
+/* ---------- Modal de exportação ---------- */
+.exp-tabs{display:flex;gap:6px;margin-bottom:14px}
+.exp-tab{flex:1;font-family:'Poppins';font-weight:700;font-size:12px;padding:9px;border:1px solid var(--line2);border-radius:9px;background:var(--panel2);color:var(--ink2);cursor:pointer}
+.exp-tab.active{background:var(--red);border-color:var(--red);color:#fff}
+.exp-sel{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink)}
+.exp-sel:focus{outline:none;border-color:var(--blue)}
+.exp-chk{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--ink2);margin-bottom:10px;line-height:1.45}
+.exp-chk input{width:16px;height:16px;accent-color:var(--red);margin-top:1px;flex-shrink:0}
+.exp-out{width:100%;min-height:150px;font-size:11px;padding:8px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink);font-family:ui-monospace,monospace;margin-top:10px;display:none}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--line2);border-radius:3px}
+/* ---------- acréscimos da v2 (login, exemplares, comunidade) ---------- */
+.user-chip{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.user-chip .home-btn{margin-left:0}
+.ghost-btn{font-size:12px;font-weight:600;padding:7px 12px;border:1px solid rgba(255,255,255,.55);border-radius:20px;background:transparent;color:#fff;cursor:pointer}
+.ghost-btn:hover{background:rgba(255,255,255,.14)}
+.login-bg{position:fixed;inset:0;z-index:500;background:linear-gradient(160deg,var(--red) 0%,var(--red-deep) 100%);display:none;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.login-bg.open{display:flex}
+.login-box{background:var(--panel);border-radius:var(--radius-lg);padding:26px;width:380px;max-width:100%;box-shadow:var(--shadow2)}
+.login-box h1{font-family:'Poppins';font-weight:800;font-size:22px;color:var(--ink);margin-bottom:4px}
+.login-box p{font-size:13px;color:var(--ink2);margin-bottom:16px;line-height:1.5}
+.link-btn{background:none;border:none;color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;padding:6px 0}
+.ex-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:8px}
+.ex-row select,.ex-row input[type=number]{width:100%;font-size:12px;padding:6px;border:1px solid var(--line2);border-radius:7px;background:var(--panel);color:var(--ink)}
+.ex-line{grid-column:1/-1;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;color:var(--ink2)}
+.ex-line .sp{margin-left:auto}
+.ex-price{font-family:'Poppins';font-weight:700;color:var(--ink);font-size:13px}
+.ex-src{font-size:10px;padding:1px 6px;border-radius:6px;background:#eaf2fb;color:var(--blue-dark);font-weight:700}
+.ex-src.manual{background:#fff4d6;color:#7a5a00}.ex-src.exato{background:#e3f6ec;color:#176b3c}
+.ex-del{border:none;background:none;color:var(--ink3);cursor:pointer;font-size:15px}
+.ex-del:hover{color:#c0392b}
+.add-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.chk-line{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2);margin:8px 0;line-height:1.4}
+.chk-line input{width:16px;height:16px;accent-color:var(--red);flex-shrink:0}
+.wish-tag{position:absolute;left:5px;top:5px;font-size:11px;background:rgba(255,255,255,.92);border-radius:6px;padding:0 4px}
+.price-tag.ref{background:rgba(255,255,255,.88);color:var(--ink2)}
+.com{max-width:1000px;margin:0 auto;padding:18px 16px 60px;display:none}
+.com-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.com-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.com-item{display:flex;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:10px;box-shadow:var(--shadow)}
+.com-item img,.com-item .noimg{width:58px;height:81px;border-radius:6px;object-fit:cover;background:#e9edf3;flex-shrink:0}
+.com-item .t{font-family:'Poppins';font-weight:700;font-size:13px;color:var(--ink)}
+.com-item .m{font-size:11px;color:var(--ink2);margin-top:2px;line-height:1.5}
+.com-item .who{font-size:11px;color:var(--ink);margin-top:5px;font-weight:600}
+.com-item a{font-size:11px;font-weight:700;color:var(--blue);text-decoration:none;margin-right:10px}
+.pick-list{max-height:48vh;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+.pick{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--line);font-size:12px;color:var(--ink)}
+.pick:last-child{border-bottom:none}
+.pick input{width:16px;height:16px;accent-color:var(--red);flex-shrink:0}
+.pick small{color:var(--ink3);margin-left:auto;white-space:nowrap}
+.fld select,.fld textarea{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink);font-family:inherit}
+.spark{width:100%;height:46px;margin-top:8px;display:block}
+.ext-pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;background:#ffe9e9;color:#a02b2b}
+.ext-pill.on{background:#e3f6ec;color:#176b3c}
+@media(max-width:520px){.ex-row{grid-template-columns:1fr 1fr}.set-input{width:100%}}
+/* cabeçalho + barras fixos ao rolar (só em tela grande: no celular comeria a tela toda) */
+.topo{position:sticky;top:0;z-index:100;box-shadow:0 3px 14px rgba(20,30,50,.18)}
+.topo header{position:static;box-shadow:none}
+@media(max-width:760px),(max-height:620px){.topo{display:contents}.topo header{position:sticky;top:0;box-shadow:0 3px 14px rgba(20,30,50,.18)}}
+</style>
+</head>
+<body>
+
+<!-- ======================= LOGIN ======================= -->
+<div class="login-bg" id="loginView">
+  <div class="login-box">
+    <h1>Pokédex do Colecionador</h1>
+    <p>Entre para ver a sua coleção. Cada pessoa enxerga só as próprias cartas; a comunidade mostra apenas o que cada um escolhe divulgar.</p>
+    <div class="fld" id="lgNomeWrap" style="display:none"><label>Seu nome</label><input id="lgNome" autocomplete="name"/></div>
+    <div class="fld"><label>E-mail</label><input id="lgEmail" type="email" autocomplete="email"/></div>
+    <div class="fld"><label>Senha</label><input id="lgSenha" type="password" autocomplete="current-password"/></div>
+    <button class="save-btn" id="lgBtn" onclick="loginEnviar()">Entrar</button>
+    <div style="display:flex;justify-content:space-between;margin-top:8px">
+      <button class="link-btn" id="lgTroca" onclick="loginTrocarModo()">Criar conta</button>
+      <button class="link-btn" onclick="loginEsqueci()">Esqueci a senha</button>
+    </div>
+    <div class="save-note" id="lgStatus" style="white-space:pre-line"></div>
+  </div>
+</div>
+
+<div class="topo" id="topo">
+<header>
+  <div class="brand-row">
+    <div class="lens"></div>
+    <div class="brand-txt">
+      <div class="brand-title">Minha Pokédex</div>
+      <div class="brand-owner" id="ownerLbl" onclick="abrirPerfil()"></div>
+    </div>
+    <div class="user-chip">
+      <button class="home-btn" onclick="showHome()">🏠 Início</button>
+      <button class="ghost-btn" onclick="abrirComunidade()">👥 Comunidade</button>
+      <button class="ghost-btn" onclick="abrirPerfil()">⚙ Perfil</button>
+      <button class="ghost-btn" onclick="sair()">Sair</button>
+    </div>
+  </div>
+  <div class="search-row">
+    <input class="set-input" id="setInput" placeholder="Código ou nome do set (ex: me01, Equilíbrio Perfeito)" onkeydown="if(event.key==='Enter')loadFromInput()"/>
+    <button class="load-btn" onclick="loadFromInput()">Carregar</button>
+    <button class="search-btn" onclick="openSearch()">🔍 Buscar</button>
+    <button class="search-btn" onclick="abrirNovoLiga()">➕ Coleção só da Liga</button>
+  </div>
+  <div class="saved-bar">
+    <span class="saved-label">Favoritos:</span>
+    <span id="savedChips"></span>
+    <span class="no-fav" id="noFav">Nenhum — carregue um set e clique em ★</span>
+  </div>
+</header>
+
+<div class="warn-banner" id="warnBanner">
+  <b>⚠️ Aviso:</b> <span id="warnText"></span>
+  <span class="x" onclick="hideWarn()">×</span>
+</div>
+
+<div class="sync-bar">
+  <button class="sync-btn" onclick="carregarTudo()">↺ Recarregar</button>
+  <span class="ext-pill" id="extPill">extensão: não detectada</span>
+  <span class="sync-status" id="syncStatus"></span>
+</div>
+
+<div class="stats-bar" id="statsBar">
+  <div class="stat">Base<span id="statBase">0/0</span></div>
+  <div class="stat">Especiais<span id="statSpecial">0/0</span></div>
+  <div class="stat">Total<span id="statTotal">0/0</span></div>
+  <div class="stat">Progresso<span id="statPct">0%</span></div>
+  <div class="stat" title="Cartas repetidas neste set — não entram no valor total">Repetidas<span id="statDup">0</span></div>
+  <div class="stat-value" id="statValue">R$ 0,00</div>
+</div>
+<div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+<div class="filter-bar" id="filterBar">
+  <button class="filter-btn active" onclick="setFilter('all',this)">Todas</button>
+  <button class="filter-btn" onclick="setFilter('owned',this)">Tenho</button>
+  <button class="filter-btn" onclick="setFilter('missing',this)">Faltando</button>
+  <button class="filter-btn" onclick="setFilter('base',this)">Base</button>
+  <button class="filter-btn" onclick="setFilter('special',this)">Especiais</button>
+  <button class="filter-btn" onclick="setFilter('dup',this)">Repetidas</button>
+  <button class="filter-btn" onclick="setFilter('wish',this)">Procuro</button>
+  <button class="filter-btn" onclick="setFilter('noprice',this)">Sem preço</button>
+  <span class="set-title-lbl" id="setTitleLbl"></span>
+  <div class="toolbar-right">
+    <button class="tb-btn blue" onclick="atualizarPrecosSet(currentSetId)">🔄 Atualizar preços (Liga)</button>
+    <button class="tb-btn" onclick="abrirVinculo(currentSetId)">🔗 Página na Liga</button>
+    <button class="tb-btn red" onclick="abrirColar()">📋 Colar da Liga</button>
+    <button class="tb-btn" onclick="atualizarVariacoesSet()" title="Abre a página de cada carta que você TEM e grava o preço por variação (Normal / Foil / Reverse)">💎 Preço por variação</button>
+    <button class="tb-btn" onclick="diagnosticoEdicao()" title="Baixa a leitura bruta da página da Liga, pra ajustar o leitor">🧪 Diagnóstico</button>
+    <button class="tb-btn" onclick="openExp()">📤 Exportar</button>
+    <button class="tb-btn" id="favBtn" onclick="alternarFavorito()">★ Favorito</button>
+    <button class="tb-btn" onclick="excluirColecao(currentSetId)">🗑 Excluir</button>
+  </div>
+</div>
+</div><!-- /topo -->
+
+<div class="home" id="homeView"></div>
+
+<!-- ======================= COMUNIDADE ======================= -->
+<div class="com" id="comView">
+  <div class="home-h" style="margin-top:4px">Comunidade</div>
+  <div id="comAviso"></div>
+  <div class="com-tabs">
+    <button class="filter-btn active" id="comTab_matches" onclick="comAba('matches')">🎯 Tem o que eu procuro</button>
+    <button class="filter-btn" id="comTab_repetidas" onclick="comAba('repetidas')">🔁 Repetidas da galera</button>
+    <button class="filter-btn" id="comTab_desejos" onclick="comAba('desejos')">🔎 Procurados</button>
+    <button class="tb-btn blue" style="margin-left:auto" onclick="abrirDivulgar()">📣 O que eu divulgo</button>
+  </div>
+  <input class="search-modal-input" id="comBusca" placeholder="Filtrar por carta, set ou pessoa..." oninput="renderComunidade()"/>
+  <div class="com-list" id="comLista"></div>
+</div>
+
+<div class="card-grid" id="cardGrid" style="display:none"></div>
+
+<!-- ======================= MODAIS ======================= -->
+<div class="modal-bg" id="searchModal" onclick="fecharSeFundo(event,'searchModal')">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Buscar Coleção</span><button class="modal-close" onclick="fechar('searchModal')">×</button></div>
+    <input class="search-modal-input" id="searchQ" placeholder="Nome ou código (ex: Mega, 151, svp, promo...)" oninput="filterSets()"/>
+    <div id="setResults"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="vincModal" onclick="fecharSeFundo(event,'vincModal')">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Página deste set na Liga</span><button class="modal-close" onclick="fechar('vincModal')">×</button></div>
+    <div class="hint-box" style="margin:0 0 12px">
+      Abra a <b>edição</b> no site da Liga Pokémon (a lista com todas as cartas do set), copie o endereço da barra do navegador e cole aqui.<br>
+      Isso é feito <b>uma vez por set</b> e vale para todos os usuários.
+    </div>
+    <div class="fld"><label>Escolher a edição na lista da Liga</label>
+      <input id="vincBusca" placeholder="Digite o nome ou código (ex: Mega, MEP, 151)..." oninput="renderEdicoesLiga('vinc')"/>
+      <div class="pick-list" id="vincLista" style="max-height:190px"></div>
+      <div style="margin-top:6px"><button class="mini-btn" onclick="atualizarEdicoesLiga('vinc')">↻ Atualizar lista de edições (extensão)</button> <span class="sync-status" id="vincEdStatus"></span></div></div>
+    <div class="fld"><label>…ou cole o endereço (URL) da edição</label><input id="vincUrl" placeholder="https://www.ligapokemon.com.br/?view=cards/search&card=ed=..."/></div>
+    <button class="save-btn" onclick="salvarVinculo()">Salvar</button>
+    <div class="save-note" id="vincStatus"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="colarModal" onclick="fecharSeFundo(event,'colarModal')">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Colar preços da Liga</span><button class="modal-close" onclick="fechar('colarModal')">×</button></div>
+    <div class="hint-box" style="margin:0 0 12px">
+      Plano B para quando não dá pra usar a extensão (celular, por exemplo).<br>
+      1) Abra a edição na Liga e role até o fim. 2) <b>Ctrl+A</b> e <b>Ctrl+C</b>. 3) Cole aqui e aplique.<br>
+      O casamento é pelo <b>número</b> da carta. O preço vale para todos os usuários.
+    </div>
+    <textarea id="colarArea" style="width:100%;min-height:160px;font-size:12px;padding:8px;border:1px solid var(--line2);border-radius:8px;background:var(--panel2);color:var(--ink);font-family:inherit" placeholder="Cole aqui o texto copiado da página da Liga..."></textarea>
+    <button class="save-btn" style="margin-top:10px" onclick="aplicarColado()">Aplicar preços</button>
+    <div class="save-note" id="colarStatus" style="white-space:pre-line"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="novoLigaModal" onclick="fecharSeFundo(event,'novoLigaModal')">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Coleção que só existe na Liga</span><button class="modal-close" onclick="fechar('novoLigaModal')">×</button></div>
+    <div class="hint-box" style="margin:0 0 12px">
+      Para promos/produtos que o catálogo ainda não tem. Informe a página da edição na Liga: com a <b>extensão</b> eu leio as cartas (e as imagens) sozinho. Sem extensão, cole o texto da página (Ctrl+A, Ctrl+C).
+    </div>
+    <div class="fld"><label>Escolher a edição na lista da Liga</label>
+      <input id="nlBusca" placeholder="Digite o nome ou código (ex: Mega, MEP, 151)..." oninput="renderEdicoesLiga('nl')"/>
+      <div class="pick-list" id="nlLista" style="max-height:190px"></div>
+      <div style="margin-top:6px"><button class="mini-btn" onclick="atualizarEdicoesLiga('nl')">↻ Atualizar lista de edições (extensão)</button> <span class="sync-status" id="nlEdStatus"></span></div></div>
+    <div class="fld"><label>…ou cole o endereço (URL) da edição</label><input id="nlUrl" placeholder="https://www.ligapokemon.com.br/?view=cards/search&card=ed=MEP"/></div>
+    <div class="fld"><label>Nome da coleção</label><input id="nlNome" placeholder="Ex: Mega Evolution Promos"/></div>
+    <div class="fld"><label>Código curto</label><input id="nlCod" placeholder="Ex: MEP"/></div>
+    <div class="fld"><label>Texto colado (só se não tiver a extensão)</label><textarea id="nlTexto" style="min-height:80px"></textarea></div>
+    <button class="save-btn" onclick="criarSetLiga()">Criar coleção</button>
+    <div class="save-note" id="nlStatus" style="white-space:pre-line"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="perfilModal" onclick="fecharSeFundo(event,'perfilModal')">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Meu perfil</span><button class="modal-close" onclick="fechar('perfilModal')">×</button></div>
+    <div class="fld"><label>Nome (aparece na comunidade)</label><input id="pfNome"/></div>
+    <div class="fld"><label>Cidade / UF</label><input id="pfCidade" placeholder="Ex: Goiânia - GO"/></div>
+    <div class="fld"><label>WhatsApp (com DDD)</label><input id="pfTel" inputmode="tel" placeholder="(62) 9 9999-9999"/></div>
+    <div class="fld"><label>E-mail de contato</label><input id="pfEmail" type="email"/></div>
+    <label class="chk-line"><input type="checkbox" id="pfCom"/> Participar da comunidade (divulgar o que eu marcar e ver o dos outros)</label>
+    <label class="chk-line"><input type="checkbox" id="pfMT"/> Mostrar meu WhatsApp para a comunidade</label>
+    <label class="chk-line"><input type="checkbox" id="pfME"/> Mostrar meu e-mail para a comunidade</label>
+    <div class="cm-section">Padrão ao marcar uma carta</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="fld"><label>Idioma</label><select id="pfIdioma"></select></div>
+      <div class="fld"><label>Qualidade</label><select id="pfQual"></select></div>
+    </div>
+    <div class="fld"><label>Valor usado nas cartas</label><select id="pfBase">
+      <option value="menor">Menor preço da Liga (pode ser de carta danificada)</option>
+      <option value="medio">Preço médio da Liga (mais próximo de uma NM)</option></select></div>
+    <button class="save-btn" onclick="salvarPerfil()">Salvar</button>
+    <div class="save-note" id="pfStatus"></div>
+    <div class="cm-section">Ferramentas</div>
+    <div class="add-row">
+      <button class="tb-btn" onclick="importarAntigo()">⬇ Importar da planilha antiga</button>
+      <button class="tb-btn" onclick="limparCache()">🧹 Limpar cache de cartas</button>
+    </div>
+    <div class="save-note" id="impStatus" style="white-space:pre-line;text-align:left"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="divModal" onclick="fecharSeFundo(event,'divModal')">
+  <div class="modal" style="width:560px">
+    <div class="modal-header"><span class="modal-title">O que eu divulgo na comunidade</span><button class="modal-close" onclick="fechar('divModal')">×</button></div>
+    <div class="exp-tabs">
+      <button class="exp-tab active" id="divTab_rep" onclick="divAba('rep')">🔁 Minhas repetidas</button>
+      <button class="exp-tab" id="divTab_falta" onclick="divAba('falta')">🔎 Cartas que procuro</button>
+    </div>
+    <div class="fld" id="divSetWrap" style="display:none"><label>Coleção</label><select id="divSet" class="exp-sel" onchange="renderDivulgar()"></select></div>
+    <div class="add-row">
+      <button class="tb-btn" onclick="divTodas(true)">Marcar todas</button>
+      <button class="tb-btn" onclick="divTodas(false)">Desmarcar todas</button>
+      <span class="sync-status" id="divStatus" style="align-self:center"></span>
+    </div>
+    <div class="pick-list" id="divLista"></div>
+    <div class="hint-box">Marcar/desmarcar salva na hora. Só aparece para os outros se <b>Participar da comunidade</b> estiver ligado no seu perfil.</div>
+  </div>
+</div>
+
+<div class="modal-bg" id="expModal" onclick="fecharSeFundo(event,'expModal')">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Exportar cartas</span><button class="modal-close" onclick="fechar('expModal')">×</button></div>
+    <div class="exp-tabs">
+      <button class="exp-tab active" id="expTabFalta" onclick="setExpMode('faltando')">🔍 Faltando</button>
+      <button class="exp-tab" id="expTabProc" onclick="setExpMode('procuro')">🎯 Procuro</button>
+      <button class="exp-tab" id="expTabDup" onclick="setExpMode('repetidas')">🔁 Repetidas</button>
+    </div>
+    <div class="fld"><label>Coleção</label><select id="expSet" class="exp-sel"></select></div>
+    <div class="fld" id="expWhatWrap"><label>O que incluir</label>
+      <select id="expWhat" class="exp-sel">
+        <option value="all">Base + especiais</option>
+        <option value="base">Só a coleção base</option>
+        <option value="special">Só as especiais</option>
+      </select>
+    </div>
+    <label class="chk-line"><input type="checkbox" id="expSoMarcadas"/> <span id="expSoMarcadasLbl">Só as que marquei para divulgar</span></label>
+    <div class="fld"><label>Formato</label>
+      <select id="expFmt" class="exp-sel">
+        <option value="img">Página com imagens — pronta pra imprimir / salvar em PDF</option>
+        <option value="txt">Lista de texto — pra mandar no WhatsApp</option>
+        <option value="csv">Planilha CSV — abre no Excel</option>
+      </select>
+    </div>
+    <button class="save-btn" onclick="runExport()">Gerar</button>
+    <div class="save-note" id="expStatus" style="white-space:pre-line"></div>
+    <textarea class="exp-out" id="expOut" readonly></textarea>
+    <div id="expActions" style="display:none;margin-top:8px;gap:6px;flex-wrap:wrap">
+      <button class="tb-btn" onclick="copiarExport()">📋 Copiar</button>
+      <button class="tb-btn" onclick="baixarExportTxt()">💾 Baixar arquivo</button>
+    </div>
+  </div>
+</div>
+
+<div class="card-modal-bg" id="cardModal" onclick="fecharSeFundo(event,'cardModal')">
+  <div class="card-modal" style="width:400px">
+    <div class="cm-header">
+      <div><div class="cm-name" id="cmName"></div><div class="cm-meta" id="cmMeta"></div></div>
+      <button class="modal-close" onclick="fechar('cardModal')">×</button>
+    </div>
+    <img class="cm-img" id="cmImg" src="" alt=""/>
+    <div class="card-ph big" id="cmPh" style="display:none"><div class="n"></div><div class="t"></div></div>
+    <div class="cm-section">Meus exemplares</div>
+    <div id="cmLinhas"></div>
+    <div class="add-row" id="cmAdd"></div>
+    <label class="chk-line"><input type="checkbox" id="cmDesejo" onchange="alternarDesejo(this.checked)"/> 🔎 Procuro esta carta (aparece para a comunidade)</label>
+    <div class="cm-section">Preço na Liga</div>
+    <div class="hint-box" id="cmPreco" style="margin-top:0"></div>
+    <div class="save-note" id="saveNote"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+/* =====================================================================
+   POKÉDEX DO COLECIONADOR — v2
+   Catálogo: TCGdex (online) · Dados: Supabase (login + RLS) ·
+   Preços: Liga Pokémon lida pela extensão no navegador do usuário
+   ===================================================================== */
+const CFG=(typeof window!=='undefined'&&window.POKEDEX_CONFIG)||{};
+const TCG='https://api.tcgdex.net/v2';
+const EXTRAS=[['Normal','Normal'],['Holo','Holo'],['Reverse','Reverse Holo']];
+const IDIOMAS=[['PT','Português'],['EN','Inglês'],['JP','Japonês'],['ES','Espanhol'],['IT','Italiano'],['FR','Francês'],['DE','Alemão'],['KO','Coreano'],['ZH','Chinês']];
+const QUALS=[['M','M · Mint'],['NM','NM · Near Mint'],['SP','SP · Slightly Played'],['MP','MP · Moderately Played'],['HP','HP · Heavily Played'],['D','D · Damaged']];
+
+let sb=null,user=null,perfil=null;
+let linhas=[],porCarta={},desejos={},setsUser={},customSets={},vinculos={};
+let precoG={},precoX={},precoE={},valorHist=[],ligaEdicoes=[];
+let catalogo=[],currentSetId=null,currentSet=null,currentCards=[],currentFilter='all',openCardId=null;
+let extVersao=null;
+
+/* ---------- utilitários ---------- */
+const $=id=>document.getElementById(id);
+function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+const J=x=>escHtml(JSON.stringify(x));            // valor seguro dentro de onclick="..."
+function fmtBRL(v){return 'R$ '+(Number(v)||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
+function normName(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
+function hojeSP(){return new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'});}
+function haQuanto(iso){
+  if(!iso)return '';
+  const m=Math.max(0,Math.round((Date.now()-new Date(iso).getTime())/60000));
+  if(m<60)return 'há '+m+' min';if(m<1440)return 'há '+Math.round(m/60)+' h';return 'há '+Math.round(m/1440)+' dia(s)';
+}
+function jget(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v;}catch(e){return d;}}
+function jset(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}
+function setSync(m,c){const el=$('syncStatus');el.textContent=m||'';el.className='sync-status'+(c?' '+c:'');}
+function showWarn(t){$('warnText').textContent=t;$('warnBanner').classList.add('show');}
+function hideWarn(){$('warnBanner').classList.remove('show');}
+function fechar(id){$(id).classList.remove('open');if(id==='cardModal')openCardId=null;}
+function fecharSeFundo(e,id){if(e.target===$(id))fechar(id);}
+function opts(lista,sel){return lista.map(([v,l])=>`<option value="${escHtml(v)}"${v===sel?' selected':''}>${escHtml(l)}</option>`).join('');}
+function setIdOf(cardId){const s=String(cardId),i=s.lastIndexOf('-');return i>0?s.slice(0,i):s;}
+// "003b" -> "3b" · "TG01" -> "TG1" · serve pra casar a numeração do catálogo com a da Liga
+function chaveNum(n){const m=String(n==null?'':n).trim().match(/^([A-Za-z]*)0*(\d+)([A-Za-z]?)$/);return m?(m[1].toUpperCase()+m[2]+m[3].toLowerCase()):String(n||'').trim().toUpperCase();}
+function numInt(n){const m=String(n||'').match(/(\d+)/);return m?parseInt(m[1],10):null;}
+function likeEsc(s){return String(s).replace(/[\\%_]/g,'\\$&');}
+function erroMsg(e){return (e&&(e.message||e.error_description||e.details))||String(e);}
+
+/* =====================================================================
+   LOGIN
+   ===================================================================== */
+let loginModo='entrar';
+function loginTrocarModo(){
+  loginModo=loginModo==='entrar'?'criar':'entrar';
+  $('lgNomeWrap').style.display=loginModo==='criar'?'block':'none';
+  $('lgBtn').textContent=loginModo==='criar'?'Criar conta':'Entrar';
+  $('lgTroca').textContent=loginModo==='criar'?'Já tenho conta':'Criar conta';
+  lgStatus('');
+}
+function lgStatus(m,c){const el=$('lgStatus');el.textContent=m;el.className='save-note'+(c?' '+c:'');}
+async function loginEnviar(){
+  const email=$('lgEmail').value.trim(),senha=$('lgSenha').value;
+  if(!email||!senha){lgStatus('Preencha e-mail e senha.','error');return;}
+  lgStatus('Aguarde...','syncing');
+  try{
+    if(loginModo==='criar'){
+      if(senha.length<6){lgStatus('A senha precisa de pelo menos 6 caracteres.','error');return;}
+      const {data,error}=await sb.auth.signUp({email,password:senha,
+        options:{data:{nome:$('lgNome').value.trim()},emailRedirectTo:location.origin+location.pathname}});
+      if(error)throw error;
+      if(!data.session)lgStatus('Conta criada! Abra o e-mail de confirmação que acabou de chegar e depois entre aqui.','synced');
+    }else{
+      const {error}=await sb.auth.signInWithPassword({email,password:senha});
+      if(error)throw error;
+    }
+  }catch(e){
+    const m=erroMsg(e);
+    lgStatus(/invalid login/i.test(m)?'E-mail ou senha incorretos.':/not confirmed/i.test(m)?'Confirme o e-mail antes de entrar (veja sua caixa de entrada).':m,'error');
+  }
+}
+async function loginEsqueci(){
+  const email=$('lgEmail').value.trim();
+  if(!email){lgStatus('Digite seu e-mail acima e clique de novo.','error');return;}
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  lgStatus(error?erroMsg(error):'Enviei um link para redefinir a senha.',error?'error':'synced');
+}
+async function sair(){await sb.auth.signOut();}
+
+async function iniciar(){
+  if(!window.supabase||!CFG.supabaseUrl||/SEU-PROJETO/.test(CFG.supabaseUrl)||!CFG.supabaseAnonKey||/COLE_AQUI/.test(CFG.supabaseAnonKey)){
+    $('loginView').classList.add('open');
+    lgStatus('Falta configurar o Supabase no config.js (supabaseUrl e supabaseAnonKey).','error');return;
+  }
+  sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey);
+  // Nunca chamar o banco de dentro do callback (trava o cliente): agenda pra depois.
+  sb.auth.onAuthStateChange((ev,sess)=>{setTimeout(()=>aoMudarSessao(ev,sess),0);});
+}
+async function aoMudarSessao(ev,sess){
+  if(ev==='PASSWORD_RECOVERY'){
+    const nova=prompt('Digite a nova senha (mínimo 6 caracteres):');
+    if(nova&&nova.length>=6){const {error}=await sb.auth.updateUser({password:nova});alert(error?erroMsg(error):'Senha alterada.');}
+  }
+  const novo=sess&&sess.user||null;
+  if(!novo){user=null;$('loginView').classList.add('open');return;}
+  if(user&&user.id===novo.id)return;          // renovação de token: nada a fazer
+  user=novo;$('loginView').classList.remove('open');lgStatus('');
+  await carregarTudo();
+}
+
+/* =====================================================================
+   DADOS DO USUÁRIO
+   ===================================================================== */
+async function selTudo(fazQuery){
+  let out=[],de=0;const N=1000;
+  for(;;){const {data,error}=await fazQuery().range(de,de+N-1);if(error)throw error;out=out.concat(data||[]);if(!data||data.length<N)break;de+=N;}
+  return out;
+}
+function reindexar(){
+  porCarta={};
+  linhas.forEach(r=>{(porCarta[r.carta_id]=porCarta[r.carta_id]||[]).push(r);});
+}
+async function carregarTudo(){
+  if(!user)return;
+  setSync('Carregando sua coleção...','loading');
+  try{
+    const [pf,col,des,su,cs,vl,vh]=await Promise.all([
+      sb.from('perfis').select('*').eq('id',user.id).maybeSingle(),
+      selTudo(()=>sb.from('colecao').select('*').order('id')),
+      selTudo(()=>sb.from('desejos').select('*')),
+      selTudo(()=>sb.from('sets_usuario').select('*')),
+      selTudo(()=>sb.from('sets_custom').select('*')),
+      selTudo(()=>sb.from('sets_liga').select('*')),
+      sb.from('valor_hist').select('dia,valor').order('dia',{ascending:false}).limit(90)
+    ]);
+    if(pf.error)throw pf.error;
+    perfil=pf.data;
+    if(!perfil){ // conta criada antes do gatilho existir
+      const ins=await sb.from('perfis').insert({id:user.id,nome:(user.email||'').split('@')[0],email_contato:user.email}).select().single();
+      if(ins.error)throw ins.error;perfil=ins.data;
+    }
+    linhas=col;reindexar();
+    desejos={};des.forEach(d=>desejos[d.carta_id]=d);
+    setsUser={};su.forEach(s=>setsUser[s.set_id]=s);
+    customSets={};cs.forEach(s=>customSets[s.id]=s);
+    vinculos={};vl.forEach(v=>vinculos[v.set_id]=v);
+    valorHist=(vh.data||[]).slice().reverse();
+    Object.keys(precosCarregados).forEach(k=>delete precosCarregados[k]);
+    await carregarPrecos(meusSetIds());
+    sb.from('liga_edicoes').select('codigo,nome,url').order('nome').limit(3000).then(r=>{if(!r.error)ligaEdicoes=r.data||[];});
+    renderOwner();renderSaved();
+    if(currentSetId)renderGrid(),updateStats();else showHome();
+    setSync('✓ Atualizado','ok');
+    fotografarValor();
+  }catch(e){setSync('Erro ao carregar: '+erroMsg(e),'err');}
+}
+function meusSetIds(){
+  const s={};Object.keys(setsUser).forEach(k=>s[k]=1);linhas.forEach(r=>s[r.set_id]=1);
+  return Object.keys(s);
+}
+async function carregarPrecos(setIds){
+  for(const sid of setIds){
+    const pad=likeEsc(sid)+'-%';
+    const [g,x,e]=await Promise.all([
+      selTudo(()=>sb.from('precos_gerais').select('*').like('carta_id',pad)),
+      selTudo(()=>sb.from('precos').select('carta_id,idioma,qualidade,extra,preco_min,atualizado_em').like('carta_id',pad)),
+      selTudo(()=>sb.from('precos_extras').select('*').like('carta_id',pad)).catch(()=>[])      // tabela da migração v3
+    ]);
+    g.forEach(p=>{if(setIdOf(p.carta_id)===sid)precoG[p.carta_id]=p;});
+    x.forEach(p=>{if(setIdOf(p.carta_id)===sid)precoX[chaveX(p)]=p;});
+    e.forEach(p=>{if(setIdOf(p.carta_id)===sid)precoE[p.carta_id+'|'+p.extra]=p;});
+    precosCarregados[sid]=1;
+  }
+}
+const precosCarregados={};
+async function garantirPrecos(setId){if(!precosCarregados[setId])await carregarPrecos([setId]);}
+function chaveX(r){return [r.carta_id,r.extra,r.idioma,r.qualidade].join('|');}
+
+/* ---------- valoração ----------
+   manual  >  Liga por variação (Normal / Foil / Reverse Foil)  >  Liga geral
+   Em cada nível usa o MENOR ou o MÉDIO, conforme a escolha no perfil.
+   (Preço por idioma+qualidade não existe: a Liga embaralha de propósito o preço
+   de cada oferta individual, e isso a gente não quebra.)                        */
+const EXTRA_LIGA={Normal:['N'],Holo:['F','N'],Reverse:['RF']};
+function escolher(p){
+  if(!p)return null;
+  const med=perfil&&perfil.base_preco==='medio';
+  const v=med?(p.preco_med!=null?p.preco_med:p.preco_min):p.preco_min;
+  return v!=null&&Number(v)>0?Number(v):null;
+}
+function precoLinha(r){
+  if(r.preco_manual!=null)return {v:Number(r.preco_manual),fonte:'manual'};
+  for(const ac of (EXTRA_LIGA[r.extra]||[])){
+    const e=precoE[r.carta_id+'|'+ac],v=escolher(e);
+    if(v!=null)return {v,fonte:'variacao',ts:e.atualizado_em,ac};
+  }
+  const g=precoG[r.carta_id],v=escolher(g);
+  if(v!=null)return {v,fonte:'geral',ts:g.atualizado_em};
+  return {v:0,fonte:'sem'};
+}
+const rowsOf=id=>porCarta[id]||[];
+const isOwned=id=>rowsOf(id).length>0;
+const dupCount=id=>rowsOf(id).reduce((s,r)=>s+(r.quantidade-1),0);
+const valorCarta=id=>rowsOf(id).reduce((s,r)=>s+precoLinha(r).v,0);
+const dupVal=id=>rowsOf(id).reduce((s,r)=>s+precoLinha(r).v*(r.quantidade-1),0);
+function totalGeral(){let v=0,c=0;Object.keys(porCarta).forEach(id=>{v+=valorCarta(id);c++;});return {valor:v,cartas:c};}
+async function fotografarValor(){
+  if(!user||!linhas.length)return;
+  const t=totalGeral(),dia=hojeSP();
+  const {error}=await sb.from('valor_hist').upsert({user_id:user.id,dia,valor:+t.valor.toFixed(2),cartas:t.cartas},{onConflict:'user_id,dia'});
+  if(error)return;
+  const i=valorHist.findIndex(h=>h.dia===dia);
+  if(i>=0)valorHist[i].valor=t.valor;else valorHist.push({dia,valor:t.valor});
+}
+
+/* =====================================================================
+   CATÁLOGO — TCGdex
+   ===================================================================== */
+let langPt=localStorage.getItem('pkd_lang')||'';
+async function tcg(path,lang){
+  const r=await fetch(`${TCG}/${lang}/${path}`);
+  if(!r.ok)throw new Error('TCGdex HTTP '+r.status);
+  return r.json();
+}
+async function carregarCatalogo(){
+  if(catalogo.length)return catalogo;
+  const cache=jget('pkd_catalogo',null);
+  if(cache&&Date.now()-cache.ts<86400000&&cache.sets&&cache.sets.length){catalogo=cache.sets;return catalogo;}
+  const en=await tcg('sets','en');
+  let pt=[];
+  for(const l of (langPt?[langPt]:['pt-br','pt'])){
+    try{const s=await tcg('sets',l);if(Array.isArray(s)&&s.length){pt=s;langPt=l;localStorage.setItem('pkd_lang',l);break;}}catch(e){}
+  }
+  const nomePt={};pt.forEach(s=>nomePt[s.id]=s.name);
+  catalogo=en.map(s=>({id:s.id,name:nomePt[s.id]||s.name,nameEn:s.name,
+    total:(s.cardCount&&s.cardCount.total)||0,base:(s.cardCount&&s.cardCount.official)||0})).reverse();
+  jset('pkd_catalogo',{ts:Date.now(),sets:catalogo});
+  return catalogo;
+}
+// Aceita "ME01", "me1", "sv3pt5" (código antigo da pokemontcg.io) ou o nome em PT/EN.
+function codigoParaTcgdex(s){
+  s=String(s||'').toLowerCase().trim();
+  let m=s.match(/^(sv|me)0*(\d+)(pt5|\.5)?$/);if(m)return m[1]+m[2].padStart(2,'0')+(m[3]?'.5':'');
+  m=s.match(/^([a-z]+)(\d+)pt5$/);if(m)return m[1]+m[2]+'.5';
+  return s;
+}
+async function resolverSetId(txt){
+  const bruto=String(txt||'').trim();if(!bruto)return null;
+  if(customSets[bruto])return bruto;
+  const cl=('liga'+bruto.toLowerCase().replace(/[^a-z0-9]/g,''));if(customSets[cl])return cl;
+  const cat=await carregarCatalogo();
+  const cand=[bruto.toLowerCase(),codigoParaTcgdex(bruto)];
+  for(const c of cand){const hit=cat.find(s=>s.id.toLowerCase()===c);if(hit)return hit.id;}
+  const n=normName(bruto);
+  const ex=cat.find(s=>normName(s.name)===n||normName(s.nameEn)===n);if(ex)return ex.id;
+  const par=cat.find(s=>normName(s.name).includes(n)||normName(s.nameEn).includes(n));
+  return par?par.id:null;
+}
+function ordenarCartas(cards){
+  const peso=c=>{const k=String(c.localId||'');const pref=/^[A-Za-z]/.test(k)?1:0;return [pref,k.replace(/\d+.*$/,''),numInt(k)||0,k];};
+  return cards.slice().sort((a,b)=>{const x=peso(a),y=peso(b);for(let i=0;i<4;i++){if(x[i]<y[i])return -1;if(x[i]>y[i])return 1;}return 0;});
+}
+function imgUrl(c,q){
+  const u=c&&c.img;if(!u)return '';
+  if(/^data:|\.(png|jpe?g|webp|gif)(\?|$)/i.test(u))return u;
+  return u+'/'+(q||'low')+'.webp';
+}
+// Catálogo + o que a Liga sabe: imagem quando o TCGdex não tem, nome em PT quando só veio em inglês.
+async function carregarCartasSet(setId,forcar){
+  const d=await carregarCartasSetBruto(setId,forcar);
+  if(customSets[setId]||!sb||!user)return d;
+  try{await garantirPrecos(d.set.id);}catch(e){return d;}
+  return {set:d.set,cards:d.cards.map(c=>{const g=precoG[c.id];if(!g)return c;
+    const nome=(!c.pt&&g.nome_liga)?g.nome_liga:c.name,img=c.img||g.imagem_liga||'';
+    return (nome===c.name&&img===c.img)?c:Object.assign({},c,{name:nome,img});})};
+}
+async function carregarCartasSetBruto(setId,forcar){
+  if(customSets[setId]){
+    const d=customSets[setId];
+    const cards=(d.cartas||[]).map(c=>({id:setId+'-'+c.n,localId:c.n,name:c.name,img:c.img||''}));
+    let base=0;cards.forEach(c=>{if(/^\d+$/.test(c.localId))base=Math.max(base,parseInt(c.localId,10));});
+    const cont={};(d.cartas||[]).forEach(c=>{if(c.b)cont[c.b]=(cont[c.b]||0)+1;});
+    const den=Object.keys(cont).sort((a,b)=>cont[b]-cont[a])[0];if(den&&+den>0&&+den<base)base=+den;
+    return {set:{id:setId,name:d.nome,total:d.total||cards.length,base:base||cards.length,liga:true},cards:ordenarCartas(cards)};
+  }
+  const ck='pkd_set2_'+setId,cache=jget(ck,null);
+  if(!forcar&&cache&&Date.now()-cache.ts<7*86400000)return cache.d;
+  await carregarCatalogo();
+  const [en,pt]=await Promise.allSettled([tcg('sets/'+encodeURIComponent(setId),'en'),
+    langPt?tcg('sets/'+encodeURIComponent(setId),langPt):Promise.reject(new Error('sem pt'))]);
+  const E=en.status==='fulfilled'?en.value:null,P=pt.status==='fulfilled'?pt.value:null;
+  if(!E&&!P)throw new Error('Set "'+setId+'" não encontrado no catálogo.');
+  const base=(E||P),ptPor={};
+  if(P)(P.cards||[]).forEach(c=>ptPor[c.localId]=c);
+  const vistos={},cards=[];
+  (base.cards||[]).forEach(c=>{const p=ptPor[c.localId];vistos[c.localId]=1;
+    cards.push({id:c.id,localId:c.localId,name:(p&&p.name)||c.name,img:(p&&p.image)||c.image||'',pt:!!(p&&p.name)});});
+  if(P&&E)(P.cards||[]).forEach(c=>{if(!vistos[c.localId])cards.push({id:c.id,localId:c.localId,name:c.name,img:c.image||'',pt:true});});
+  const cc=base.cardCount||{};
+  const d={set:{id:base.id,name:(P&&P.name)||base.name,total:cc.total||cards.length,base:cc.official||cc.total||cards.length},cards:ordenarCartas(cards)};
+  jset(ck,{ts:Date.now(),d});
+  return d;
+}
+function limparCache(){
+  Object.keys(localStorage).forEach(k=>{if(k.startsWith('pkd_set')||k==='pkd_catalogo')localStorage.removeItem(k);});
+  catalogo=[];$('impStatus').textContent='Cache limpo.';
+}
+function isSpecial(card,set){
+  const k=String(card.localId||'');
+  if(/^[A-Za-z]/.test(k)||/[A-Za-z]$/.test(k))return true;
+  const n=numInt(k),b=(set&&set.base)||0;
+  return !!(b&&n!=null&&n>b);
+}
+
+/* =====================================================================
+   CABEÇALHO / INÍCIO
+   ===================================================================== */
+function renderOwner(){$('ownerLbl').textContent=perfil&&perfil.nome?('de '+perfil.nome):'Toque para completar seu perfil';}
+function renderSaved(){
+  const favs=Object.values(setsUser).filter(s=>s.favorito);
+  $('noFav').style.display=favs.length?'none':'inline';
+  $('savedChips').innerHTML=favs.map(s=>`<span class="saved-chip" onclick="fetchSet(${J(s.set_id)})">${escHtml(s.nome||s.set_id)}</span>`).join('');
+}
+function esconderTudo(){
+  ['homeView','comView','cardGrid'].forEach(id=>$(id).style.display='none');
+  ['statsBar','progressBar','filterBar'].forEach(id=>$(id).style.display='none');
+}
+function showHome(){
+  esconderTudo();currentSetId=null;currentSet=null;currentCards=[];
+  $('homeView').style.display='block';renderHome();
+}
+function resumoPorSet(){
+  const g={};
+  const novo=sid=>({id:sid,count:0,value:0,base:0,spec:0,dup:0,dupValue:0});
+  Object.keys(porCarta).forEach(cid=>{
+    const r0=porCarta[cid][0],sid=r0.set_id;if(!g[sid])g[sid]=novo(sid);
+    g[sid].count++;g[sid].value+=valorCarta(cid);g[sid].dup+=dupCount(cid);g[sid].dupValue+=dupVal(cid);
+    const su=setsUser[sid]||{};
+    if(isSpecial({localId:r0.numero},{base:su.base||su.total||0}))g[sid].spec++;else g[sid].base++;
+  });
+  Object.keys(setsUser).forEach(sid=>{if(!g[sid])g[sid]=novo(sid);});
+  return Object.values(g).sort((a,b)=>b.value-a.value);
+}
+function sparkline(){
+  const h=valorHist.slice(-60);if(h.length<2)return '';
+  const vs=h.map(x=>Number(x.valor)),mn=Math.min(...vs),mx=Math.max(...vs),W=300,H=46,d=(mx-mn)||1;
+  const pts=vs.map((v,i)=>`${(i/(vs.length-1)*W).toFixed(1)},${(H-4-((v-mn)/d)*(H-8)).toFixed(1)}`).join(' ');
+  const dif=vs[vs.length-1]-vs[0];
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="#F4C430" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
+    <div class="hero-sub">${h.length} dia(s) de histórico · ${dif>=0?'+':''}${fmtBRL(dif)} no período</div>`;
+}
+function renderHome(){
+  const sums=resumoPorSet();
+  const totalCards=sums.reduce((s,x)=>s+x.count,0),totalValue=sums.reduce((s,x)=>s+x.value,0);
+  const totalSpent=Object.values(setsUser).reduce((s,x)=>s+(Number(x.gasto)||0),0);
+  const totalDup=sums.reduce((s,x)=>s+x.dup,0),totalDupVal=sums.reduce((s,x)=>s+x.dupValue,0);
+  const diff=totalValue-totalSpent;
+  const who=perfil&&perfil.nome?('Pokédex de '+escHtml(perfil.nome)):'Sua Pokédex';
+  let html=`<div class="hero">
+    <div class="hero-card big"><div class="hero-lbl">${who} · valor atual</div><div class="hero-val">${fmtBRL(totalValue)}</div>
+      <div class="hero-sub">${totalCards} cartas em ${sums.filter(s=>s.count>0).length} coleções</div>${sparkline()}</div>
+    <div class="hero-card"><div class="mini-lbl">Total investido</div><div class="mini-val">${fmtBRL(totalSpent)}</div></div>
+    <div class="hero-card"><div class="mini-lbl">Diferença</div><div class="mini-val ${diff>=0?'diff-pos':'diff-neg'}">${diff>=0?'+':''}${fmtBRL(diff)}</div></div>
+    <div class="hero-card"><div class="mini-lbl">Repetidas (fora do total)</div><div class="mini-val">${totalDup}</div><div class="hero-sub" style="color:var(--ink2)">valeriam ${fmtBRL(totalDupVal)}</div></div>
+  </div>
+  <div class="tools-row">
+    <button class="tb-btn blue" onclick="atualizarTodos()">🔄 Atualizar preços de todas as coleções (Liga)</button>
+    <button class="tb-btn" onclick="openExp()">📤 Exportar faltando / repetidas</button>
+    <button class="tb-btn" onclick="abrirDivulgar()">📣 O que eu divulgo</button>
+  </div>`;
+  if(!sums.length){
+    html+=`<div class="home-empty" style="margin-top:18px"><div class="t">Sua Pokédex está vazia</div>Busque um set lá em cima e comece a marcar as cartas que você tem.<br>Já usava a versão antiga? Vá em <b>⚙ Perfil → Importar da planilha antiga</b>.</div>`;
+  }else{
+    html+='<div class="home-h">Minhas coleções</div><div class="coll-grid">'+sums.map(s=>{
+      const su=setsUser[s.id]||{},name=su.nome||(customSets[s.id]&&customSets[s.id].nome)||s.id;
+      const size=su.total||0,bSize=su.base||size,sSize=Math.max(0,size-bSize);
+      const bPct=bSize?Math.min(100,Math.round(s.base/bSize*100)):0,sPct=sSize?Math.min(100,Math.round(s.spec/sSize*100)):0;
+      const sp=su.gasto!=null?su.gasto:'',d=s.value-(Number(sp)||0);
+      const temLink=!!((customSets[s.id]&&customSets[s.id].liga_url)||vinculos[s.id]);
+      const mini=n=>`<span style="font-size:12px;color:var(--ink3)">/${n}</span>`;
+      return `<div class="coll">
+        <div class="coll-top"><div class="coll-name" onclick="fetchSet(${J(s.id)})">${escHtml(name)}</div>
+          <div style="display:flex;align-items:center;gap:4px"><span class="coll-id" title="${temLink?'Página da Liga vinculada':'Sem página da Liga vinculada'}">${temLink?'🔗 ':''}${escHtml(s.id)}</span>
+          <button class="coll-del" title="Excluir esta coleção" onclick="excluirColecao(${J(s.id)})">🗑</button></div></div>
+        <div class="coll-stats">
+          <div class="coll-stat"><div class="n">${s.base}${bSize?mini(bSize):''}</div><div class="l">base</div></div>
+          <div class="coll-stat"><div class="n">${s.spec}${sSize?mini(sSize):''}</div><div class="l">especiais</div></div>
+          <div class="coll-stat"><div class="n">${fmtBRL(s.value)}</div><div class="l">valor</div></div>
+          ${s.dup?`<div class="coll-stat"><div class="n" style="color:#0d5c4a">+${s.dup}</div><div class="l">repetidas</div></div>`:''}
+        </div>
+        ${bSize?`<div class="coll-barlbl">Base ${bPct}%</div><div class="coll-bar"><i style="width:${bPct}%"></i></div>`:''}
+        ${sSize?`<div class="coll-barlbl">Especiais ${sPct}%</div><div class="coll-bar"><i class="sp" style="width:${sPct}%"></i></div>`:''}
+        <div class="spent-row"><label>Gasto: R$</label><input class="spent-inp" type="number" step="0.01" min="0" value="${escHtml(sp)}" placeholder="0,00" onchange="setGasto(${J(s.id)},this.value)"/>
+          ${sp!==''?`<span class="spent-diff ${d>=0?'diff-pos':'diff-neg'}">${d>=0?'+':''}${fmtBRL(d)}</span>`:''}</div>
+      </div>`;}).join('')+'</div>';
+  }
+  $('homeView').innerHTML=html;
+}
+async function garantirSetUsuario(setId,extra){
+  const atual=setsUser[setId]||{};
+  const meta=(currentSet&&currentSet.id===setId)?{nome:currentSet.name,total:currentSet.total,base:currentSet.base}:{};
+  const linha=Object.assign({user_id:user.id,set_id:setId},
+    {nome:atual.nome,total:atual.total,base:atual.base,favorito:!!atual.favorito,gasto:atual.gasto==null?null:atual.gasto},meta,extra||{});
+  const {data,error}=await sb.from('sets_usuario').upsert(linha,{onConflict:'user_id,set_id'}).select().single();
+  if(error)throw error;setsUser[setId]=data;return data;
+}
+async function setGasto(sid,val){
+  const n=parseFloat(val);
+  try{await garantirSetUsuario(sid,{gasto:(isNaN(n)||val==='')?null:n});renderHome();}catch(e){showWarn(erroMsg(e));}
+}
+async function alternarFavorito(){
+  if(!currentSetId)return;
+  try{const s=await garantirSetUsuario(currentSetId,{favorito:!(setsUser[currentSetId]&&setsUser[currentSetId].favorito)});
+    renderSaved();$('favBtn').textContent=s.favorito?'★ Favorito ✓':'★ Favorito';}catch(e){showWarn(erroMsg(e));}
+}
+async function excluirColecao(sid){
+  if(!sid)return;
+  const n=linhas.filter(r=>r.set_id===sid).length;
+  if(!confirm(`Excluir a coleção "${(setsUser[sid]&&setsUser[sid].nome)||sid}" da SUA Pokédex?\n\nIsso apaga ${n} exemplar(es) marcados e os "procuro" desse set. Não afeta outros usuários.`))return;
+  try{
+    let r=await sb.from('colecao').delete().eq('set_id',sid);if(r.error)throw r.error;
+    r=await sb.from('desejos').delete().eq('set_id',sid);if(r.error)throw r.error;
+    r=await sb.from('sets_usuario').delete().eq('set_id',sid);if(r.error)throw r.error;
+    linhas=linhas.filter(x=>x.set_id!==sid);reindexar();
+    Object.keys(desejos).forEach(k=>{if(desejos[k].set_id===sid)delete desejos[k];});
+    delete setsUser[sid];renderSaved();showHome();fotografarValor();
+  }catch(e){showWarn(erroMsg(e));}
+}
+
+/* =====================================================================
+   BUSCA E TELA DO SET
+   ===================================================================== */
+async function openSearch(){
+  $('searchModal').classList.add('open');$('searchQ').value='';
+  $('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--ink3)">Carregando lista de sets...</div>';
+  try{await carregarCatalogo();filterSets();setTimeout(()=>$('searchQ').focus(),50);}
+  catch(e){$('setResults').innerHTML='<div style="padding:12px;font-size:13px;color:var(--red)">Não consegui carregar o catálogo: '+escHtml(erroMsg(e))+'</div>';}
+}
+function filterSets(){
+  const q=normName($('searchQ').value);
+  const custom=Object.values(customSets).map(s=>({id:s.id,name:s.nome,nameEn:'',total:s.total||(s.cartas||[]).length,liga:true}));
+  const lista=custom.concat(catalogo).filter(s=>!q||normName(s.name).includes(q)||normName(s.nameEn).includes(q)||s.id.toLowerCase().includes(q)).slice(0,80);
+  $('setResults').innerHTML=lista.map(s=>`<div class="set-row" onclick="pickSet(${J(s.id)})">
+    <div><div class="set-row-name">${escHtml(s.name)}</div><div class="set-row-meta">${s.nameEn&&s.nameEn!==s.name?escHtml(s.nameEn)+' · ':''}${s.total||'?'} cartas${s.liga?' · só na Liga':''}</div></div>
+    <div><span class="set-row-id">${escHtml(s.id)}</span><button class="set-row-btn">Abrir</button></div></div>`).join('')
+    ||'<div style="padding:12px;font-size:13px;color:var(--ink3)">Nada encontrado.</div>';
+}
+function pickSet(id){fechar('searchModal');fetchSet(id);}
+async function loadFromInput(){
+  const v=$('setInput').value;if(!v.trim())return;
+  setSync('Procurando set...','loading');
+  try{const id=await resolverSetId(v);if(!id){setSync('Não achei esse set — use 🔍 Buscar.','err');return;}fetchSet(id);}
+  catch(e){setSync(erroMsg(e),'err');}
+}
+let fetchToken=0;
+async function fetchSet(setId){
+  const token=++fetchToken;
+  esconderTudo();hideWarn();
+  const grid=$('cardGrid');grid.style.display='grid';grid.innerHTML='<div class="loading">Carregando cartas...</div>';
+  try{
+    const d=await carregarCartasSet(setId);
+    if(token!==fetchToken)return;
+    currentSetId=d.set.id;currentSet=d.set;currentCards=d.cards;
+    if(token!==fetchToken)return;
+    // mantém nome/tamanho do set atualizados pra quem já acompanha
+    const su=setsUser[currentSetId];
+    if(su&&(su.nome!==d.set.name||su.total!==d.set.total||su.base!==d.set.base))garantirSetUsuario(currentSetId).catch(()=>{});
+    ['statsBar','filterBar'].forEach(id=>$(id).style.display='flex');$('progressBar').style.display='block';
+    $('setTitleLbl').textContent=d.set.name+' ('+d.set.id+')';
+    $('favBtn').textContent=(su&&su.favorito)?'★ Favorito ✓':'★ Favorito';
+    $('setInput').value=d.set.id;
+    renderGrid();updateStats();setSync('','');
+  }catch(e){if(token===fetchToken)grid.innerHTML='<div class="empty"><div class="empty-title">Não deu pra abrir esse set</div><div class="empty-sub">'+escHtml(erroMsg(e))+'</div></div>';}
+}
+function setFilter(f,btn){currentFilter=f;document.querySelectorAll('#filterBar .filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderGrid();}
+// Para troca: repetidas (qtd-1) ou, se marcou a única, 1
+function qtdTroca(r){return r.quantidade>1?r.quantidade-1:1;}
+function passaFiltro(c){
+  const own=isOwned(c.id);
+  switch(currentFilter){
+    case 'owned':return own;case 'missing':return !own;
+    case 'base':return !isSpecial(c,currentSet);case 'special':return isSpecial(c,currentSet);
+    case 'dup':return dupCount(c.id)>0||rowsOf(c.id).some(r=>r.divulgar);case 'wish':return !!desejos[c.id];
+    case 'noprice':return own&&valorCarta(c.id)<=0;default:return true;
+  }
+}
+const CHECK='<svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3 4.7-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function chipsHtml(id){
+  const rs=rowsOf(id);if(!rs.length)return '';
+  const ex={};rs.forEach(r=>ex[r.extra]=1);
+  let h='';if(ex.Normal)h+='<span class="type-chip">N</span>';if(ex.Holo)h+='<span class="type-chip holo">H</span>';if(ex.Reverse)h+='<span class="type-chip rev">R</span>';
+  const d=dupCount(id);if(d)h+=`<span class="type-chip dup">+${d}</span>`;
+  return `<div class="type-badges">${h}</div>`;
+}
+function renderGrid(){
+  const grid=$('cardGrid');
+  const lista=currentCards.filter(passaFiltro);
+  if(!lista.length){grid.innerHTML='<div class="empty"><div class="empty-title">Nenhuma carta neste filtro</div></div>';return;}
+  grid.innerHTML=lista.map(c=>{
+    const own=isOwned(c.id),v=own?valorCarta(c.id):(escolher(precoG[c.id])||0),src=imgUrl(c,'low');
+    const inner=src?`<img loading="lazy" referrerpolicy="no-referrer" src="${escHtml(src)}" alt="" onerror="this.style.display='none'"/>`
+      :`<div class="card-ph"><div class="n">#${escHtml(c.localId)}</div><div class="t">${escHtml(c.name)}</div></div>`;
+    return `<div class="card-wrap" onclick="openCard(${J(c.id)})">
+      <div class="card-img-box ${own?'owned':'missing'}">${inner}
+        ${own?`<div class="owned-badge">${CHECK}</div>`:''}
+        ${desejos[c.id]?'<div class="wish-tag">🔎</div>':''}
+        ${v?`<div class="price-tag${own?'':' ref'}">${fmtBRL(v)}</div>`:''}
+        ${chipsHtml(c.id)}
+      </div>
+      <div class="card-num">#${escHtml(c.localId)}</div><div class="card-name">${escHtml(c.name)}</div></div>`;
+  }).join('');
+}
+function updateStats(){
+  if(!currentSet)return;
+  let b=0,s=0,bT=0,sT=0,val=0,dup=0;
+  currentCards.forEach(c=>{
+    const sp=isSpecial(c,currentSet),own=isOwned(c.id);
+    if(sp){sT++;if(own)s++;}else{bT++;if(own)b++;}
+    if(own){val+=valorCarta(c.id);dup+=dupCount(c.id);}
+  });
+  const tot=bT+sT,tenho=b+s,pct=tot?Math.round(tenho/tot*100):0;
+  $('statBase').textContent=b+'/'+bT;$('statSpecial').textContent=s+'/'+sT;$('statTotal').textContent=tenho+'/'+tot;
+  $('statPct').textContent=pct+'%';$('statDup').textContent=dup;$('statValue').textContent=fmtBRL(val);
+  $('progressFill').style.width=pct+'%';
+}
+
+/* =====================================================================
+   CARTA — exemplares (variação + idioma + qualidade + quantidade)
+   ===================================================================== */
+function cartaAtual(){return currentCards.find(c=>c.id===openCardId)||null;}
+function openCard(cardId){
+  openCardId=cardId;const c=cartaAtual();if(!c)return;
+  $('cmName').textContent=c.name;$('cmMeta').textContent='#'+c.localId+' · '+(currentSet?currentSet.name:'');
+  const src=imgUrl(c,'high'),img=$('cmImg'),ph=$('cmPh');
+  if(src){img.style.display='block';img.referrerPolicy='no-referrer';img.src=src;ph.style.display='none';}
+  else{img.style.display='none';ph.style.display='flex';ph.querySelector('.n').textContent='#'+c.localId;ph.querySelector('.t').textContent=c.name;}
+  setNote('');renderCardModal();
+  $('cardModal').classList.add('open');
+  carregarRaridade(c);
+}
+const raridadeCache={};
+// Variações que REALMENTE existem pra carta (vem do catálogo). Sem informação -> mostra todas.
+function extrasDaCarta(cardId){
+  const d=raridadeCache[cardId],v=d&&d.variants;if(!v)return EXTRAS;
+  const tem=EXTRAS.filter(([k])=>(k==='Normal'&&v.normal)||(k==='Holo'&&v.holo)||(k==='Reverse'&&v.reverse));
+  return tem.length?tem:EXTRAS;
+}
+async function carregarRaridade(c){
+  if(customSets[setIdOf(c.id)])return;
+  try{
+    let d=raridadeCache[c.id];
+    if(!d){try{d=await tcg('cards/'+encodeURIComponent(c.id),langPt||'en');}catch(e){d=await tcg('cards/'+encodeURIComponent(c.id),'en');}raridadeCache[c.id]=d;}
+    if(openCardId!==c.id||!d)return;
+    const v=d.variants||{},tem=[];if(v.normal)tem.push('Normal');if(v.holo)tem.push('Holo');if(v.reverse)tem.push('Reverse');
+    $('cmMeta').textContent='#'+c.localId+' · '+(currentSet?currentSet.name:'')+(d.rarity?' · '+d.rarity:'')+(tem.length?' · existe em: '+tem.join(', '):'');
+    renderCardModal();
+  }catch(e){}
+}
+function setNote(m,c){const el=$('saveNote');el.textContent=m||'';el.className='save-note'+(c?' '+c:'');}
+function renderCardModal(){
+  const c=cartaAtual();if(!c)return;
+  const rs=rowsOf(c.id),exs=extrasDaCarta(c.id);
+  $('cmAdd').innerHTML=exs.map(([k,l])=>`<button class="tb-btn" onclick="addLinha(${J(k)})">＋ ${escHtml(l)}</button>`).join('');
+  // no seletor: só as que existem + a que já está gravada (pra não sumir um exemplar antigo)
+  const exsDe=r=>exs.some(([k])=>k===r.extra)?exs:exs.concat(EXTRAS.filter(([k])=>k===r.extra));
+  $('cmLinhas').innerHTML=rs.length?rs.map(r=>{
+    const p=precoLinha(r),base=(perfil&&perfil.base_preco==='medio')?'médio':'menor',rot={manual:'manual',variacao:'Liga · '+({N:'Normal',F:'Foil',RF:'Reverse Foil'}[p.ac]||'variação')+' · '+base,geral:'Liga · geral · '+base,sem:'sem preço'}[p.fonte];
+    return `<div class="ex-row">
+      <select onchange="mudarLinha(${r.id},'extra',this.value)">${opts(exsDe(r),r.extra)}</select>
+      <select onchange="mudarLinha(${r.id},'idioma',this.value)">${opts(IDIOMAS,r.idioma)}</select>
+      <select onchange="mudarLinha(${r.id},'qualidade',this.value)">${opts(QUALS,r.qualidade)}</select>
+      <div class="ex-line">
+        <span>Qtd</span><button class="qty-b" onclick="mudarLinha(${r.id},'quantidade',${r.quantidade-1})">−</button>
+        <b style="min-width:18px;text-align:center;color:var(--ink)">${r.quantidade}</b>
+        <button class="qty-b" onclick="mudarLinha(${r.id},'quantidade',${r.quantidade+1})">+</button>
+        <span class="sp ex-price">${fmtBRL(p.v)}</span><span class="ex-src ${p.fonte==='manual'?'manual':p.fonte==='variacao'?'exato':''}">${rot}</span>
+        <button class="ex-del" title="Remover este exemplar" onclick="delLinha(${r.id})">🗑</button>
+      </div>
+      <div class="ex-line">
+        <span>Preço manual R$</span>
+        <input type="number" step="0.01" min="0" style="width:90px" value="${r.preco_manual==null?'':escHtml(r.preco_manual)}" placeholder="usar Liga" onchange="mudarLinha(${r.id},'preco_manual',this.value)"/>
+        <label class="sp" style="display:flex;align-items:center;gap:5px;cursor:pointer" title="Aparece em 🔁 Repetidas da galera para quem participa da comunidade"><input type="checkbox" ${r.divulgar?'checked':''} onchange="mudarLinha(${r.id},'divulgar',this.checked)"/> ${r.quantidade>1?`divulgar ${r.quantidade-1} repetida(s) p/ troca`:'disponível p/ troca'}</label>
+      </div></div>`;}).join('')
+    :'<div class="hint-box" style="margin:0 0 8px">Você ainda não tem esta carta. Toque na variação abaixo para marcar.</div>';
+  $('cmDesejo').checked=!!desejos[c.id];
+  const g=precoG[c.id],lk=urlDaCarta(c);
+  const edUrl=urlDoSet(currentSetId);
+  const linha=(rot,p)=>`<tr><td style="padding:2px 10px 2px 0">${rot}</td><td><b>${p.preco_min!=null?fmtBRL(p.preco_min):'—'}</b></td><td style="padding:0 10px">${p.preco_med!=null?fmtBRL(p.preco_med):'—'}</td><td>${p.preco_max!=null?fmtBRL(p.preco_max):'—'}</td></tr>`;
+  let tab='';
+  [['N','Normal'],['F','Foil'],['RF','Reverse Foil']].forEach(([ac,rot])=>{const e=precoE[c.id+'|'+ac];if(e)tab+=linha(rot,e);});
+  if(g&&g.preco_min!=null)tab+=linha(tab?'Geral':'Geral',g);
+  let h=tab?`<table style="border-collapse:collapse;font-size:12px"><tr style="color:var(--ink3)"><td></td><td>menor</td><td style="padding:0 10px">médio</td><td>maior</td></tr>${tab}</table>
+      <span style="color:var(--ink3)">geral ${haQuanto(g&&g.atualizado_em)}${precoE[c.id+'|N']||precoE[c.id+'|F']||precoE[c.id+'|RF']?' · variação '+haQuanto((precoE[c.id+'|F']||precoE[c.id+'|N']||precoE[c.id+'|RF']).atualizado_em):''}</span>`
+    :'Ainda sem preço da Liga para esta carta.';
+  h+=`<br>Ordem usada: <b>manual</b> → <b>variação</b> (Normal/Foil/Reverse) → <b>geral</b>, pelo <b>${(perfil&&perfil.base_preco==='medio')?'médio':'menor'}</b> (muda no Perfil).`;
+  if(lk&&extVersao)h+=`<div style="margin-top:6px"><button class="mini-btn liga" onclick="atualizarPrecoCarta()">🔄 Buscar preço por variação desta carta</button></div>`;
+  if(lk)h+=`<div style="margin-top:6px"><a href="${escHtml(lk)}" target="_blank" rel="noopener">🔗 Ver esta carta na Liga</a> <span style="color:var(--ink3)">— pra conferir idioma/qualidade e digitar o preço manual, se quiser</span></div>`;
+  else if(edUrl)h+=`<div style="margin-top:6px"><a href="${escHtml(edUrl)}" target="_blank" rel="noopener">🔗 Abrir a edição na Liga</a></div>`;
+  $('cmPreco').innerHTML=h;
+}
+function aposMudar(){renderCardModal();renderGrid();updateStats();fotografarValor();}
+async function addLinha(extra){
+  const c=cartaAtual();if(!c||!user)return;
+  const idioma=(perfil&&perfil.idioma_padrao)||'PT',qualidade=(perfil&&perfil.qualidade_padrao)||'NM';
+  const igual=rowsOf(c.id).find(r=>r.extra===extra&&r.idioma===idioma&&r.qualidade===qualidade);
+  if(igual)return mudarLinha(igual.id,'quantidade',igual.quantidade+1);
+  setNote('Salvando...','syncing');
+  try{
+    const {data,error}=await sb.from('colecao').insert({user_id:user.id,carta_id:c.id,set_id:currentSetId,numero:String(c.localId),
+      nome:c.name,imagem_url:imgUrl(c,'low')||null,extra,idioma,qualidade}).select().single();
+    if(error)throw error;
+    linhas.push(data);reindexar();
+    if(!setsUser[currentSetId])await garantirSetUsuario(currentSetId);
+    if(desejos[c.id])await alternarDesejo(false,true);      // achou a carta: sai da lista de procurados
+    setNote('✓ Salvo','synced');aposMudar();
+  }catch(e){setNote(erroMsg(e),'error');}
+}
+async function mudarLinha(id,campo,valor){
+  const r=linhas.find(x=>x.id===id);if(!r)return;
+  if(campo==='quantidade'){valor=parseInt(valor,10);if(!(valor>=1))return delLinha(id);}
+  if(campo==='preco_manual'){const n=parseFloat(valor);valor=(valor===''||isNaN(n))?null:n;}
+  const patch={[campo]:valor,atualizado_em:new Date().toISOString()};
+  if(campo==='quantidade'&&valor<=1&&r.quantidade>1)patch.divulgar=false;
+  setNote('Salvando...','syncing');
+  try{
+    const {data,error}=await sb.from('colecao').update(patch).eq('id',id).select().single();
+    if(error)throw error;
+    Object.assign(r,data);setNote('✓ Salvo','synced');aposMudar();
+  }catch(e){
+    const m=erroMsg(e);
+    setNote(/duplicate|unique/i.test(m)?'Você já tem um exemplar com essa mesma variação/idioma/qualidade — aumente a quantidade dele.':m,'error');
+    renderCardModal();
+  }
+}
+async function delLinha(id){
+  setNote('Removendo...','syncing');
+  const {error}=await sb.from('colecao').delete().eq('id',id);
+  if(error){setNote(erroMsg(error),'error');return;}
+  linhas=linhas.filter(x=>x.id!==id);reindexar();setNote('✓ Removido','synced');aposMudar();
+}
+async function alternarDesejo(marcar,silencioso){
+  const c=cartaAtual();if(!c)return;
+  try{await gravarDesejo(c,currentSetId,marcar);if(!silencioso){setNote(marcar?'✓ Marcada como procurada':'✓ Removida dos procurados','synced');renderGrid();}}
+  catch(e){setNote(erroMsg(e),'error');$('cmDesejo').checked=!!desejos[c.id];}
+}
+async function gravarDesejo(c,setId,marcar){
+  if(marcar){
+    const {data,error}=await sb.from('desejos').upsert({user_id:user.id,carta_id:c.id,set_id:setId,numero:String(c.localId),
+      nome:c.name,imagem_url:imgUrl(c,'low')||null},{onConflict:'user_id,carta_id'}).select().single();
+    if(error)throw error;desejos[c.id]=data;
+  }else{
+    const {error}=await sb.from('desejos').delete().eq('carta_id',c.id);
+    if(error)throw error;delete desejos[c.id];
+  }
+}
+
+/* =====================================================================
+   LIGA POKÉMON — leitura pela extensão (roda no navegador do usuário)
+   ===================================================================== */
+const extPend={};
+window.addEventListener('message',ev=>{
+  if(ev.source!==window||ev.origin!==location.origin)return;
+  const m=ev.data;if(!m||m.de!=='pokedex-ext')return;
+  if(m.tipo==='PRONTA'){extVersao=m.versao;renderExt();return;}
+  const p=extPend[m.id];if(!p)return;delete extPend[m.id];clearTimeout(p.t);
+  if(m.ok)p.ok(m.dados);else p.err(new Error(m.erro||'A extensão não respondeu.'));
+});
+function renderExt(){const el=$('extPill');if(!el)return;el.textContent=extVersao?('extensão v'+extVersao+' ✓'):'extensão: não detectada';el.className='ext-pill'+(extVersao?' on':'');}
+function extChamar(tipo,url,opcoes,limite){
+  return new Promise((ok,err)=>{
+    const id='m'+Date.now()+Math.random().toString(36).slice(2);
+    extPend[id]={ok,err,t:setTimeout(()=>{delete extPend[id];err(new Error('A extensão demorou demais para responder.'));},limite||300000)};
+    window.postMessage({de:'pokedex-site',id,tipo,url,opcoes:opcoes||{}},location.origin);
+  });
+}
+function urlLigaValida(u){try{const x=new URL(u);return x.protocol==='https:'&&x.hostname==='www.ligapokemon.com.br';}catch(e){return false;}}
+function codigoDaUrl(u){try{const m=decodeURIComponent(u).replace(/\+/g,' ').match(/(?:^|[?&=\s])ed=([^&\s]+)/i);return m?m[1].toUpperCase():null;}catch(e){return null;}}
+
+/* Toda página de edição da Liga imprime cada carta assim:
+       Meganium (#001/∞)      <- âncora: nome + número
+       R$ 34,99               <- menor preço
+       R$ 349,99              <- maior preço
+   Lemos a âncora e pegamos os preços DENTRO do bloco dela.            */
+function parseLiga(text){
+  const re=/^(.*?)\s*\(#\s*([A-Za-z]{0,3}\d{1,4}[A-Za-z]?)\s*\/([^)\n]*)\)\s*$/gim;
+  const brutos=[];let m;
+  while((m=re.exec(text)))brutos.push({name:(m[1]||'').trim(),num:m[2],tot:(m[3]||'').trim(),at:m.index,end:m.index+m[0].length});
+  const vistos={},out=[];
+  brutos.forEach((it,i)=>{
+    const ate=Math.min(i+1<brutos.length?brutos[i+1].at:text.length,it.end+800);
+    const ps=(text.slice(it.end,ate).match(/R\$\s*\d{1,3}(?:\.\d{3})*,\d{2}/g)||[])
+      .map(p=>parseFloat(p.replace(/[^\d,]/g,'').replace(',','.')));
+    it.min=ps.length?ps[0]:null;it.max=ps.length>1&&ps[1]>=ps[0]?ps[1]:null;it.key=chaveNum(it.num);
+    if(!it.name)return;
+    const ja=vistos[it.key];
+    if(!ja){vistos[it.key]=it;out.push(it);}else if(ja.min==null&&it.min!=null){ja.min=it.min;ja.max=it.max;}
+  });
+  return out;
+}
+/* A página de edição da Liga traz o set INTEIRO num JSON embutido:
+       var cardsjson = [{"sN":"001","nPT":"Bulbasaur","precoMenor":"0.12","precoMaior":"60.00","sP":"//arquivos/...jpg",...}]
+   A tela só desenha 24 por vez, mas o JSON tem todas — então lemos ele direto
+   (confirmado no diagnóstico de 20/09/2026: 188 de 188 cartas do MEG).          */
+function extrairCardsJson(src){
+  if(!src)return null;
+  const m=src.match(/var\s+cardsjson\s*=\s*\[/);if(!m)return null;
+  const ini=m.index+m[0].length-1;let prof=0,emStr=false,esc=false;
+  for(let i=ini;i<src.length;i++){
+    const ch=src[i];
+    if(emStr){if(esc)esc=false;else if(ch==='\\')esc=true;else if(ch==='"')emStr=false;continue;}
+    if(ch==='"')emStr=true;else if(ch==='['||ch==='{')prof++;
+    else if(ch===']'||ch==='}'){prof--;if(prof===0){try{const a=JSON.parse(src.slice(ini,i+1));return Array.isArray(a)?a:null;}catch(e){return null;}}}
+  }
+  return null;
+}
+function semEntidades(t){if(!/&[#a-z0-9]+;/i.test(t))return t;const e=document.createElement('textarea');e.innerHTML=t;return e.value;}
+function listagemDeCardsJson(arr){
+  const vistos={},out=[];
+  (arr||[]).forEach(c=>{
+    const num=String(c.sN||'').trim();if(!num)return;
+    const key=chaveNum(num);if(vistos[key])return;vistos[key]=1;
+    const en=String(c.nEN||''),nomeEn=en.replace(/\s*\(#?[^)]*\)\s*$/,'').trim();
+    const mn=parseFloat(c.precoMenor),mx=parseFloat(c.precoMaior),md=parseFloat(c.p1b);
+    const sp=String(c.sP||'').replace(/^\/+/,'');
+    const dn=en.match(/\/\s*0*(\d{1,4})\s*\)\s*$/),den=dn?parseInt(dn[1],10):null;   // "(#119/094)" -> 94
+    const href=c.sSigla&&en?('https://www.ligapokemon.com.br/?view=cards/card&card='+encodeURIComponent(en.replace('(#','('))+'&ed='+encodeURIComponent(c.sSigla)+'&num='+encodeURIComponent(num)):'';
+    out.push({num,key,name:semEntidades(String(c.nPT||nomeEn||'').trim()),min:mn>0?mn:null,med:md>0?md:null,max:mx>0?mx:null,
+      img:sp?('https://repositorio.sbrauble.com//'+sp):'',href,den});
+  });
+  return out;
+}
+// Normaliza qualquer leitura (extensão ou texto colado) para [{num,key,name,min,max,img,href}]
+function lerListagem(dados){
+  const fontes=[].concat(dados.scripts||[],dados.html||[]);
+  for(const f of fontes){const arr=extrairCardsJson(f);if(arr&&arr.length)return {lidas:listagemDeCardsJson(arr),fonte:'cardsjson'};}
+  const lk=mapaLinks(dados.links);
+  return {lidas:parseLiga(dados.texto||'').map(l=>({num:l.num,key:l.key,name:l.name,min:l.min,max:l.max,den:/^0*\d{1,4}$/.test(l.tot)?parseInt(l.tot,10):null,
+    img:(lk[l.key]&&lk[l.key].img)||'',href:(lk[l.key]&&lk[l.key].href)||''})),fonte:'texto'};
+}
+function numCustom(num){const m=String(num).match(/^([A-Za-z]*)(\d+)([A-Za-z]?)$/);return m?(m[1].toUpperCase()+m[2].padStart(3,'0')+m[3].toLowerCase()):String(num);}
+function mapaLinks(links){
+  const out={};(links||[]).forEach(l=>{try{const u=new URL(l.href),n=u.searchParams.get('num');if(n){const k=chaveNum(n);if(!out[k])out[k]={href:l.href,img:l.img||''};}}catch(e){}});
+  return out;
+}
+function erroMigracao(e){
+  const m=erroMsg(e);
+  return /does not exist|schema cache|could not find/i.test(m)?new Error('O banco ainda está na versão anterior: rode o arquivo sql/migracao_v3.sql no SQL Editor do Supabase e tente de novo. ('+m+')'):e;
+}
+async function upsertLotes(tabela,rows,conflito){
+  for(let i=0;i<rows.length;i+=500){const {error}=await sb.from(tabela).upsert(rows.slice(i,i+500),{onConflict:conflito});if(error)throw error;}
+}
+// Coração da atualização: recebe a listagem normalizada e grava os preços (valem pra todos os usuários).
+async function aplicarLeitura(setId,lidas){
+  if(!lidas||!lidas.length)throw new Error('O leitor não achou nenhuma carta nessa página. Confira se o endereço é o da EDIÇÃO (lista de cartas). Se for, a Liga pode ter mudado o layout — use "🧪 Diagnóstico" e me mande o arquivo.');
+  const soHref={};lidas.forEach(l=>{if(l.href)soHref[l.key]=l.href;});
+  if(Object.keys(soHref).length)jset('pkd_links_'+setId,Object.assign(jget('pkd_links_'+setId,{}),soHref));
+  if(customSets[setId]){                                   // coleção só da Liga: a lista de cartas também vem daqui
+    const d=customSets[setId],por={};(d.cartas||[]).forEach(c=>por[chaveNum(c.n)]=c);
+    let mudou=false;
+    lidas.forEach(l=>{const k=l.key;
+      if(!por[k]){por[k]={n:numCustom(l.num),name:l.name,img:l.img||''};if(l.den)por[k].b=l.den;mudou=true;}
+      else{if(l.img&&!por[k].img){por[k].img=l.img;mudou=true;}
+           if(l.den&&por[k].b!==l.den){por[k].b=l.den;mudou=true;}}});
+    if(mudou){const cartas=Object.values(por);
+      const {data,error}=await sb.from('sets_custom').update({cartas,total:Math.max(d.total||0,cartas.length)}).eq('id',setId).select().single();
+      if(error)throw error;customSets[setId]=data;}
+  }
+  const d=await carregarCartasSet(setId),porChave={};
+  d.cards.forEach(c=>{porChave[chaveNum(c.localId)]=c;});
+  const agora=new Date().toISOString(),rows=[],semPar=[];let comPreco=0;
+  lidas.forEach(l=>{const c=porChave[l.key];
+    if(!c){semPar.push('#'+l.num+' '+l.name);return;}
+    const a=precoG[c.id]||{};
+    if(l.min!=null)comPreco++;
+    rows.push({carta_id:c.id,
+      preco_min:l.min!=null?l.min:(a.preco_min!=null?a.preco_min:null),
+      preco_med:l.med!=null?l.med:(l.min!=null?null:(a.preco_med!=null?a.preco_med:null)),
+      preco_max:l.max!=null?l.max:(l.min!=null?null:(a.preco_max!=null?a.preco_max:null)),
+      nome_liga:l.name||a.nome_liga||null,imagem_liga:l.img||a.imagem_liga||null,url_liga:l.href||a.url_liga||null,
+      atualizado_em:l.min!=null?agora:(a.atualizado_em||agora),atualizado_por:user.id});});
+  try{await upsertLotes('precos_gerais',rows,'carta_id');}catch(e){throw erroMigracao(e);}
+  rows.forEach(r=>precoG[r.carta_id]=r);
+  return {lidas:lidas.length,gravadas:comPreco,semPar};
+}
+function urlDoSet(setId){return (customSets[setId]&&customSets[setId].liga_url)||(vinculos[setId]&&vinculos[setId].liga_url)||null;}
+async function atualizarPrecosSet(setId,emLote){
+  if(!setId)return null;
+  const url=urlDoSet(setId);
+  if(!url){if(!emLote)abrirVinculo(setId);return null;}
+  if(!extVersao){if(!emLote){showWarn('Extensão não detectada neste navegador. Instale a extensão (pasta "extensao") ou use "📋 Colar da Liga".');abrirColar();}return null;}
+  setSync('Lendo a Liga ('+setId+')… pode abrir uma aba por alguns segundos.','loading');
+  try{
+    const esperado=(currentSet&&currentSet.id===setId&&currentSet.total)||(setsUser[setId]&&setsUser[setId].total)||0;
+    const r=await lerEdicaoCompleta(setId,url,esperado);
+    if(!emLote){
+      const parcial=esperado&&r.lidas<esperado*0.8;
+      setSync(`${parcial?'⚠':'✓'} ${r.gravadas} preço(s) atualizados — ${r.lidas} de ${esperado||'?'} cartas lidas`,parcial?'err':'ok');
+      const avisos=[];
+      if(parcial)avisos.push(`A Liga só entregou ${r.lidas} das ${esperado} cartas deste set. Clique em "🧪 Diagnóstico" e me mande o arquivo para eu ajustar o leitor.`);
+      if(r.semPar.length)avisos.push(`${r.semPar.length} carta(s) da Liga não casaram com o catálogo: ${r.semPar.slice(0,6).join(', ')}${r.semPar.length>6?'…':''}`);
+      if(avisos.length)showWarn(avisos.join(' · '));
+      if(currentSetId===setId){const d=await carregarCartasSet(setId);currentCards=d.cards;currentSet=d.set;renderGrid();updateStats();if(openCardId)renderCardModal();}
+      fotografarValor();
+    }
+    return r;
+  }catch(e){if(!emLote){setSync('','');showWarn(erroMsg(e));}else throw e;return null;}
+}
+// Lê a edição e, se a Liga paginar por link, segue as outras páginas (com pausa).
+async function lerEdicaoCompleta(setId,url,esperado){
+  const soma={lidas:0,gravadas:0,semPar:[],fonte:''},feitas={},vistas={};
+  const fila=[url];
+  while(fila.length&&Object.keys(feitas).length<25){
+    const u=fila.shift();if(feitas[u])continue;feitas[u]=1;
+    const dados=await extChamar('LER_EDICAO',u,{esperado,bruto:true});
+    if(dados.bloqueio)throw new Error('A Liga pediu verificação anti-robô. Abra o site da Liga numa aba, resolva a verificação e tente de novo.');
+    const L=lerListagem(dados);soma.fonte=L.fonte;
+    let r;try{r=await aplicarLeitura(setId,L.lidas);}catch(e){if(soma.lidas)break;throw e;}
+    const novas=L.lidas.filter(l=>!vistas[l.key]);
+    novas.forEach(l=>vistas[l.key]=1);
+    soma.lidas=Object.keys(vistas).length;soma.gravadas+=r.gravadas;
+    r.semPar.forEach(x=>{if(soma.semPar.indexOf(x)<0)soma.semPar.push(x);});
+    if(L.fonte==='cardsjson')break;                                     // o JSON já traz o set inteiro
+    if(!novas.length&&u!==url)break;                                   // página repetida: acabou
+    if(esperado&&soma.lidas>=esperado)break;
+    (dados.paginas||[]).forEach(p=>{if(urlLigaValida(p)&&!feitas[p]&&fila.indexOf(p)<0)fila.push(p);});
+    if(fila.length){setSync(`Lendo a Liga (${setId}) — ${soma.lidas} cartas até agora…`,'loading');await new Promise(z=>setTimeout(z,2000));}
+  }
+  return soma;
+}
+async function diagnosticoEdicao(){
+  const url=urlDoSet(currentSetId);
+  if(!url)return abrirVinculo(currentSetId);
+  if(!extVersao)return showWarn('Extensão não detectada neste navegador.');
+  setSync('Gerando diagnóstico da edição…','loading');
+  try{const d=await extChamar('LER_EDICAO',url,{bruto:true,esperado:(currentSet&&currentSet.total)||0});
+    d.extensao=extVersao;d.esperado=(currentSet&&currentSet.total)||0;const L=lerListagem(d);d.cartasLidas=L.lidas.length;d.fonteLeitura=L.fonte;
+    baixarArquivo('diagnostico_liga_'+currentSetId+'.json',JSON.stringify(d),'application/json');
+    setSync(`✓ Diagnóstico baixado (${d.cartasLidas} cartas lidas)`,'ok');}
+  catch(e){setSync('','');showWarn(erroMsg(e));}
+}
+async function atualizarTodos(){
+  if(!extVersao){showWarn('Extensão não detectada neste navegador. A atualização em lote precisa dela (Chrome/Edge no computador).');return;}
+  const ids=meusSetIds(),com=ids.filter(urlDoSet),sem=ids.filter(i=>!urlDoSet(i));
+  if(!com.length){showWarn('Nenhuma das suas coleções tem a página da Liga vinculada ainda. Abra o set e clique em "🔗 Página na Liga".');return;}
+  let ok=0,precos=0;const falhas=[],parciais=[];
+  for(let i=0;i<com.length;i++){
+    setSync(`Lendo a Liga: ${com[i]} (${i+1}/${com.length})…`,'loading');
+    try{const r=await atualizarPrecosSet(com[i],true);if(r){ok++;precos+=r.gravadas;const t=(setsUser[com[i]]&&setsUser[com[i]].total)||0;if(t&&r.lidas<t*0.8)parciais.push(`${com[i]} (${r.lidas}/${t})`);}}catch(e){falhas.push(com[i]+': '+erroMsg(e));}
+    if(i<com.length-1)await new Promise(r=>setTimeout(r,2500));          // pausa: não martelar a Liga
+  }
+  setSync(`✓ ${ok}/${com.length} coleções · ${precos} preços atualizados`,'ok');
+  const avisos=[];if(falhas.length)avisos.push('Falharam — '+falhas.join(' | '));
+  if(parciais.length)avisos.push('Leitura parcial: '+parciais.join(', '));
+  if(sem.length)avisos.push('Sem página da Liga vinculada: '+sem.join(', '));
+  if(avisos.length)showWarn(avisos.join(' · '));
+  renderHome();fotografarValor();
+}
+function urlDaCarta(c){
+  const g=precoG[c.id];if(g&&g.url_liga)return g.url_liga;
+  return jget('pkd_links_'+setIdOf(c.id),{})[chaveNum(c.localId)]||null;
+}
+/* A página da carta publica, em texto limpo, menor/médio/maior POR VARIAÇÃO:
+       cards_editions[i].price = { "0":{p,m,g}, "2":{p,m,g}, "3":{p,m,g} }   (0=Normal 2=Foil 3=Reverse Foil)
+   Já o preço de cada oferta individual (idioma/qualidade) vem embaralhado em classes
+   CSS de propósito — esse a gente não decifra.                                    */
+const ACRON_EXTRA={0:'N',2:'F',3:'RF'};
+function variacoesDaLeitura(dados,c,codLiga){
+  const eds=(dados.vars&&dados.vars.cards_editions)||[];if(!Array.isArray(eds)||!eds.length)return [];
+  const k=chaveNum(c.localId);
+  const ed=eds.find(e=>chaveNum(e.num)===k&&(!codLiga||String(e.code).toUpperCase()===codLiga))||eds.find(e=>chaveNum(e.num)===k)||(eds.length===1?eds[0]:null);
+  if(!ed||!ed.price)return [];
+  const n=x=>{const v=parseFloat(x);return v>0?v:null;};
+  return Object.keys(ed.price).map(id=>{const p=ed.price[id]||{};
+    return {extra:ACRON_EXTRA[id]||('X'+id),preco_min:n(p.p),preco_med:n(p.m),preco_max:n(p.g)};}).filter(v=>v.preco_min!=null);
+}
+async function lerVariacoesCarta(c,setId){
+  const url=urlDaCarta(c);if(!url)throw new Error('Sem link desta carta na Liga — atualize os preços do set primeiro.');
+  const dados=await extChamar('LER_CARTA',url,{});
+  if(dados.bloqueio)throw new Error('A Liga pediu verificação anti-robô. Abra o site dela numa aba, resolva e tente de novo.');
+  const cod=((customSets[setId]&&customSets[setId].liga_codigo)||(vinculos[setId]&&vinculos[setId].liga_codigo)||'').toUpperCase();
+  const vs=variacoesDaLeitura(dados,c,cod);if(!vs.length)return 0;
+  const agora=new Date().toISOString();
+  const rows=vs.map(v=>Object.assign({carta_id:c.id,atualizado_em:agora,atualizado_por:user.id},v));
+  try{await upsertLotes('precos_extras',rows,'carta_id,extra');}catch(e){throw erroMigracao(e);}
+  rows.forEach(r=>precoE[r.carta_id+'|'+r.extra]=r);
+  return rows.length;
+}
+async function atualizarPrecoCarta(){
+  const c=cartaAtual();if(!c)return;
+  setNote('Lendo a página da carta na Liga...','syncing');
+  try{const n=await lerVariacoesCarta(c,currentSetId);
+    setNote(n?`✓ ${n} variação(ões) atualizadas`:'A Liga não tem preço por variação para esta carta.',n?'synced':'');aposMudar();}
+  catch(e){setNote(erroMsg(e),'error');}
+}
+let loteVariacoes=false;
+async function atualizarVariacoesSet(){
+  if(loteVariacoes){loteVariacoes=false;return;}
+  if(!extVersao)return showWarn('Extensão não detectada neste navegador.');
+  const alvo=currentCards.filter(c=>isOwned(c.id)&&urlDaCarta(c));
+  if(!alvo.length)return showWarn('Nada para ler: marque as cartas que você tem e rode "Atualizar preços (Liga)" antes (é ele que descobre o link de cada carta).');
+  if(!confirm(`Vou abrir a página de ${alvo.length} carta(s) que você tem neste set, uma por vez, com pausa entre elas (~${Math.ceil(alvo.length*6/60)} min).\nAs abas abrem e fecham sozinhas em segundo plano. Clique de novo no botão para interromper.\n\nContinuar?`))return;
+  loteVariacoes=true;let ok=0,falhas=0;
+  for(let i=0;i<alvo.length&&loteVariacoes;i++){
+    setSync(`💎 Preço por variação: ${i+1}/${alvo.length} — ${alvo[i].name} (clique no botão de novo para parar)`,'loading');
+    try{if(await lerVariacoesCarta(alvo[i],currentSetId))ok++;}catch(e){falhas++;if(/anti-robô|migracao_v3/.test(erroMsg(e))){showWarn(erroMsg(e));break;}}
+    if(i<alvo.length-1)await new Promise(z=>setTimeout(z,2500));
+  }
+  loteVariacoes=false;
+  setSync(`✓ Preço por variação: ${ok} carta(s) atualizadas${falhas?` · ${falhas} falharam`:''}`,falhas?'err':'ok');
+  renderGrid();updateStats();fotografarValor();
+}
+
+/* ---------- lista de edições da Liga (vale pra todos; qualquer um com a extensão atualiza) ---------- */
+const URL_EDICOES='https://www.ligapokemon.com.br/?view=cards/edicoes';
+function parseEdicoesLiga(html){
+  const doc=new DOMParser().parseFromString(html||'','text/html'),vistos={},out=[];
+  doc.querySelectorAll('a[href]').forEach(a=>{
+    const h=a.getAttribute('href')||'';
+    if(!/cards(\/|%2F)search/i.test(h)||!/ed(id)?(=|%3D)/i.test(h))return;
+    let url;try{url=new URL(h,'https://www.ligapokemon.com.br/').href;}catch(e){return;}
+    const cod=codigoDaUrl(url);if(!cod||vistos[cod])return;
+    let nome=(a.textContent||'').replace(/\s+/g,' ').trim();
+    if(nome.toUpperCase().endsWith(' '+cod))nome=nome.slice(0,-cod.length).trim();
+    if(!nome||nome.length>120)return;
+    vistos[cod]=1;out.push({codigo:cod,nome,url});
+  });
+  return out;
+}
+async function atualizarEdicoesLiga(pre){
+  const st=$(pre+'EdStatus');
+  if(!extVersao){st.textContent='Precisa da extensão (Chrome/Edge no computador).';return;}
+  st.textContent='Lendo a lista de edições na Liga...';
+  try{
+    const d=await extChamar('LER_CARTA',URL_EDICOES,{bruto:true});
+    const eds=parseEdicoesLiga(d.html);
+    if(!eds.length){baixarArquivo('diagnostico_edicoes_liga.json',JSON.stringify(d),'application/json');st.textContent='Não reconheci a lista — baixei um diagnóstico, me mande o arquivo.';return;}
+    const agora=new Date().toISOString();
+    try{await upsertLotes('liga_edicoes',eds.map(e=>Object.assign({atualizado_em:agora,atualizado_por:user.id},e)),'codigo');}catch(e){throw erroMigracao(e);}
+    ligaEdicoes=eds.slice().sort((a,b)=>a.nome.localeCompare(b.nome));
+    st.textContent='✓ '+eds.length+' edições';renderEdicoesLiga(pre);
+  }catch(e){st.textContent=erroMsg(e);}
+}
+function renderEdicoesLiga(pre){
+  const el=$(pre+'Lista'),q=normName($(pre+'Busca').value);
+  if(!ligaEdicoes.length){el.innerHTML='<div class="pick">Lista vazia — clique em "↻ Atualizar lista de edições".</div>';return;}
+  // sem busca, sugere pelo nome do set aberto
+  const dica=(pre==='vinc'&&currentSet)?normName(currentSet.name):'';
+  const nota=e=>{const n=normName(e.nome),c=e.codigo.toLowerCase();
+    if(q)return (c===q?0:n===q?1:c.startsWith(q)?2:n.includes(q)||c.includes(q)?3:9);
+    return dica&&(n===dica||n.includes(dica)||dica.includes(n))?0:5;};
+  const lista=ligaEdicoes.map(e=>[nota(e),e]).filter(x=>x[0]<9).sort((a,b)=>a[0]-b[0]||a[1].nome.localeCompare(b[1].nome)).slice(0,60);
+  el.innerHTML=lista.map(([,e])=>`<div class="pick" style="cursor:pointer" onclick="escolherEdicaoLiga(${J(pre)},${J(e.codigo)})"><span>${escHtml(e.nome)}</span><small>${escHtml(e.codigo)}</small></div>`).join('')||'<div class="pick">Nada encontrado.</div>';
+}
+function escolherEdicaoLiga(pre,cod){
+  const e=ligaEdicoes.find(x=>x.codigo===cod);if(!e)return;
+  if(pre==='vinc'){$('vincUrl').value=e.url;salvarVinculo();}
+  else{$('nlUrl').value=e.url;$('nlNome').value=e.nome;$('nlCod').value=e.codigo;}
+}
+
+/* ---------- vincular set -> página da Liga ---------- */
+let vincSetId=null;
+function abrirVinculo(setId){
+  if(!setId)return;vincSetId=setId;
+  $('vincUrl').value=urlDoSet(setId)||'';$('vincStatus').textContent='';
+  $('vincBusca').value='';$('vincEdStatus').textContent='';renderEdicoesLiga('vinc');
+  $('vincModal').classList.add('open');
+}
+async function salvarVinculo(){
+  const url=$('vincUrl').value.trim(),st=$('vincStatus');
+  if(!urlLigaValida(url)){st.className='save-note error';st.textContent='Cole o endereço completo, começando com https://www.ligapokemon.com.br/';return;}
+  try{
+    if(customSets[vincSetId]){
+      const {data,error}=await sb.from('sets_custom').update({liga_url:url,liga_codigo:codigoDaUrl(url)}).eq('id',vincSetId).select().single();
+      if(error)throw error;customSets[vincSetId]=data;
+    }else{
+      const {data,error}=await sb.from('sets_liga').upsert({set_id:vincSetId,liga_url:url,liga_codigo:codigoDaUrl(url),
+        atualizado_por:user.id,atualizado_em:new Date().toISOString()},{onConflict:'set_id'}).select().single();
+      if(error)throw error;vinculos[vincSetId]=data;
+    }
+    fechar('vincModal');
+    if(extVersao)atualizarPrecosSet(vincSetId);else setSync('✓ Página vinculada','ok');
+  }catch(e){st.className='save-note error';st.textContent=erroMsg(e);}
+}
+/* ---------- plano B: colar o texto ---------- */
+function abrirColar(){if(!currentSetId)return;$('colarArea').value='';$('colarStatus').textContent='';$('colarModal').classList.add('open');setTimeout(()=>$('colarArea').focus(),50);}
+async function aplicarColado(){
+  const st=$('colarStatus'),txt=$('colarArea').value;
+  if(!txt.trim()){st.className='save-note error';st.textContent='Cole o texto da página da Liga primeiro.';return;}
+  st.className='save-note syncing';st.textContent='Aplicando...';
+  try{const r=await aplicarLeitura(currentSetId,lerListagem({texto:txt,html:txt}).lidas);
+    st.className='save-note synced';
+    st.textContent=`✓ ${r.gravadas} preço(s) gravados (${r.lidas} cartas lidas).`+(r.semPar.length?`\n${r.semPar.length} não casaram: ${r.semPar.slice(0,5).join(', ')}`:'')+'\nSe a edição tem mais páginas, cole a próxima.';
+    $('colarArea').value='';renderGrid();updateStats();fotografarValor();
+  }catch(e){st.className='save-note error';st.textContent=erroMsg(e);}
+}
+/* ---------- coleção que só existe na Liga ---------- */
+function abrirNovoLiga(){['nlUrl','nlNome','nlCod','nlTexto','nlBusca'].forEach(i=>$(i).value='');$('nlStatus').textContent='';$('nlEdStatus').textContent='';renderEdicoesLiga('nl');$('novoLigaModal').classList.add('open');}
+async function criarSetLiga(){
+  const st=$('nlStatus'),url=$('nlUrl').value.trim(),nome=$('nlNome').value.trim();
+  const cod=($('nlCod').value.trim()||codigoDaUrl(url)||'').toUpperCase(),limpo=cod.toLowerCase().replace(/[^a-z0-9]/g,'');
+  const erro=m=>{st.className='save-note error';st.textContent=m;};
+  if(url&&!urlLigaValida(url))return erro('O endereço precisa começar com https://www.ligapokemon.com.br/');
+  if(!nome||!limpo)return erro('Preencha o nome e o código curto.');
+  const id='liga'+limpo;
+  const texto=$('nlTexto').value;
+  st.className='save-note syncing';
+  try{
+    let dados={texto};
+    if(!texto.trim()){
+      if(!url||!extVersao)return erro('Sem a extensão, cole o texto da página da edição no campo de baixo.');
+      st.textContent='Lendo a Liga...';
+      dados=await extChamar('LER_EDICAO',url,{bruto:true});
+    }
+    const lidas=lerListagem(dados).lidas;if(!lidas.length)return erro('Não achei cartas nessa página/texto.');
+    const cartas=lidas.map(l=>({n:numCustom(l.num),name:l.name,img:l.img||''}));
+    if(!customSets[id]){
+      const {data,error}=await sb.from('sets_custom').insert({id,nome,liga_url:url||null,liga_codigo:cod,total:cartas.length,cartas,criado_por:user.id}).select().single();
+      if(error)throw error;customSets[id]=data;
+    }
+    await aplicarLeitura(id,lidas);
+    currentSet={id,name:nome,total:cartas.length,base:cartas.length};
+    await garantirSetUsuario(id,{nome,total:customSets[id].total,favorito:true});
+    renderSaved();fechar('novoLigaModal');fetchSet(id);
+  }catch(e){erro(erroMsg(e));}
+}
+
+/* =====================================================================
+   PERFIL
+   ===================================================================== */
+function abrirPerfil(){
+  if(!perfil)return;
+  $('pfNome').value=perfil.nome||'';$('pfCidade').value=perfil.cidade||'';$('pfTel').value=perfil.telefone||'';$('pfEmail').value=perfil.email_contato||'';
+  $('pfCom').checked=!!perfil.na_comunidade;$('pfMT').checked=!!perfil.mostrar_telefone;$('pfME').checked=!!perfil.mostrar_email;
+  $('pfIdioma').innerHTML=opts(IDIOMAS,perfil.idioma_padrao||'PT');$('pfQual').innerHTML=opts(QUALS,perfil.qualidade_padrao||'NM');
+  $('pfBase').value=perfil.base_preco||'menor';$('pfStatus').textContent='';$('impStatus').textContent='';$('perfilModal').classList.add('open');
+}
+async function salvarPerfil(){
+  const st=$('pfStatus');
+  const p={nome:$('pfNome').value.trim()||null,cidade:$('pfCidade').value.trim()||null,telefone:$('pfTel').value.trim()||null,
+    email_contato:$('pfEmail').value.trim()||null,na_comunidade:$('pfCom').checked,mostrar_telefone:$('pfMT').checked,
+    mostrar_email:$('pfME').checked,idioma_padrao:$('pfIdioma').value,qualidade_padrao:$('pfQual').value,base_preco:$('pfBase').value};
+  if(p.na_comunidade&&!((p.mostrar_telefone&&p.telefone)||(p.mostrar_email&&p.email_contato))){
+    st.className='save-note error';st.textContent='Para participar da comunidade, libere pelo menos um contato (WhatsApp ou e-mail) — senão ninguém consegue te chamar.';return;}
+  const {data,error}=await sb.from('perfis').update(p).eq('id',user.id).select().single();
+  if(error){st.className='save-note error';st.textContent=erroMsg(erroMigracao(error));return;}
+  perfil=data;if(currentSetId){renderGrid();updateStats();}comCache={};renderOwner();st.className='save-note synced';st.textContent='✓ Salvo';
+  if($('homeView').style.display!=='none')renderHome();
+}
+
+/* =====================================================================
+   DIVULGAR — escolher QUAIS repetidas e QUAIS faltantes aparecem
+   ===================================================================== */
+let divModo='rep',divCartas=[];
+function abrirDivulgar(){
+  const ids=meusSetIds();
+  $('divSet').innerHTML=ids.map(i=>`<option value="${escHtml(i)}"${i===currentSetId?' selected':''}>${escHtml((setsUser[i]&&setsUser[i].nome)||i)}</option>`).join('');
+  $('divModal').classList.add('open');divAba(divModo);
+}
+function divAba(m){divModo=m;$('divTab_rep').classList.toggle('active',m==='rep');$('divTab_falta').classList.toggle('active',m==='falta');
+  $('divSetWrap').style.display=m==='falta'?'block':'none';renderDivulgar();}
+async function renderDivulgar(){
+  const el=$('divLista');$('divStatus').textContent='';
+  if(divModo==='rep'){
+    const rs=linhas.filter(r=>r.quantidade>1||r.divulgar).sort((a,b)=>(a.set_id+a.numero).localeCompare(b.set_id+b.numero,undefined,{numeric:true}));
+    el.innerHTML=rs.length?rs.map(r=>`<label class="pick"><input type="checkbox" ${r.divulgar?'checked':''} onchange="divMarcarRep(${r.id},this.checked)"/>
+      <span><b>#${escHtml(r.numero)}</b> ${escHtml(r.nome)} <span style="color:var(--ink3)">· ${escHtml(r.extra)} · ${escHtml(r.idioma)} · ${escHtml(r.qualidade)}</span></span>
+      <small>${escHtml(r.set_id)} · ×${qtdTroca(r)}${r.quantidade>1?'':' (única)'} · ${fmtBRL(precoLinha(r).v)}</small></label>`).join('')
+      :'<div class="pick">Nada para troca ainda. Aumente a quantidade de um exemplar, ou abra a carta e marque "disponível p/ troca" na que você tem uma só.</div>';
+    return;
+  }
+  const sid=$('divSet').value;if(!sid){el.innerHTML='<div class="pick">Nenhuma coleção ainda.</div>';return;}
+  el.innerHTML='<div class="pick">Carregando...</div>';
+  try{
+    const d=await carregarCartasSet(sid);if($('divSet').value!==sid||divModo!=='falta')return;
+    divCartas=d.cards.filter(c=>!isOwned(c.id));
+    el.innerHTML=divCartas.length?divCartas.map((c,i)=>{const g=precoG[c.id];
+      return `<label class="pick"><input type="checkbox" ${desejos[c.id]?'checked':''} onchange="divMarcarFalta(${i},this.checked)"/>
+      <span><b>#${escHtml(c.localId)}</b> ${escHtml(c.name)}</span><small>${g&&g.preco_min?fmtBRL(g.preco_min):''}</small></label>`;}).join('')
+      :'<div class="pick">🎉 Você tem todas as cartas deste set.</div>';
+  }catch(e){el.innerHTML='<div class="pick">'+escHtml(erroMsg(e))+'</div>';}
+}
+async function divMarcarRep(id,v){
+  const r=linhas.find(x=>x.id===id);if(!r)return;
+  const {error}=await sb.from('colecao').update({divulgar:v}).eq('id',id);
+  if(error){$('divStatus').textContent=erroMsg(error);return;}r.divulgar=v;comCache={};$('divStatus').textContent='✓ salvo';
+}
+async function divMarcarFalta(i,v){
+  const c=divCartas[i];if(!c)return;
+  try{await gravarDesejo(c,$('divSet').value,v);comCache={};$('divStatus').textContent='✓ salvo';if(currentSetId===$('divSet').value)renderGrid();}
+  catch(e){$('divStatus').textContent=erroMsg(e);}
+}
+async function divTodas(v){
+  $('divStatus').textContent='Salvando...';
+  try{
+    if(divModo==='rep'){
+      const q=sb.from('colecao').update({divulgar:v});
+      const {error}=await (v?q.gt('quantidade',1):q.eq('divulgar',true));if(error)throw error;   // marcar: só repetidas · desmarcar: tudo (inclui únicas)
+      linhas.forEach(r=>{if(v?r.quantidade>1:r.divulgar)r.divulgar=v;});
+    }else{
+      const sid=$('divSet').value;
+      if(v){
+        const rows=divCartas.map(c=>({user_id:user.id,carta_id:c.id,set_id:sid,numero:String(c.localId),nome:c.name,imagem_url:imgUrl(c,'low')||null}));
+        await upsertLotes('desejos',rows,'user_id,carta_id');rows.forEach(r=>desejos[r.carta_id]=r);
+      }else{
+        const {error}=await sb.from('desejos').delete().eq('set_id',sid);if(error)throw error;
+        Object.keys(desejos).forEach(k=>{if(desejos[k].set_id===sid)delete desejos[k];});
+      }
+      if(currentSetId===sid)renderGrid();
+    }
+    comCache={};await renderDivulgar();$('divStatus').textContent='✓ salvo';
+  }catch(e){$('divStatus').textContent=erroMsg(e);}
+}
+
+/* =====================================================================
+   COMUNIDADE
+   ===================================================================== */
+let comModo='matches',comCache={};
+function abrirComunidade(){esconderTudo();currentSetId=null;$('comView').style.display='block';comAba(comModo);}
+function comAba(m){comModo=m;['matches','repetidas','desejos'].forEach(k=>$('comTab_'+k).classList.toggle('active',k===m));carregarComunidade();}
+async function carregarComunidade(){
+  const el=$('comLista');
+  $('comAviso').innerHTML=perfil&&perfil.na_comunidade?'':`<div class="hint-box" style="margin:0 0 12px">Você ainda <b>não participa</b> da comunidade: dá pra ver o que os outros divulgam, mas nada seu aparece. <a href="#" onclick="abrirPerfil();return false">Ativar no perfil</a>.</div>`;
+  if(!comCache[comModo]){
+    el.innerHTML='<div class="loading">Carregando...</div>';
+    try{comCache[comModo]=await selTudo(()=>sb.from('comunidade_'+comModo).select('*'));}
+    catch(e){el.innerHTML='<div class="empty">'+escHtml(erroMsg(e))+'</div>';return;}
+  }
+  renderComunidade();
+}
+function linkZap(tel,msg){let d=String(tel||'').replace(/\D/g,'');if(!d)return '';if(d.length<=11)d='55'+d;return 'https://wa.me/'+d+'?text='+encodeURIComponent(msg);}
+function renderComunidade(){
+  const q=normName($('comBusca').value);
+  let rows=(comCache[comModo]||[]);
+  if(comModo!=='matches')rows=rows.filter(r=>r.user_id!==user.id);
+  if(q)rows=rows.filter(r=>normName([r.carta,r.set_id,r.numero,r.pessoa,r.cidade].join(' ')).includes(q));
+  const vazio={matches:'Ninguém divulgou (ainda) uma repetida das cartas que você marcou como "procuro".',repetidas:'Ninguém divulgou repetidas ainda.',desejos:'Ninguém divulgou cartas procuradas ainda.'}[comModo];
+  $('comLista').innerHTML=rows.length?rows.slice(0,400).map(r=>{
+    const tem=comModo!=='desejos';
+    const msg=tem?`Oi! Vi na Pokédex que você tem repetida a carta ${r.carta} #${r.numero} (${r.set_id}). Ainda tem?`
+                 :`Oi! Vi na Pokédex que você procura a carta ${r.carta} #${r.numero} (${r.set_id}). Eu tenho!`;
+    const zap=linkZap(r.telefone,msg);
+    return `<div class="com-item">
+      ${r.imagem_url?`<img loading="lazy" referrerpolicy="no-referrer" src="${escHtml(r.imagem_url)}" alt=""/>`:'<div class="noimg"></div>'}
+      <div style="min-width:0"><div class="t">${escHtml(r.carta)} <span style="color:var(--ink3);font-weight:600">#${escHtml(r.numero)}</span></div>
+        <div class="m">${escHtml(r.set_id)}${tem?` · ${escHtml(r.extra)} · ${escHtml(r.idioma)} · ${escHtml(r.qualidade)} · ×${r.disponiveis}`:((r.idioma||r.qualidade)?` · quer ${escHtml(r.idioma||'qualquer idioma')} ${escHtml(r.qualidade||'')}`:'')}
+          ${r.preco_ref?`<br>ref. Liga: <b>${fmtBRL(r.preco_ref)}</b>`:''}</div>
+        <div class="who">${tem?'Tem':'Procura'}: ${escHtml(r.pessoa||'Colecionador')}${r.cidade?' · '+escHtml(r.cidade):''}</div>
+        <div>${zap?`<a href="${escHtml(zap)}" target="_blank" rel="noopener">💬 WhatsApp</a>`:''}${r.email?`<a href="mailto:${escHtml(r.email)}?subject=${encodeURIComponent('Pokédex — '+r.carta)}">✉ E-mail</a>`:''}</div>
+      </div></div>`;}).join(''):`<div class="empty" style="grid-column:1/-1">${vazio}</div>`;
+}
+
+/* =====================================================================
+   EXPORTAR
+   ===================================================================== */
+let expMode='faltando',expTexto='',expNome='lista.txt';
+function openExp(){
+  const ids=meusSetIds();
+  $('expSet').innerHTML='<option value="__all">Todas as minhas coleções</option>'+ids.map(i=>`<option value="${escHtml(i)}"${i===currentSetId?' selected':''}>${escHtml((setsUser[i]&&setsUser[i].nome)||i)}</option>`).join('');
+  $('expOut').style.display='none';$('expActions').style.display='none';$('expStatus').textContent='';
+  $('expModal').classList.add('open');setExpMode(expMode);
+}
+function setExpMode(m){expMode=m;$('expTabFalta').classList.toggle('active',m==='faltando');$('expTabProc').classList.toggle('active',m==='procuro');$('expTabDup').classList.toggle('active',m==='repetidas');
+  $('expSoMarcadasLbl').textContent=m==='faltando'?'Só as que marquei como "procuro"':'Só as que marquei para divulgar';
+  $('expSoMarcadasLbl').parentNode.style.display=m==='procuro'?'none':'';}
+/* Raridade p/ ordenar a exportação: busca no TCGdex 1x por carta e guarda no navegador */
+const RAR_KEY='pkd_rar_';
+async function raridadeTxt(c){
+  const mem=raridadeCache[c.id];if(mem&&mem.rarity!=null)return mem.rarity||'';
+  let s=null;try{s=localStorage.getItem(RAR_KEY+c.id);}catch(e){}
+  if(s!==null)return s;
+  if(customSets[setIdOf(c.id)])return '';
+  try{
+    let d;try{d=await tcg('cards/'+encodeURIComponent(c.id),langPt||'en');}catch(e){d=await tcg('cards/'+encodeURIComponent(c.id),'en');}
+    if(d)raridadeCache[c.id]=d;const r=(d&&d.rarity)||'';
+    try{localStorage.setItem(RAR_KEY+c.id,r);}catch(e){}
+    return r;
+  }catch(e){return '';}
+}
+// 6 hiper/secreta · 5 arte especial · 4 ultra · 3 ilustração · 2 dupla rara/ACE/brilhante · 0 demais
+function nivelRaro(rar,c,set){
+  const n=nivelPorRaridade(rar,c,set);
+  return isSpecial(c,set)?Math.max(n,3):n;   // tudo acima da coleção base (ex.: 119/094) vai para a frente
+}
+function nivelPorRaridade(rar,c,set){
+  const r=String(rar||'').toLowerCase();
+  if(r){
+    if(/hyper|hiper|secret|secreta|rainbow|arco|gold|dourad/.test(r))return 6;
+    if(/special illustration|ilustra[çc][ãa]o especial|arte especial|special art/.test(r))return 5;
+    if(/ultra/.test(r))return 4;
+    if(/illustration|ilustra/.test(r))return 3;
+    if(/double|dupla|ace spec|shiny|brilhante|radiant|radiante|\b(v|vmax|vstar|gx|ex)\b/.test(r))return 2;
+    return 0;
+  }
+  // sem raridade no catálogo (sets só da Liga): estima pelo nome e pelo número
+  const nm=String(c.name||''),poke=/\b(ex|gx|vmax|vstar|v)\b/i.test(nm);
+  if(isSpecial(c,set))return poke?5:3;
+  return poke?2:0;
+}
+const NOME_NIVEL={6:'Hiper/Secreta',5:'Arte Especial',4:'Ultra Rara',3:'Ilustração Rara',2:'Dupla Rara'};
+async function emParalelo(lista,n,fn){let i=0;await Promise.all(Array.from({length:Math.min(n,lista.length)},async()=>{while(i<lista.length){const k=i++;await fn(lista[k],k);}}));}
+async function runExport(){
+  const st=$('expStatus'),sel=$('expSet').value,oque=$('expWhat').value,so=$('expSoMarcadas').checked,fmt=$('expFmt').value;
+  const ids=sel==='__all'?meusSetIds():[sel];
+  st.className='save-note syncing';st.textContent='Montando...';
+  try{
+    const grupos=[];
+    for(const sid of ids){
+      const d=await carregarCartasSet(sid),itens=[];
+      d.cards.forEach(c=>{
+        const sp=isSpecial(c,d.set);if((oque==='base'&&sp)||(oque==='special'&&!sp))return;
+        if(expMode==='procuro'){
+          if(!desejos[c.id]||isOwned(c.id))return;
+          itens.push({c,sn:d.set.name,qtd:1,det:'',preco:escolher(precoG[c.id])||0});
+        }else if(expMode==='faltando'){
+          if(isOwned(c.id)||(so&&!desejos[c.id]))return;
+          itens.push({c,sn:d.set.name,qtd:1,det:'',preco:escolher(precoG[c.id])||0});
+        }else rowsOf(c.id).forEach(r=>{if(r.quantidade<2?!r.divulgar:(so&&!r.divulgar))return;
+          itens.push({c,sn:d.set.name,set:d.set,qtd:qtdTroca(r),det:[r.extra,r.idioma,r.qualidade].join(' · '),preco:precoLinha(r).v});});
+      });
+      if(itens.length)grupos.push({set:d.set,itens});
+    }
+    if(expMode==='repetidas'){   // raras e especiais na frente
+      const todos=grupos.flatMap(g=>g.itens);let feitos=0;
+      await emParalelo(todos,6,async it=>{
+        it.rar=await raridadeTxt(it.c);it.nivel=nivelRaro(it.rar,it.c,it.set);
+        st.textContent=`Verificando raridades... ${++feitos}/${todos.length}`;});
+      const top=todos.filter(i=>i.nivel>=2).sort((a,b)=>(b.nivel-a.nivel)||(b.preco-a.preco));
+      top.forEach(i=>i.tag=(i.rar||NOME_NIVEL[i.nivel])+' · '+i.sn);
+      grupos.forEach(g=>g.itens=g.itens.filter(i=>!(i.nivel>=2)));
+      for(let k=grupos.length-1;k>=0;k--)if(!grupos[k].itens.length)grupos.splice(k,1);
+      if(top.length)grupos.unshift({set:{name:'⭐ Raras e especiais'},itens:top});
+    }
+    const n=grupos.reduce((s,g)=>s+g.itens.reduce((a,i)=>a+i.qtd,0),0);
+    if(!n){st.className='save-note';st.textContent=expMode==='procuro'?'Você ainda não marcou nenhuma carta como "procuro". Abra a carta e marque 🔎 Procuro esta carta.':'Nada para exportar com esses filtros.';return;}
+    const titulo=(expMode==='faltando'?'🔎 FALTANDO':expMode==='procuro'?'🎯 PROCURO':'🔁 REPETIDAS')+(perfil&&perfil.nome?' — '+perfil.nome:'');
+    const tot=grupos.reduce((s,g)=>s+g.itens.reduce((a,i)=>a+i.preco*i.qtd,0),0);
+    if(fmt==='img'){abrirOuBaixar(htmlExport(titulo,grupos,n,tot),'pokedex_'+expMode+'.html');st.className='save-note synced';st.textContent='✓ Página aberta em outra aba (ou baixada).';return;}
+    if(fmt==='csv'){
+      const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
+      expTexto='\ufeffSet;Numero;Carta;Detalhe;Raridade;Qtd;Preco\n'+grupos.map(g=>g.itens.map(i=>[q(i.sn||g.set.name),q(i.c.localId),q(i.c.name),q(i.det),q(i.rar||NOME_NIVEL[i.nivel]||''),i.qtd,String(i.preco.toFixed(2)).replace('.',',')].join(';')).join('\n')).join('\n');
+      expNome='pokedex_'+expMode+'.csv';
+    }else{
+      expTexto=titulo+'\n'+grupos.map(g=>`\n*${g.set.name}* (${g.itens.length})\n`+g.itens.map(i=>`#${i.c.localId} ${i.c.name}${i.det?' ['+i.det+']':''}${i.tag?' ('+i.tag+')':''}${i.qtd>1?' x'+i.qtd:''}${i.preco?' — '+fmtBRL(i.preco):''}`).join('\n')).join('\n')
+        +`\n\nTotal: ${n} carta(s)`+(tot?` · ~${fmtBRL(tot)} (menor preço da Liga)`:'');
+      expNome='pokedex_'+expMode+'.txt';
+    }
+    $('expOut').value=expTexto;$('expOut').style.display='block';$('expActions').style.display='flex';
+    st.className='save-note synced';st.textContent=`✓ ${n} carta(s).`;
+  }catch(e){st.className='save-note error';st.textContent=erroMsg(e);}
+}
+function htmlExport(titulo,grupos,n,tot){
+  const css='body{font-family:system-ui,sans-serif;margin:18px;color:#1c2430}h1{font-size:20px}h2{font-size:15px;margin:22px 0 8px;border-left:5px solid #1B3F91;padding-left:8px}.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}.c{font-size:11px;text-align:center;break-inside:avoid}.c img,.c .ph{width:100%;aspect-ratio:63/88;object-fit:cover;border-radius:8px;background:#e9edf3;display:block}.c b{display:block;margin-top:4px}.c small{color:#5a6577}@media print{.g{grid-template-columns:repeat(6,1fr)}}';
+  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+escHtml(titulo)+'</title><style>'+css+'</style></head><body><h1>'+escHtml(titulo)+'</h1><div>'+n+' carta(s)'+(tot?' · ~'+fmtBRL(tot):'')+'</div>'
+    +grupos.map(g=>'<h2>'+escHtml(g.set.name)+' ('+g.itens.length+')</h2><div class="g">'+g.itens.map(i=>{const s=imgUrl(i.c,'low');
+      return '<div class="c">'+(s?'<img referrerpolicy="no-referrer" src="'+escHtml(s)+'">':'<div class="ph"></div>')+'<b>#'+escHtml(i.c.localId)+' '+escHtml(i.c.name)+'</b><small>'+escHtml(i.det)+(i.tag?'<br>'+escHtml(i.tag):'')+(i.qtd>1?' ×'+i.qtd:'')+(i.preco?' · '+fmtBRL(i.preco):'')+'</small></div>';}).join('')+'</div>').join('')+'</body></html>';
+}
+function baixarArquivo(nome,conteudo,tipo){
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([conteudo],{type:(tipo||'text/plain')+';charset=utf-8'}));
+  a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);
+}
+function abrirOuBaixar(html,nome){
+  const url=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
+  const w=window.open(url,'_blank');if(!w)baixarArquivo(nome,html,'text/html');
+}
+function copiarExport(){const t=$('expOut');t.select();(navigator.clipboard?navigator.clipboard.writeText(expTexto):Promise.reject()).catch(()=>document.execCommand('copy'));$('expStatus').textContent='✓ Copiado';}
+function baixarExportTxt(){baixarArquivo(expNome,expTexto,/\.csv$/.test(expNome)?'text/csv':'text/plain');}
+
+/* =====================================================================
+   MIGRAÇÃO — importa a coleção da planilha antiga (Apps Script)
+   ===================================================================== */
+function entradaAntiga(raw){
+  const n=x=>{const v=parseInt(x,10);return(isNaN(v)||v<0)?0:v;};
+  const out={price:0,types:{normal:false,holofoil:false,reverseHolofoil:false},dups:{normal:0,holofoil:0,reverseHolofoil:0}};
+  if(!raw)return out;
+  const d=raw.dups||{};Object.keys(out.dups).forEach(k=>out.dups[k]=n(d[k]));
+  if(raw.types){out.price=parseFloat(raw.price)||0;Object.keys(out.types).forEach(k=>out.types[k]=!!raw.types[k]);return out;}
+  Object.keys(out.types).forEach(k=>{const s=raw[k];if(s&&s.owned){out.types[k]=true;if(!out.price&&s.price)out.price=parseFloat(s.price)||0;}});
+  return out;
+}
+async function importarAntigo(){
+  const st=$('impStatus');const log=m=>{st.textContent=m;};
+  if(!CFG.scriptUrlAntigo)return log('config.js sem scriptUrlAntigo.');
+  if(!confirm('Importar a coleção da planilha antiga para a SUA conta?\n\nCartas que já existirem aqui não são duplicadas.'))return;
+  try{
+    log('Lendo a planilha antiga...');
+    const j=await (await fetch(CFG.scriptUrlAntigo+'?action=get')).json();
+    if(!j.ok)throw new Error(j.error||'A planilha não respondeu.');
+    const col=j.collection||{},nomesAntigos=jget('pkm_setnames',{});
+    const MAPA={normal:'Normal',holofoil:'Holo',reverseHolofoil:'Reverse'};
+    // 1) coleções criadas pela Liga
+    for(const k of Object.keys(col)){
+      if(!k.startsWith('__set__'))continue;const def=col[k];if(!def||def.deleted||!Array.isArray(def.cards)||customSets[def.id])continue;
+      const cartas=def.cards.map(c=>({n:c.n,name:c.name,img:''}));
+      const {data,error}=await sb.from('sets_custom').insert({id:def.id,nome:def.name,liga_codigo:def.code||null,total:def.total||cartas.length,cartas,criado_por:user.id}).select().single();
+      if(error)throw error;customSets[def.id]=data;
+      const precos=def.cards.filter(c=>c.price>0).map(c=>({carta_id:def.id+'-'+c.n,preco_min:c.price,atualizado_por:user.id}));
+      if(precos.length)await upsertLotes('precos_gerais',precos,'carta_id');
+    }
+    // 2) cartas, agrupadas pelo set antigo
+    const porSet={};
+    Object.keys(col).forEach(k=>{if(k.startsWith('__'))return;const i=k.indexOf('-');if(i<1)return;
+      (porSet[k.slice(0,i)]=porSet[k.slice(0,i)]||[]).push({num:k.slice(i+1),e:entradaAntiga(col[k])});});
+    await carregarCatalogo();
+    const naoAchados=[],semPar=[];let nLinhas=0;
+    for(const antigo of Object.keys(porSet)){
+      log('Importando '+antigo+'...');
+      let novo=customSets[antigo]?antigo:null;
+      if(!novo){const c=codigoParaTcgdex(antigo);const hit=catalogo.find(s=>s.id.toLowerCase()===c)||catalogo.find(s=>s.id.toLowerCase()===antigo.toLowerCase());
+        if(hit)novo=hit.id;else if(nomesAntigos[antigo]){const n=normName(nomesAntigos[antigo]);const h2=catalogo.find(s=>normName(s.nameEn)===n||normName(s.name)===n);if(h2)novo=h2.id;}}
+      if(!novo){naoAchados.push(antigo);continue;}
+      let d;try{d=await carregarCartasSet(novo);}catch(e){naoAchados.push(antigo);continue;}
+      const porChave={};d.cards.forEach(c=>porChave[chaveNum(c.localId)]=c);
+      const rows=[],seeds=[];
+      porSet[antigo].forEach(({num,e})=>{
+        const c=porChave[chaveNum(num)];
+        const tem=Object.keys(MAPA).filter(t=>e.types[t]);if(!tem.length)return;
+        if(!c){semPar.push(antigo+'-'+num);return;}
+        tem.forEach(t=>{if(rowsOf(c.id).some(r=>r.extra===MAPA[t]))return;
+          rows.push({user_id:user.id,carta_id:c.id,set_id:novo,numero:String(c.localId),nome:c.name,imagem_url:imgUrl(c,'low')||null,
+            extra:MAPA[t],idioma:(perfil&&perfil.idioma_padrao)||'PT',qualidade:(perfil&&perfil.qualidade_padrao)||'NM',quantidade:1+e.dups[t]});});
+        if(e.price>0&&!precoG[c.id])seeds.push({carta_id:c.id,preco_min:e.price,atualizado_por:user.id});
+      });
+      if(rows.length){await upsertLotes('colecao',rows,'user_id,carta_id,extra,idioma,qualidade');nLinhas+=rows.length;}
+      if(seeds.length)await upsertLotes('precos_gerais',seeds,'carta_id');
+      const g=col['__gasto__'+antigo];
+      const {error}=await sb.from('sets_usuario').upsert({user_id:user.id,set_id:novo,nome:d.set.name,total:d.set.total,base:d.set.base,
+        favorito:true,gasto:g&&g.v!=null?parseFloat(g.v)||0:((setsUser[novo]&&setsUser[novo].gasto)||null)},{onConflict:'user_id,set_id'});
+      if(error)throw error;
+    }
+    await carregarTudo();
+    log(`✓ Importação concluída: ${nLinhas} exemplar(es).`
+      +(naoAchados.length?`\nSets que não achei no catálogo novo: ${naoAchados.join(', ')} — abra-os pela busca e me avise o código.`:'')
+      +(semPar.length?`\nCartas sem par (${semPar.length}): ${semPar.slice(0,12).join(', ')}${semPar.length>12?'…':''}`:''));
+  }catch(e){log('Erro: '+erroMsg(e));}
+}
+
+/* ---------- vai! ---------- */
+renderExt();
+iniciar();
+</script>
+</body>
+</html>
